@@ -32,8 +32,17 @@ type Context struct {
 	engine *Engine
 }
 
-func (p *Context) FormInt(name string, defval int) int {
-	ret := p.FormValue(name)
+func (p *Context) setParam(name, val string) {
+	p.ParseForm()
+	p.Form.Set(name, val)
+}
+
+func (p *Context) Param(name string) string {
+	return p.FormValue(name)
+}
+
+func (p *Context) ParamInt(name string, defval int) int {
+	ret := p.Param(name)
 	if ret != "" {
 		if v, err := strconv.Atoi(ret); err == nil {
 			return v

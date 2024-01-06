@@ -25,6 +25,7 @@ import (
 type H map[string]interface{}
 
 type Engine struct {
+	router
 	Mux *http.ServeMux
 
 	tpls map[string]Template
@@ -39,12 +40,18 @@ func New(fs ...fs.FS) *Engine {
 		e.fs = fs[0]
 		e.tpls = make(map[string]Template)
 	}
+	e.router.init()
 	return e
 }
 
 func (p *Engine) NewContext(w http.ResponseWriter, r *http.Request) *Context {
 	ctx := &Context{ResponseWriter: w, Request: r, engine: p}
 	return ctx
+}
+
+// ServeHTTP makes the router implement the http.Handler interface.
+func (p *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	p.router.serveHTTP(w, req, p)
 }
 
 func (p *Engine) Handle(pattern string, f func(ctx *Context)) {
@@ -54,7 +61,7 @@ func (p *Engine) Handle(pattern string, f func(ctx *Context)) {
 }
 
 func (p *Engine) Run(addr string, mws ...func(h http.Handler) http.Handler) {
-	h := http.Handler(p.Mux)
+	h := http.Handler(p)
 	for _, mw := range mws {
 		h = mw(h)
 	}
