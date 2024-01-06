@@ -36,12 +36,19 @@ func New(fs ...fs.FS) *Engine {
 	e := &Engine{
 		Mux: http.NewServeMux(),
 	}
-	if fs != nil {
-		e.fs = fs[0]
-		e.tpls = make(map[string]Template)
-	}
 	e.router.init()
+	if fs != nil {
+		e.initYapFS(fs[0])
+	}
 	return e
+}
+
+func (p *Engine) initYapFS(fsys fs.FS) {
+	if sub, e := fs.Sub(fsys, "yap"); e == nil {
+		fsys = sub
+	}
+	p.fs = fsys
+	p.tpls = make(map[string]Template)
 }
 
 func (p *Engine) NewContext(w http.ResponseWriter, r *http.Request) *Context {
