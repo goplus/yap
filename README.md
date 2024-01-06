@@ -6,3 +6,22 @@ yap - Yet Another Go/Go+ HTTP Web Framework
 [![GitHub release](https://img.shields.io/github/v/tag/goplus/yap.svg?label=release)](https://github.com/goplus/yap/releases)
 [![Coverage Status](https://codecov.io/gh/goplus/yap/branch/main/graph/badge.svg)](https://codecov.io/gh/goplus/yap)
 [![GoDoc](https://pkg.go.dev/badge/github.com/goplus/yap.svg)](https://pkg.go.dev/github.com/goplus/yap)
+
+### Router and Parameters
+
+demo ([hello.go](demo/hello/hello.go)):
+
+```go
+import "github.com/goplus/yap"
+
+y := yap.New()
+y.GET("/p/:id", func(ctx *yap.Context) {
+	ctx.JSON(200, yap.H{
+		"id": ctx.Param("id"),
+	})
+})
+y.Handle("/", func(ctx *yap.Context) {
+	ctx.TEXT(200, "text/html", `<html><body>Hello, <a href="/p/123">Yap</a>!</body></html>`)
+})
+y.Run(":8080")
+```
