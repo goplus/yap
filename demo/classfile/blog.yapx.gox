@@ -1,0 +1,11 @@
+type article struct {
+	ID string
+}
+
+get "/p/:id", ctx => {
+	ctx.yap "article", article{
+		ID: ctx.param("id"),
+	}
+}
+
+run ":8080"
