@@ -28,7 +28,7 @@ y.Run(":8080")
 
 ### YAP Template
 
-demo ([blog.go](demo/blog/blog.go)):
+demo ([blog.go](demo/blog/blog.go), [article.yap](demo/blog/yap/article.yap)):
 
 ```go
 import (
