@@ -1,10 +1,6 @@
-type article struct {
-	ID string
-}
-
 get "/p/:id", ctx => {
-	ctx.yap "article", article{
-		ID: ctx.param("id"),
+	ctx.yap "article", {
+		"id": ctx.param("id"),
 	}
 }
 

@@ -44,8 +44,12 @@ func New(fs ...fs.FS) *Engine {
 }
 
 func (p *Engine) initYapFS(fsys fs.FS) {
-	if sub, e := fs.Sub(fsys, "yap"); e == nil {
-		fsys = sub
+	const name = "yap"
+	if f, e := fsys.Open(name); e == nil {
+		f.Close()
+		if sub, e := fs.Sub(fsys, name); e == nil {
+			fsys = sub
+		}
 	}
 	p.fs = fsys
 	p.tpls = make(map[string]Template)
