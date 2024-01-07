@@ -9,7 +9,7 @@ yap - Yet Another Go/Go+ HTTP Web Framework
 
 ### Router and Parameters
 
-demo ([hello.go](demo/hello/hello.go)):
+demo in Go ([hello.go](demo/hello/hello.go)):
 
 ```go
 import "github.com/goplus/yap"
@@ -26,33 +26,51 @@ y.Handle("/", func(ctx *yap.Context) {
 y.Run(":8080")
 ```
 
+demo in Go+ classfile ([hello_yap.gox](demo/classfile_hello/hello_yap.gox)):
+
+```go
+get "/p/:id", ctx => {
+	ctx.json {
+		"id": ctx.param("id"),
+	}
+}
+handle "/", ctx => {
+	ctx.html `<html><body>Hello, <a href="/p/123">Yap</a>!</body></html>`
+}
+
+run ":8080"
+```
+
 ### YAP Template
 
-demo ([blog.go](demo/blog/blog.go)):
+demo in Go ([blog.go](demo/blog/blog.go)):
 
 ```go
 import (
-	"embed"
-	"io/fs"
+	"os"
 
 	"github.com/goplus/yap"
 )
 
-type article struct {
-	ID string
-}
-
-//go:embed yap
-var yapFS embed.FS
-
-fsYap, _ := fs.Sub(yapFS, "yap")
-y := yap.New(fsYap)
+y := yap.New(os.DirFS("."))
 
 y.GET("/p/:id", func(ctx *yap.Context) {
-	ctx.YAP(200, "article", article{
-		ID: ctx.Param("id"),
+	ctx.YAP(200, "article", yap.H{
+		"id": ctx.Param("id"),
 	})
 })
 
 y.Run(":8080")
+```
+
+demo in Go+ classfile ([blog_yap.gox](demo/classfile_blog/blog_yap.gox)):
+
+```go
+get "/p/:id", ctx => {
+	ctx.yap "article", {
+		"id": ctx.param("id"),
+	}
+}
+
+run ":8080"
 ```
