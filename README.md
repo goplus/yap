@@ -43,7 +43,7 @@ run ":8080"
 
 ### YAP Template
 
-demo in Go ([blog.go](demo/blog/blog.go)):
+demo in Go ([blog.go](demo/blog/blog.go), [article.yap](demo/blog/yap/article.yap)):
 
 ```go
 import (
@@ -63,7 +63,7 @@ y.GET("/p/:id", func(ctx *yap.Context) {
 y.Run(":8080")
 ```
 
-demo in Go+ classfile ([blog_yap.gox](demo/classfile_blog/blog_yap.gox)):
+demo in Go+ classfile ([blog_yap.gox](demo/classfile_blog/blog_yap.gox), [article.yap](demo/classfile_blog/yap/article.yap)):
 
 ```go
 get "/p/:id", ctx => {
