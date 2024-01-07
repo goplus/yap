@@ -1,3 +1,3 @@
 gop 1.1
 
-project .yapx App github.com/goplus/yap
+project _yap.gox App github.com/goplus/yap
