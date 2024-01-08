@@ -88,6 +88,8 @@ func acceptNext(accept string) (item, left string) {
 	return
 }
 
+// TEXT replies the HTTP request with code as status,
+// mime as Content-Type and text as response body.
 func (p *Context) TEXT(code int, mime string, text string) {
 	w := p.ResponseWriter
 	h := w.Header()
@@ -97,6 +99,8 @@ func (p *Context) TEXT(code int, mime string, text string) {
 	io.WriteString(w, text)
 }
 
+// DATA replies the HTTP request with code as status,
+// mime as Content-Type and data as response body.
 func (p *Context) DATA(code int, mime string, data []byte) {
 	w := p.ResponseWriter
 	h := w.Header()
@@ -106,6 +110,8 @@ func (p *Context) DATA(code int, mime string, data []byte) {
 	w.Write(data)
 }
 
+// PrettyJSON converts any interface to JSON (in pretty mode).
+// It also sets the Content-Type as "application/json".
 func (p *Context) PrettyJSON(code int, data interface{}) {
 	msg, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
@@ -114,6 +120,8 @@ func (p *Context) PrettyJSON(code int, data interface{}) {
 	p.DATA(code, "application/json", msg)
 }
 
+// JSON converts any interface to JSON.
+// It also sets the Content-Type as "application/json".
 func (p *Context) JSON(code int, data interface{}) {
 	msg, err := json.Marshal(data)
 	if err != nil {
@@ -122,6 +130,8 @@ func (p *Context) JSON(code int, data interface{}) {
 	p.DATA(code, "application/json", msg)
 }
 
+// YAP uses a YAP template to convert any interface to HTML.
+// It also sets the Content-Type as "text/html".
 func (p *Context) YAP(code int, yapFile string, data interface{}) {
 	w := p.ResponseWriter
 	t, err := p.engine.templ(yapFile)

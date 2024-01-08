@@ -26,10 +26,6 @@ const (
 	GopPackage = true
 )
 
-type Apper interface {
-	initApp()
-}
-
 type App struct {
 	*Engine
 }
@@ -85,7 +81,7 @@ func (p App) Run__1(addr string, mws ...func(h http.Handler) http.Handler) {
 }
 
 // Gopt_App_Main is required by Go+ compiler as the entry of a YAP project.
-func Gopt_App_Main(app Apper) {
+func Gopt_App_Main(app interface{ initApp() }) {
 	app.initApp()
 	app.(interface{ MainEntry() }).MainEntry()
 }
@@ -96,82 +92,82 @@ const (
 	mimeBinary = "application/octet-stream"
 )
 
-func (p *Context) Text__0(code int, mime string, text string) {
-	p.TEXT(code, mime, text)
-}
-
-func (p *Context) Text__1(code int, text string) {
-	p.TEXT(code, mimeText, text)
-}
-
-func (p *Context) Text__2(text string) {
+func (p *Context) Text__0(text string) {
 	p.TEXT(200, mimeText, text)
 }
 
-func (p *Context) Text__3(code int, text []byte) {
-	p.DATA(code, mimeText, text)
-}
-
-func (p *Context) Text__4(text []byte) {
+func (p *Context) Text__1(text []byte) {
 	p.DATA(200, mimeText, text)
 }
 
-func (p *Context) Binary__0(code int, mime string, data []byte) {
-	p.DATA(code, mime, data)
+func (p *Context) Text__2(code int, mime string, text string) {
+	p.TEXT(code, mime, text)
 }
 
-func (p *Context) Binary__1(code int, data []byte) {
-	p.DATA(code, mimeBinary, data)
+func (p *Context) Text__3(code int, text string) {
+	p.TEXT(code, mimeText, text)
 }
 
-func (p *Context) Binary__2(data []byte) {
+func (p *Context) Text__4(code int, text []byte) {
+	p.DATA(code, mimeText, text)
+}
+
+func (p *Context) Binary__0(data []byte) {
 	p.DATA(200, mimeBinary, data)
 }
 
-func (p *Context) Binary__3(code int, data string) {
-	p.TEXT(code, mimeBinary, data)
-}
-
-func (p *Context) Binary__4(data string) {
+func (p *Context) Binary__1(data string) {
 	p.TEXT(200, mimeBinary, data)
 }
 
-func (p *Context) Html__0(code int, text string) {
-	p.TEXT(code, mimeHtml, text)
+func (p *Context) Binary__2(code int, mime string, data []byte) {
+	p.DATA(code, mime, data)
 }
 
-func (p *Context) Html__1(text string) {
+func (p *Context) Binary__3(code int, data []byte) {
+	p.DATA(code, mimeBinary, data)
+}
+
+func (p *Context) Binary__4(code int, data string) {
+	p.TEXT(code, mimeBinary, data)
+}
+
+func (p *Context) Html__0(text string) {
 	p.TEXT(200, mimeHtml, text)
 }
 
-func (p *Context) Html__2(code int, text []byte) {
-	p.DATA(code, mimeHtml, text)
-}
-
-func (p *Context) Html__3(text []byte) {
+func (p *Context) Html__1(text []byte) {
 	p.DATA(200, mimeHtml, text)
 }
 
-func (p *Context) Json__0(code int, data interface{}) {
-	p.JSON(code, data)
+func (p *Context) Html__2(code int, text string) {
+	p.TEXT(code, mimeHtml, text)
 }
 
-func (p *Context) Json__1(data interface{}) {
+func (p *Context) Html__3(code int, text []byte) {
+	p.DATA(code, mimeHtml, text)
+}
+
+func (p *Context) Json__0(data interface{}) {
 	p.JSON(200, data)
 }
 
-func (p *Context) PrettyJson__0(code int, data interface{}) {
-	p.PrettyJSON(code, data)
+func (p *Context) Json__1(code int, data interface{}) {
+	p.JSON(code, data)
 }
 
-func (p *Context) PrettyJson__1(data interface{}) {
+func (p *Context) PrettyJson__0(data interface{}) {
 	p.PrettyJSON(200, data)
 }
 
-func (p *Context) Yap__0(code int, yapFile string, data interface{}) {
-	p.YAP(code, yapFile, data)
+func (p *Context) PrettyJson__1(code int, data interface{}) {
+	p.PrettyJSON(code, data)
 }
 
-func (p *Context) Yap__1(yapFile string, data interface{}) {
+func (p *Context) Yap__0(yapFile string, data interface{}) {
 	p.YAP(200, yapFile, data)
+}
+
+func (p *Context) Yap__1(code int, yapFile string, data interface{}) {
+	p.YAP(code, yapFile, data)
 }
