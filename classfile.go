@@ -84,7 +84,7 @@ func (p App) Run__1(addr string, mws ...func(h http.Handler) http.Handler) {
 	p.Run__0(os.DirFS("."), addr, mws...)
 }
 
-// Gopt_App_Main is required by Go+ compiler as the entry of a .yapx project.
+// Gopt_App_Main is required by Go+ compiler as the entry of a YAP project.
 func Gopt_App_Main(app Apper) {
 	app.initApp()
 	app.(interface{ MainEntry() }).MainEntry()
