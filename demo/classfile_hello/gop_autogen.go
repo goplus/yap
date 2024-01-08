@@ -2,11 +2,11 @@ package main
 
 import "github.com/goplus/yap"
 
-type hello_yap struct {
+type hello struct {
 	yap.App
 }
 //line demo/classfile_hello/hello_yap.gox:1
-func (this *hello_yap) MainEntry() {
+func (this *hello) MainEntry() {
 //line demo/classfile_hello/hello_yap.gox:1:1
 	this.Get("/p/:id", func(ctx *yap.Context) {
 //line demo/classfile_hello/hello_yap.gox:2:1
@@ -21,5 +21,5 @@ func (this *hello_yap) MainEntry() {
 	this.Run__1(":8080")
 }
 func main() {
-	yap.Gopt_App_Main(new(hello_yap))
+	yap.Gopt_App_Main(new(hello))
 }

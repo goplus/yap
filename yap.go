@@ -85,7 +85,7 @@ func (p *Engine) templ(path string) (t Template, err error) {
 	}
 	t, ok := p.tpls[path]
 	if !ok {
-		t, err = ParseFSFile(p.fs, path+".yap")
+		t, err = ParseFSFile(p.fs, path+"_yap.html")
 		if err != nil {
 			return
 		}
