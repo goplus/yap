@@ -88,6 +88,16 @@ func acceptNext(accept string) (item, left string) {
 	return
 }
 
+// Redirect replies to the request with a redirect to url,
+// which may be a path relative to the request path.
+func (p *Context) Redirect(url string, code ...int) {
+	statusCode := http.StatusFound
+	if code == nil {
+		statusCode = code[0]
+	}
+	http.Redirect(p.ResponseWriter, p.Request, url, statusCode)
+}
+
 func (p *Context) TEXT(code int, mime string, text string) {
 	w := p.ResponseWriter
 	h := w.Header()
