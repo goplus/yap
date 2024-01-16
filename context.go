@@ -92,7 +92,7 @@ func acceptNext(accept string) (item, left string) {
 // which may be a path relative to the request path.
 func (p *Context) Redirect(url string, code ...int) {
 	statusCode := http.StatusFound
-	if code == nil {
+	if code != nil {
 		statusCode = code[0]
 	}
 	http.Redirect(p.ResponseWriter, p.Request, url, statusCode)
