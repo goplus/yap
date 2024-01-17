@@ -26,10 +26,6 @@ const (
 	GopPackage = true
 )
 
-type Apper interface {
-	initApp()
-}
-
 type App struct {
 	*Engine
 }
@@ -85,7 +81,7 @@ func (p App) Run__1(addr string, mws ...func(h http.Handler) http.Handler) {
 }
 
 // Gopt_App_Main is required by Go+ compiler as the entry of a YAP project.
-func Gopt_App_Main(app Apper) {
+func Gopt_App_Main(app interface{ initApp() }) {
 	app.initApp()
 	app.(interface{ MainEntry() }).MainEntry()
 }
