@@ -78,6 +78,16 @@ func (p App) Delete(path string, handle func(ctx *Context)) {
 	p.Route(http.MethodDelete, path, handle)
 }
 
+// Static serves static files from a dir (default is "$YapFS/static").
+func (p *App) Static__0(pattern string, dir ...fs.FS) {
+	p.Static(pattern, dir...)
+}
+
+// Static serves static files from a http file system.
+func (p *App) Static__1(pattern string, fs http.FileSystem) {
+	p.StaticHttp(pattern, fs)
+}
+
 // Gopt_App_Main is required by Go+ compiler as the entry of a YAP project.
 func Gopt_App_Main(app interface{ initApp() }) {
 	app.initApp()

@@ -88,10 +88,15 @@ func (p *Engine) Static(pattern string, dir ...fs.FS) {
 	} else {
 		fsys = p.FS("static")
 	}
+	p.StaticHttp(pattern, http.FS(fsys))
+}
+
+// StaticHttp serves static files from fsys (http.FileSystem).
+func (p *Engine) StaticHttp(pattern string, fsys http.FileSystem) {
 	if !strings.HasSuffix(pattern, "/") {
 		pattern += "/"
 	}
-	p.Mux.Handle(pattern, http.StripPrefix(pattern, http.FileServer(http.FS(fsys))))
+	p.Mux.Handle(pattern, http.StripPrefix(pattern, http.FileServer(fsys)))
 }
 
 // Handle registers the handler function for the given pattern.
