@@ -47,8 +47,8 @@ Static files server demo in Go:
 
 ```go
 y := yap.New(os.DirFS("."))
-y.Static("/foo", y.FS("foo"))
-y.Static("/") // y.Static("/", y.FS("static"))
+y.Static("/foo", y.FS("public"))
+y.Static("/") // means: y.Static("/", y.FS("static"))
 y.Run(":8080")
 ```
 
