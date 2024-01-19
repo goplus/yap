@@ -79,12 +79,12 @@ func (p App) Delete(path string, handle func(ctx *Context)) {
 }
 
 // Static serves static files from a dir (default is "$YapFS/static").
-func (p *App) Static__0(pattern string, dir ...fs.FS) {
+func (p App) Static__0(pattern string, dir ...fs.FS) {
 	p.Static(pattern, dir...)
 }
 
 // Static serves static files from a http file system.
-func (p *App) Static__1(pattern string, fs http.FileSystem) {
+func (p App) Static__1(pattern string, fs http.FileSystem) {
 	p.StaticHttp(pattern, fs)
 }
 
