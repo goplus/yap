@@ -113,12 +113,13 @@ func (p *Engine) Run(addr string, mws ...func(h http.Handler) http.Handler) erro
 }
 
 func (p *Engine) templ(path string) (t Template, err error) {
+	fsys := p.yapFS()
 	if p.tpls == nil {
 		return Template{}, os.ErrNotExist
 	}
 	t, ok := p.tpls[path]
 	if !ok {
-		t, err = ParseFSFile(p.fs, path+"_yap.html")
+		t, err = ParseFSFile(fsys, path+"_yap.html")
 		if err != nil {
 			return
 		}
