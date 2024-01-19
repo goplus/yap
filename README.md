@@ -41,6 +41,25 @@ handle "/", ctx => {
 run ":8080"
 ```
 
+### Static files
+
+Static files server demo in Go:
+
+```go
+y := yap.New(os.DirFS("."))
+y.Static("/foo", y.FS("foo"))
+y.Static("/") // y.Static("/", y.FS("static"))
+y.Run(":8080")
+```
+
+Static files server demo in Go+ classfile ([staticfile_yap.gox](demo/classfile_static/staticfile_yap.gox)):
+
+```go
+static "/foo", FS("public")
+static "/"
+run ":8888"
+```
+
 ### YAP Template
 
 demo in Go ([blog.go](demo/blog/blog.go), [article_yap.html](demo/blog/yap/article_yap.html)):
