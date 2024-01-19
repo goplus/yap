@@ -49,7 +49,7 @@ Static files server demo in Go:
 y := yap.New(os.DirFS("."))
 y.Static("/foo", y.FS("public"))
 y.Static("/") // means: y.Static("/", y.FS("static"))
-y.Run(":8080")
+y.Run(":8888")
 ```
 
 Static files server demo in Go+ classfile ([staticfile_yap.gox](demo/classfile_static/staticfile_yap.gox)):
