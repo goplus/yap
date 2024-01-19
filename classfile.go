@@ -34,6 +34,11 @@ func (p *App) initApp() {
 	p.Engine = New()
 }
 
+// InitYapApp initialize a YAP application.
+func (p *App) InitYapApp() {
+	p.initApp()
+}
+
 // Get is a shortcut for router.Route(http.MethodGet, path, handle)
 func (p App) Get(path string, handle func(ctx *Context)) {
 	p.Route(http.MethodGet, path, handle)
