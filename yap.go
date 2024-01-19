@@ -18,8 +18,10 @@ package yap
 
 import (
 	"io/fs"
+	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type H map[string]interface{}
@@ -32,6 +34,7 @@ type Engine struct {
 	fs   fs.FS
 }
 
+// New creates a YAP engine.
 func New(fs ...fs.FS) *Engine {
 	e := &Engine{
 		Mux: http.NewServeMux(),
@@ -55,6 +58,13 @@ func (p *Engine) initYapFS(fsys fs.FS) {
 	p.tpls = make(map[string]Template)
 }
 
+func (p *Engine) yapFS() fs.FS {
+	if p.fs == nil {
+		p.initYapFS(os.DirFS("."))
+	}
+	return p.fs
+}
+
 func (p *Engine) NewContext(w http.ResponseWriter, r *http.Request) *Context {
 	ctx := &Context{ResponseWriter: w, Request: r, engine: p}
 	return ctx
@@ -65,18 +75,41 @@ func (p *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	p.router.serveHTTP(w, req, p)
 }
 
+// FS returns a $YapFS sub filesystem by specified a dir.
+func (p *Engine) FS(dir string) (ret fs.FS) {
+	return SubFS(p.yapFS(), dir)
+}
+
+// Static serves static files from a dir (default is "$YapFS/static").
+func (p *Engine) Static(pattern string, dir ...fs.FS) {
+	var fsys fs.FS
+	if dir != nil {
+		fsys = dir[0]
+	} else {
+		fsys = p.FS("static")
+	}
+	if !strings.HasSuffix(pattern, "/") {
+		pattern += "/"
+	}
+	p.Mux.Handle(pattern, http.StripPrefix(pattern, http.FileServer(http.FS(fsys))))
+}
+
+// Handle registers the handler function for the given pattern.
 func (p *Engine) Handle(pattern string, f func(ctx *Context)) {
 	p.Mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		f(p.NewContext(w, r))
 	})
 }
 
-func (p *Engine) Run(addr string, mws ...func(h http.Handler) http.Handler) {
+// Run listens on the TCP network address addr and then calls
+// Serve with handler to handle requests on incoming connections.
+// Accepted connections are configured to enable TCP keep-alives.
+func (p *Engine) Run(addr string, mws ...func(h http.Handler) http.Handler) error {
 	h := http.Handler(p)
 	for _, mw := range mws {
 		h = mw(h)
 	}
-	http.ListenAndServe(addr, h)
+	return http.ListenAndServe(addr, h)
 }
 
 func (p *Engine) templ(path string) (t Template, err error) {
@@ -92,4 +125,17 @@ func (p *Engine) templ(path string) (t Template, err error) {
 		p.tpls[path] = t
 	}
 	return
+}
+
+// SubFS returns a sub filesystem by specified a dir.
+func SubFS(fsys fs.FS, dir string) (ret fs.FS) {
+	f, err := fsys.Open(dir)
+	if err == nil {
+		f.Close()
+		ret, err = fs.Sub(fsys, dir)
+	}
+	if err != nil {
+		log.Panicln("Get $YapFS sub filesystem failed:", err)
+	}
+	return ret
 }

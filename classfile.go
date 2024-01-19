@@ -19,7 +19,6 @@ package yap
 import (
 	"io/fs"
 	"net/http"
-	"os"
 )
 
 const (
@@ -35,8 +34,13 @@ func (p *App) initApp() {
 }
 
 // InitYapApp initialize a YAP application.
-func (p *App) InitYapApp() {
-	p.initApp()
+func (p *App) InitYapApp(fs ...fs.FS) {
+	if p.Engine == nil {
+		p.initApp()
+	}
+	if fs != nil {
+		p.initYapFS(fs[0])
+	}
 }
 
 // Get is a shortcut for router.Route(http.MethodGet, path, handle)
@@ -72,17 +76,6 @@ func (p App) Patch(path string, handle func(ctx *Context)) {
 // Delete is a shortcut for router.Route(http.MethodDelete, path, handle)
 func (p App) Delete(path string, handle func(ctx *Context)) {
 	p.Route(http.MethodDelete, path, handle)
-}
-
-// Run with specified `fsys` as yap template directory.
-func (p App) Run__0(fsys fs.FS, addr string, mws ...func(h http.Handler) http.Handler) {
-	p.initYapFS(fsys)
-	p.Run(addr, mws...)
-}
-
-// Run with cwd as yap template directory.
-func (p App) Run__1(addr string, mws ...func(h http.Handler) http.Handler) {
-	p.Run__0(os.DirFS("."), addr, mws...)
 }
 
 // Gopt_App_Main is required by Go+ compiler as the entry of a YAP project.
