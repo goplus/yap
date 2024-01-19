@@ -64,7 +64,8 @@ func (p *Engine) NewContext(w http.ResponseWriter, r *http.Request) *Context {
 
 // ServeHTTP makes the router implement the http.Handler interface.
 func (p *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	if strings.HasSuffix(req.URL.Path, "_yap.html") {
+	// If path does not contain with ., then it is a dynamic request.
+	if !strings.Contains(req.URL.Path, ".") {
 		p.router.serveHTTP(w, req, p)
 	} else {
 		// Support static files.
