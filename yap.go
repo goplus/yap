@@ -20,6 +20,8 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 type H map[string]interface{}
@@ -62,7 +64,15 @@ func (p *Engine) NewContext(w http.ResponseWriter, r *http.Request) *Context {
 
 // ServeHTTP makes the router implement the http.Handler interface.
 func (p *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	p.router.serveHTTP(w, req, p)
+	if strings.HasSuffix(req.URL.Path, "_yap.html") {
+		p.router.serveHTTP(w, req, p)
+	} else {
+		// Support static files.
+		const name = "yap"
+		staticDir := filepath.Join(name, "static")
+		httpDir := http.Dir(staticDir)
+		http.FileServer(httpDir).ServeHTTP(w, req)
+	}
 }
 
 func (p *Engine) Handle(pattern string, f func(ctx *Context)) {
