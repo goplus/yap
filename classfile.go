@@ -91,14 +91,14 @@ func (p App) Static__0(pattern string, dir ...fs.FS) {
 func (p App) Static__1(pattern string, ctx context.Context, url string) (closer fsx.Closer, err error) {
 	fs, closer, err := fsx.Open(ctx, url)
 	if err == nil {
-		p.StaticHttp(pattern, fs)
+		p.StaticHttp(pattern, fs, false)
 	}
 	return
 }
 
 // Static serves static files from a http file system.
-func (p App) Static__2(pattern string, fs http.FileSystem) {
-	p.StaticHttp(pattern, fs)
+func (p App) Static__2(pattern string, fs http.FileSystem, allowRedirect ...bool) {
+	p.StaticHttp(pattern, fs, allowRedirect...)
 }
 
 // Gopt_App_Main is required by Go+ compiler as the entry of a YAP project.
