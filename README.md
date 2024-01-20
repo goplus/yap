@@ -60,7 +60,7 @@ static "/"
 run ":8888"
 ```
 
-Static files server also can use a `http.FileSystem` instead of `fs.FS` object:
+Static files server also can use a `http.FileSystem` instead of `fs.FS` object (See [yapserve](https://github.com/xushiwei/yapserve) for more information):
 
 ```go
 import "github.com/qiniu/x/http/fs"
