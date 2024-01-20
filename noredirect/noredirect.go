@@ -10,19 +10,6 @@ import (
 
 // FileServer returns a handler that serves HTTP requests
 // with the contents of the file system rooted at root.
-//
-// As a special case, the returned file server redirects any request
-// ending in "/index.html" to the same path, without the final
-// "index.html".
-//
-// To use the operating system's file system implementation,
-// use http.Dir:
-//
-//	http.Handle("/", http.FileServer(http.Dir("/tmp")))
-//
-// To use an fs.FS implementation, use http.FS to convert it:
-//
-//	http.Handle("/", http.FileServer(http.FS(fsys)))
 func FileServer(root http.FileSystem) http.Handler {
 	return &fileHandler{root}
 }
