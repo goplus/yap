@@ -17,8 +17,11 @@
 package yap
 
 import (
+	"context"
 	"io/fs"
 	"net/http"
+
+	"github.com/qiniu/x/http/fsx"
 )
 
 const (
@@ -83,8 +86,18 @@ func (p App) Static__0(pattern string, dir ...fs.FS) {
 	p.Static(pattern, dir...)
 }
 
+// Static serves static files from a http file system scheme (url).
+// See https://pkg.go.dev/github.com/qiniu/x/http/fsx for more information.
+func (p App) Static__1(pattern string, ctx context.Context, url string) (closer fsx.Closer, err error) {
+	fs, closer, err := fsx.Open(ctx, url)
+	if err == nil {
+		p.StaticHttp(pattern, fs)
+	}
+	return
+}
+
 // Static serves static files from a http file system.
-func (p App) Static__1(pattern string, fs http.FileSystem) {
+func (p App) Static__2(pattern string, fs http.FileSystem) {
 	p.StaticHttp(pattern, fs)
 }
 
