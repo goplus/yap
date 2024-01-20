@@ -22,6 +22,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/goplus/yap/noredirect"
 )
 
 type H map[string]interface{}
@@ -92,11 +94,21 @@ func (p *Engine) Static(pattern string, dir ...fs.FS) {
 }
 
 // StaticHttp serves static files from fsys (http.FileSystem).
-func (p *Engine) StaticHttp(pattern string, fsys http.FileSystem) {
+func (p *Engine) StaticHttp(pattern string, fsys http.FileSystem, allowRedirect ...bool) {
 	if !strings.HasSuffix(pattern, "/") {
 		pattern += "/"
 	}
-	p.Mux.Handle(pattern, http.StripPrefix(pattern, http.FileServer(fsys)))
+	allow := true
+	if allowRedirect != nil {
+		allow = allowRedirect[0]
+	}
+	var server http.Handler
+	if allow {
+		server = http.FileServer(fsys)
+	} else {
+		server = noredirect.FileServer(fsys)
+	}
+	p.Mux.Handle(pattern, http.StripPrefix(pattern, server))
 }
 
 // Handle registers the handler function for the given pattern.
