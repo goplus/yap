@@ -2,6 +2,8 @@ package main
 
 import "github.com/goplus/yap"
 
+const _ = true
+
 type blog struct {
 	yap.App
 }
@@ -16,5 +18,6 @@ func (this *blog) MainEntry() {
 	this.Run(":8080")
 }
 func main() {
+//line demo/classfile_blog/blog_yap.gox:7:1
 	yap.Gopt_App_Main(new(blog))
 }

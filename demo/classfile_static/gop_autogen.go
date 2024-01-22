@@ -2,6 +2,8 @@ package main
 
 import "github.com/goplus/yap"
 
+const _ = true
+
 type staticfile struct {
 	yap.App
 }
@@ -15,5 +17,6 @@ func (this *staticfile) MainEntry() {
 	this.Run(":8888")
 }
 func main() {
+//line demo/classfile_static/staticfile_yap.gox:4:1
 	yap.Gopt_App_Main(new(staticfile))
 }
