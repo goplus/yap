@@ -278,3 +278,5 @@ func (p *Request) RetWith(code any) *Request {
 func (p *Request) Resp() *Response {
 	return p.resp
 }
+
+// -----------------------------------------------------------------------------
