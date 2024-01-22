@@ -2,6 +2,8 @@ package main
 
 import "github.com/goplus/yap"
 
+const _ = true
+
 type hello struct {
 	yap.App
 }
@@ -21,5 +23,6 @@ func (this *hello) MainEntry() {
 	this.Run(":8080")
 }
 func main() {
+//line demo/classfile_hello/hello_yap.gox:10:1
 	yap.Gopt_App_Main(new(hello))
 }
