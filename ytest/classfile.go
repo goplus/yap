@@ -17,10 +17,13 @@
 package ytest
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
+)
+
+const (
+	GopPackage = true
 )
 
 // -----------------------------------------------------------------------------
@@ -46,6 +49,13 @@ func Gopt_App_Main(app interface{ initApp() *App }, workers ...interface{ initCa
 		worker.initCase(a)
 		worker.(interface{ Main() }).Main()
 	}
+}
+
+// Host replaces a host into real. For example:
+//
+//	host "https://example.com" "http://localhost:8080"
+//	host "http://example.com" "http://localhost:8888"
+func (p *App) Host(host, real string) {
 }
 
 func (p *App) hostOf(url string) (host string, url2 string, ok bool) {
@@ -84,8 +94,8 @@ func (p *App) newRequest(method, url string, body io.Reader) (req *http.Request,
 
 // -----------------------------------------------------------------------------
 
-func Echo(v ...any) {
-	fmt.Println(v...)
+func Oauth2(auth string) RTComposer {
+	return nil
 }
 
 // -----------------------------------------------------------------------------

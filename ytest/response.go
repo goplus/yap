@@ -67,6 +67,10 @@ func (p *Response) MatchHeader(key string, value any) {
 	}
 }
 
+func (p *Response) Body() any {
+	return nil
+}
+
 func (p *Response) MatchBody(bodyType string, body any) {
 }
 
