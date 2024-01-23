@@ -17,6 +17,7 @@
 package ytest
 
 import (
+	"io"
 	"log"
 	"net/http"
 )
@@ -24,6 +25,7 @@ import (
 type Response struct {
 	code   int
 	header http.Header
+	body   io.Reader
 }
 
 func newResponse(resp *http.Response) *Response {

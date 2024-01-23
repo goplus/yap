@@ -17,7 +17,9 @@
 package ytest
 
 import (
+	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -56,6 +58,7 @@ func Gopt_App_Main(app interface{ initApp() *App }, workers ...interface{ initCa
 //	host "https://example.com" "http://localhost:8080"
 //	host "http://example.com" "http://localhost:8888"
 func (p *App) Host(host, real string) {
+	p.hosts[host] = real
 }
 
 func (p *App) hostOf(url string) (host string, url2 string, ok bool) {
@@ -96,6 +99,41 @@ func (p *App) newRequest(method, url string, body io.Reader) (req *http.Request,
 
 func Oauth2(auth string) RTComposer {
 	return nil
+}
+
+// -----------------------------------------------------------------------------
+
+func Echo__0(content string) {
+	println(content)
+}
+
+func Echo__1(contents ...string) {
+	for _, s := range contents {
+		print(s)
+		print(" ")
+	}
+	print("\n")
+}
+
+func Echo__2(content string, body io.Reader) {
+	decoder := json.NewDecoder(body)
+	var dataMap map[string]interface{}
+	err := decoder.Decode(&dataMap)
+	if err != nil {
+		log.Panic("decode body (io.Reader) to dataMap(map[string]interface{}) failed: ", err)
+	}
+	print(content)
+	print(json.Marshal(dataMap))
+	print("\n")
+}
+
+func Echo__3(content string, data ...any) {
+	print(content)
+	for _, s := range data {
+		print(s)
+		print(" ")
+	}
+	print("\n")
 }
 
 // -----------------------------------------------------------------------------

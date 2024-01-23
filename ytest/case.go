@@ -17,6 +17,7 @@
 package ytest
 
 import (
+	"log"
 	"net/http"
 )
 
@@ -55,3 +56,32 @@ func (p *Case) Get(url string) *Request {
 func (p *Case) Post(url string) *Request {
 	return p.Req(http.MethodPost, url)
 }
+
+// -----------------------------------------------------------------------------
+
+func (p *Case) Ret__0() {
+	req, err := http.NewRequest(p.Request.method, p.Request.url, p.Request.body)
+	if err != nil {
+		log.Panic("create new request failed: ", err)
+	}
+
+	req.Header = p.Request.header
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Panic("send request failed: ", err)
+	}
+	defer resp.Body.Close()
+
+	p.resp.code = resp.StatusCode
+	p.resp.body = resp.Body
+	p.resp.header = resp.Header
+}
+
+func (p *Case) Ret__1(code int) {
+	p.Ret__0()
+	Match__0[int](p.resp.code, code)
+}
+
+// -----------------------------------------------------------------------------
