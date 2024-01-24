@@ -19,7 +19,9 @@ package ytest
 import (
 	"io"
 	"net/http"
+	"os"
 	"strings"
+	"testing"
 )
 
 const (
@@ -39,14 +41,23 @@ func (p *App) initApp() *App {
 	return p
 }
 
-// Gopt_App_Main is required by Go+ compiler as the entry of a YAP testing project.
-func Gopt_App_Main(app interface{ initApp() *App }, workers ...interface{ initCase(*App) }) {
+// Gopt_App_TestMain is required by Go+ compiler as the TestMain entry of a YAP testing project.
+func Gopt_App_TestMain(app interface{ initApp() *App }, m *testing.M) {
+	app.initApp()
+	if me, ok := app.(interface{ MainEntry() }); ok {
+		me.MainEntry()
+	}
+	os.Exit(m.Run())
+}
+
+// Gopt_App_Main is required by Go+ compiler as the Main entry of a YAP testing project.
+func Gopt_App_Main(app interface{ initApp() *App }, workers ...interface{ initCase(*App, caseT) }) {
 	a := app.initApp()
 	if me, ok := app.(interface{ MainEntry() }); ok {
 		me.MainEntry()
 	}
 	for _, worker := range workers {
-		worker.initCase(a)
+		worker.initCase(a, nil)
 		worker.(interface{ Main() }).Main()
 	}
 }
