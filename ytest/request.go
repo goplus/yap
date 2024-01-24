@@ -280,3 +280,17 @@ func (p *Request) Resp() *Response {
 }
 
 // -----------------------------------------------------------------------------
+
+func (p *Request) Ret__0() {
+	p.Send()
+}
+
+func (p *Request) Ret__1(code int) {
+	p.RetWith(code)
+}
+
+func (p *Request) Ret__2(code *Var__0[int]) {
+	code.Match(p.Send().resp.code)
+}
+
+// -----------------------------------------------------------------------------

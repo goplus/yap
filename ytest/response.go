@@ -17,7 +17,9 @@
 package ytest
 
 import (
+	"encoding/json"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -32,6 +34,7 @@ func newResponse(resp *http.Response) *Response {
 	return &Response{
 		code:   resp.StatusCode,
 		header: resp.Header,
+		body:   resp.Body,
 	}
 }
 
@@ -70,10 +73,40 @@ func (p *Response) MatchHeader(key string, value any) {
 }
 
 func (p *Response) Body() any {
-	return nil
+	decoder := json.NewDecoder(p.body)
+	var dataMap map[string]interface{}
+	err := decoder.Decode(&dataMap)
+	if err != nil {
+		log.Panic("decode body (io.Reader) to dataMap(map[string]interface{}) failed: ", err)
+	}
+	return dataMap
+}
+
+func (p *Response) BodyToByte() []byte {
+	data, err := ioutil.ReadAll(p.body)
+	if err != nil {
+		log.Panic("ioutil ReadAll failed: ", err)
+	}
+	return data
+}
+
+func (p *Response) BodyToString() string {
+	return string(p.BodyToByte())
 }
 
 func (p *Response) MatchBody(bodyType string, body any) {
+	switch v := body.(type) {
+	case string:
+		Match__0[string](v, p.BodyToString())
+	case *Var__0[string]:
+		Match__0[string](v.Val(), p.BodyToString())
+	case []byte:
+		Match__4(v, p.BodyToByte())
+	case RequestBody:
+		Match__4(v, p.body)
+	default:
+		log.Panicf("match body failed! unexpected value type: %T\n", body)
+	}
 }
 
 func (p *Response) MatchJson(body any) {

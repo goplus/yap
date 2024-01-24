@@ -37,6 +37,8 @@ run "postWithAuth", => {
 run "mathJsonObject", => {
 	title := Var(string)
 	author := Var(string)
+	match title, "title"
+	match author, "author"
 	id := "123"
 	get "https://example.com/p/${id}"
 	ret 200
