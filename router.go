@@ -82,6 +82,11 @@ type router struct {
 	HandleOPTIONS bool
 }
 
+type routerGroup struct {
+	*router
+	basePath string
+}
+
 func (r *router) init() {
 	r.RedirectTrailingSlash = true
 	r.RedirectFixedPath = true
@@ -89,38 +94,46 @@ func (r *router) init() {
 	r.HandleOPTIONS = true
 }
 
+// router group
+func (r *routerGroup) Group(basePath string) *routerGroup {
+	return &routerGroup{
+		router:   r.router,
+		basePath: basePath,
+	}
+}
+
 // GET is a shortcut for router.Route(http.MethodGet, path, handle)
-func (r *router) GET(path string, handle func(ctx *Context)) {
+func (r *routerGroup) GET(path string, handle func(ctx *Context)) {
 	r.Route(http.MethodGet, path, handle)
 }
 
 // HEAD is a shortcut for router.Route(http.MethodHead, path, handle)
-func (r *router) HEAD(path string, handle func(ctx *Context)) {
+func (r *routerGroup) HEAD(path string, handle func(ctx *Context)) {
 	r.Route(http.MethodHead, path, handle)
 }
 
 // OPTIONS is a shortcut for router.Route(http.MethodOptions, path, handle)
-func (r *router) OPTIONS(path string, handle func(ctx *Context)) {
+func (r *routerGroup) OPTIONS(path string, handle func(ctx *Context)) {
 	r.Route(http.MethodOptions, path, handle)
 }
 
 // POST is a shortcut for router.Route(http.MethodPost, path, handle)
-func (r *router) POST(path string, handle func(ctx *Context)) {
+func (r *routerGroup) POST(path string, handle func(ctx *Context)) {
 	r.Route(http.MethodPost, path, handle)
 }
 
 // PUT is a shortcut for router.Route(http.MethodPut, path, handle)
-func (r *router) PUT(path string, handle func(ctx *Context)) {
+func (r *routerGroup) PUT(path string, handle func(ctx *Context)) {
 	r.Route(http.MethodPut, path, handle)
 }
 
 // PATCH is a shortcut for router.Route(http.MethodPatch, path, handle)
-func (r *router) PATCH(path string, handle func(ctx *Context)) {
+func (r *routerGroup) PATCH(path string, handle func(ctx *Context)) {
 	r.Route(http.MethodPatch, path, handle)
 }
 
 // DELETE is a shortcut for router.Route(http.MethodDelete, path, handle)
-func (r *router) DELETE(path string, handle func(ctx *Context)) {
+func (r *routerGroup) DELETE(path string, handle func(ctx *Context)) {
 	r.Route(http.MethodDelete, path, handle)
 }
 
@@ -132,7 +145,8 @@ func (r *router) DELETE(path string, handle func(ctx *Context)) {
 // This function is intended for bulk loading and to allow the usage of less
 // frequently used, non-standardized or custom methods (e.g. for internal
 // communication with a proxy).
-func (r *router) Route(method, path string, handle func(ctx *Context)) {
+func (r *routerGroup) Route(method, path string, handle func(ctx *Context)) {
+	path = r.basePath + path
 	if method == "" {
 		panic("method must not be empty")
 	}
@@ -158,13 +172,13 @@ func (r *router) Route(method, path string, handle func(ctx *Context)) {
 	root.addRoute(path, handle)
 }
 
-func (r *router) recv(w http.ResponseWriter, req *http.Request) {
+func (r *routerGroup) recv(w http.ResponseWriter, req *http.Request) {
 	if rcv := recover(); rcv != nil {
 		r.PanicHandler(w, req, rcv)
 	}
 }
 
-func (r *router) allowed(path, reqMethod string) (allow string) {
+func (r *routerGroup) allowed(path, reqMethod string) (allow string) {
 	allowed := make([]string, 0, 9)
 
 	if path == "*" { // server-wide
@@ -215,7 +229,7 @@ func (r *router) allowed(path, reqMethod string) (allow string) {
 	return allow
 }
 
-func (r *router) serveHTTP(w http.ResponseWriter, req *http.Request, e *Engine) {
+func (r *routerGroup) serveHTTP(w http.ResponseWriter, req *http.Request, e *Engine) {
 	if r.PanicHandler != nil {
 		defer r.recv(w, req)
 	}

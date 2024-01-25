@@ -36,6 +36,10 @@ func (p *App) initApp() {
 	p.Engine = New()
 }
 
+func (p App) Group(path string) {
+	p.basePath = path
+}
+
 // InitYapApp initialize a YAP application.
 func (p *App) InitYapApp(fs ...fs.FS) {
 	if p.Engine == nil {

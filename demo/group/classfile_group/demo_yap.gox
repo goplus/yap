@@ -1,0 +1,25 @@
+group "/vip"
+get "/v1", ctx => {
+	ctx.json {
+		"v1": "v1",
+	}
+}
+get "/v2", ctx => {
+	ctx.json {
+		"v2": "v2",
+	}
+}
+group "/xhy"
+get "/a", ctx => {
+	ctx.json {
+		"xhy": "a",
+	}
+}
+get "/b", ctx => {
+	ctx.json {
+		"xhy": "b",
+	}
+}
+
+
+run ":8083"

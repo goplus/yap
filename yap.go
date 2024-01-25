@@ -29,7 +29,7 @@ import (
 type H map[string]interface{}
 
 type Engine struct {
-	router
+	*routerGroup
 	Mux *http.ServeMux
 
 	tpls map[string]Template
@@ -40,7 +40,11 @@ type Engine struct {
 func New(fs ...fs.FS) *Engine {
 	e := &Engine{
 		Mux: http.NewServeMux(),
+		routerGroup: &routerGroup{
+			router: &router{},
+		},
 	}
+
 	e.router.init()
 	if fs != nil {
 		e.initYapFS(fs[0])
@@ -74,7 +78,7 @@ func (p *Engine) NewContext(w http.ResponseWriter, r *http.Request) *Context {
 
 // ServeHTTP makes the router implement the http.Handler interface.
 func (p *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	p.router.serveHTTP(w, req, p)
+	p.serveHTTP(w, req, p)
 }
 
 // FS returns a $YapFS sub filesystem by specified a dir.
