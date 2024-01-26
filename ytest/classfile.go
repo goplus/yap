@@ -17,10 +17,7 @@
 package ytest
 
 import (
-	"encoding/json"
-	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -101,51 +98,3 @@ func (p *App) newRequest(method, url string, body io.Reader) (req *http.Request,
 func Oauth2(auth string) RTComposer {
 	return nil
 }
-
-// -----------------------------------------------------------------------------
-
-func Echo__0(content string) {
-	fmt.Println(content)
-}
-
-func Echo__1(contents ...string) {
-	fmt.Println(contents)
-}
-
-func Echo__2(content string, body io.Reader) {
-	decoder := json.NewDecoder(body)
-	var dataMap map[string]interface{}
-	err := decoder.Decode(&dataMap)
-	if err != nil {
-		log.Panic("decode body (io.Reader) to dataMap(map[string]interface{}) failed: ", err)
-	}
-	fmt.Print(content, " ")
-	fmt.Print(json.Marshal(dataMap))
-	fmt.Print("\n")
-}
-
-func Echo__3(content string, data any) {
-	switch v := data.(type) {
-	case *Var__1[map[string]any]:
-		data = v.Val()
-	case *Var__2[[]any]:
-		data = v.Val()
-	case *Var__3[[]string]:
-		data = v.Val()
-	case *Var__0[string]:
-		data = v.Val()
-	case *Var__0[int]:
-		data = v.Val()
-	case *Var__0[bool]:
-		data = v.Val()
-	case *Var__0[float64]:
-		data = v.Val()
-	}
-	fmt.Println(content, data)
-}
-
-func Echo__4(content string, data ...any) {
-	fmt.Println(content, data)
-}
-
-// -----------------------------------------------------------------------------
