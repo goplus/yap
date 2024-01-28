@@ -65,7 +65,7 @@ func (this *case_example) Main() {
 		fmt.Println("body:", this.Resp().Body())
 	})
 //line ytest/demo/example/example_ytest.gox:37:1
-	this.Run("mathJsonObject", func() {
+	this.Run("matchJsonObject", func() {
 //line ytest/demo/example/example_ytest.gox:38:1
 		title := ytest.Gopx_Var_Cast__0[string]()
 //line ytest/demo/example/example_ytest.gox:39:1
