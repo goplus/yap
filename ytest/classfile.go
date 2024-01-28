@@ -98,4 +98,10 @@ func Oauth2(auth string) RTComposer {
 	return nil
 }
 
+func Jwt(auth string) RTComposer {
+	return &JwtAuth{
+		JwtToken: auth,
+	}
+}
+
 // -----------------------------------------------------------------------------
