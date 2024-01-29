@@ -166,18 +166,78 @@ func (p *Case) initCase(app *App, t caseT) {
 	p.DefaultHeader = make(http.Header)
 }
 
+// Req create a new request given a method and url.
 func (p *Case) Req(method, url string) *Request {
 	req := newRequest(p, method, url)
 	p.Request = req
 	return req
 }
 
+// Get is a shortcut for Req(http.MethodGet, url)
 func (p *Case) Get(url string) *Request {
 	return p.Req(http.MethodGet, url)
 }
 
+// Post is a shortcut for Req(http.MethodPost, url)
 func (p *Case) Post(url string) *Request {
 	return p.Req(http.MethodPost, url)
+}
+
+// Head is a shortcut for Req(http.MethodHead, url)
+func (p *Case) Head(url string) *Request {
+	return p.Req(http.MethodHead, url)
+}
+
+// Put is a shortcut for Req(http.MethodPut, url)
+func (p *Case) Put(url string) *Request {
+	return p.Req(http.MethodPut, url)
+}
+
+// Options is a shortcut for Req(http.MethodOptions, url)
+func (p *Case) Options(url string) *Request {
+	return p.Req(http.MethodOptions, url)
+}
+
+// Patch is a shortcut for Req(http.MethodPatch, url)
+func (p *Case) Patch(url string) *Request {
+	return p.Req(http.MethodPatch, url)
+}
+
+// -----------------------------------------------------------------------------
+
+// GET is a shortcut for Req(http.MethodGet, url)
+func (p *Case) GET(url string) *Request {
+	return p.Req(http.MethodGet, url)
+}
+
+// POST is a shortcut for Req(http.MethodPost, url)
+func (p *Case) POST(url string) *Request {
+	return p.Req(http.MethodPost, url)
+}
+
+// HEAD is a shortcut for Req(http.MethodHead, url)
+func (p *Case) HEAD(url string) *Request {
+	return p.Req(http.MethodHead, url)
+}
+
+// PUT is a shortcut for Req(http.MethodPut, url)
+func (p *Case) PUT(url string) *Request {
+	return p.Req(http.MethodPut, url)
+}
+
+// OPTIONS is a shortcut for Req(http.MethodOptions, url)
+func (p *Case) OPTIONS(url string) *Request {
+	return p.Req(http.MethodOptions, url)
+}
+
+// PATCH is a shortcut for Req(http.MethodPatch, url)
+func (p *Case) PATCH(url string) *Request {
+	return p.Req(http.MethodPatch, url)
+}
+
+// DELETE is a shortcut for Req(http.MethodDelete, url)
+func (p *Case) DELETE(url string) *Request {
+	return p.Req(http.MethodDelete, url)
 }
 
 // -----------------------------------------------------------------------------
