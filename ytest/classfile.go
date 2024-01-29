@@ -18,6 +18,7 @@ package ytest
 
 import (
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -67,6 +68,10 @@ func Gopt_App_Main(app interface{ initApp() *App }, workers ...interface{ initCa
 //	host "https://example.com" "http://localhost:8080"
 //	host "http://example.com" "http://localhost:8888"
 func (p *App) Host(host, real string) {
+	if !strings.HasPrefix(host, "http") {
+		log.Panicf("invalid host `%s`: should start with http:// or https://\n", host)
+	}
+	p.hosts[host] = real
 }
 
 func (p *App) hostOf(url string) (host string, url2 string, ok bool) {
