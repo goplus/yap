@@ -153,4 +153,10 @@ func Oauth2(auth string) RTComposer {
 	return nil
 }
 
+func Token(auth string) RTComposer {
+	return &tokenAuth{
+		Token: auth,
+	}
+}
+
 // -----------------------------------------------------------------------------
