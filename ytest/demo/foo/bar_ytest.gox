@@ -1,0 +1,10 @@
+testServer "foo.com", new(foo)
+
+run "get /p/$id", => {
+	id := "123"
+	get "http://foo.com/p/${id}"
+	ret 200
+	json {
+		"id": "12",
+	}
+}
