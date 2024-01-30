@@ -23,6 +23,18 @@ import (
 	"strconv"
 )
 
+type basetype interface {
+	string | int | bool | float64
+}
+
+type baseelem interface {
+	string
+}
+
+type baseslice interface {
+	[]string
+}
+
 // -----------------------------------------------------------------------------
 
 // JsonEncode encodes a value into string in json format.
@@ -384,18 +396,6 @@ func Gopt_Case_Match__4(t CaseT, got, expected any) {
 }
 
 // -----------------------------------------------------------------------------
-
-type baseelem interface {
-	string
-}
-
-type baseslice interface {
-	[]string
-}
-
-type basetype interface {
-	string | int | bool | float64
-}
 
 type Var__0[T basetype] struct {
 	val   T
