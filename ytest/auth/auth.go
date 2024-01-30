@@ -14,22 +14,13 @@
  * limitations under the License.
  */
 
-package ytest
+package auth
 
 import (
-	"github.com/goplus/yap/ytest/auth"
-	"github.com/goplus/yap/ytest/auth/token"
+	"net/http"
 )
 
-// -----------------------------------------------------------------------------
-
-func Oauth2(auth string) auth.RTComposer {
-	return nil
+// RTComposer represents an abstract of http Authorization objects.
+type RTComposer interface {
+	Compose(base http.RoundTripper) http.RoundTripper
 }
-
-// Token creates an Authorization by specified token.
-func Token(auth string) auth.RTComposer {
-	return token.New(auth)
-}
-
-// -----------------------------------------------------------------------------

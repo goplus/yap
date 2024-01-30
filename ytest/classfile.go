@@ -148,15 +148,3 @@ func (p *App) newRequest(method, url string, body io.Reader) (req *http.Request,
 }
 
 // -----------------------------------------------------------------------------
-
-func Oauth2(auth string) RTComposer {
-	return nil
-}
-
-func Token(auth string) RTComposer {
-	return &tokenAuth{
-		Token: auth,
-	}
-}
-
-// -----------------------------------------------------------------------------
