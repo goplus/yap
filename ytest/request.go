@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -54,6 +53,11 @@ func newRequest(ctx *Case, method, url string) *Request {
 	}
 }
 
+func (p *Request) t() CaseT {
+	return p.ctx.CaseT
+}
+
+// Auth sets an Authorization for this request.
 func (p *Request) Auth(auth auth.RTComposer) *Request {
 	p.auth = auth
 	return p
@@ -61,6 +65,7 @@ func (p *Request) Auth(auth auth.RTComposer) *Request {
 
 // -----------------------------------------------------------------------------
 
+// WithHeader sets a Header for this request.
 func (p *Request) WithHeader(key string, value any) *Request {
 	switch v := value.(type) {
 	case string:
@@ -72,28 +77,36 @@ func (p *Request) WithHeader(key string, value any) *Request {
 	case *Var__3[[]string]:
 		p.header[key] = v.Val()
 	default:
-		log.Panicf("set header failed! unexpected value type: %T\n", value)
+		fatalf("set header failed! unexpected value type: %T\n", value)
 	}
 	return p
 }
 
-// value can be: string, []string, Var(string), Var([]string)
+// Header sets a Header for this request (if request is not sended), or matches
+// a Header for response of this request (after response is returned).
+// Here value can be: string, []string, Var(string), Var([]string).
 func (p *Request) Header(key string, value any) *Request {
 	if p.resp == nil {
 		return p.WithHeader(key, value)
 	}
-	p.resp.MatchHeader(key, value)
+	t := p.t()
+	t.Helper()
+	p.resp.MatchHeader(t, key, value)
 	return p
 }
 
 // -----------------------------------------------------------------------------
 
-// body can be: string, Var(string), []byte, RequestBody
+// Body sets request body for this request (if request is not sended), or matches
+// response body of this request (after response is returned).
+// Here body can be: string, Var(string), []byte, RequestBody.
 func (p *Request) Body(bodyType string, body any) *Request {
 	if p.resp == nil {
 		return p.WithBodyEx(bodyType, body)
 	}
-	p.resp.MatchBody(bodyType, body)
+	t := p.t()
+	t.Helper()
+	p.resp.MatchBody(t, bodyType, body)
 	return p
 }
 
@@ -108,7 +121,7 @@ func (p *Request) WithBodyEx(bodyType string, body any) *Request {
 	case RequestBody:
 		return p.WithBody(bodyType, v)
 	default:
-		log.Panicf("set body failed! unexpected value type: %T\n", body)
+		fatalf("set body failed! unexpected value type: %T\n", body)
 	}
 	return p
 }
@@ -148,10 +161,12 @@ func mimeType(ct string) string {
 }
 
 func (p *Request) Binary(body any) *Request {
+	p.t().Helper()
 	return p.Body(mimeBinary, body)
 }
 
 func (p *Request) Text(body any) *Request {
+	p.t().Helper()
 	return p.Body(mimeText, body)
 }
 
@@ -165,30 +180,16 @@ func (p *Request) Json(body any) *Request {
 	if p.resp == nil {
 		return p.WithJson(body)
 	}
-	p.resp.MatchJson(body)
+	t := p.t()
+	t.Helper()
+	p.resp.MatchBody(t, mimeJson, body)
 	return p
 }
 
 func (p *Request) WithJson(body any) *Request {
-	switch v := body.(type) {
-	case *Var__1[map[string]any]:
-		body = v.Val()
-	case *Var__2[[]any]:
-		body = v.Val()
-	case *Var__3[[]string]:
-		body = v.Val()
-	case *Var__0[string]:
-		body = v.Val()
-	case *Var__0[int]:
-		body = v.Val()
-	case *Var__0[bool]:
-		body = v.Val()
-	case *Var__0[float64]:
-		body = v.Val()
-	}
 	b, err := json.Marshal(body)
 	if err != nil {
-		log.Panicln("json.Marshal failed:", err)
+		fatal("json.Marshal failed:", err)
 	}
 	return p.WithBinary(mimeJson, b)
 }
@@ -197,9 +198,12 @@ func (p *Request) WithJson(body any) *Request {
 
 func (p *Request) Form(body any) *Request {
 	if p.resp == nil {
-		return p.WithJson(body)
+		return p.WithFormEx(body)
 	}
-	return p.Body("application/x-www-form-urlencoded", body)
+	t := p.t()
+	t.Helper()
+	p.resp.MatchBody(t, mimeForm, body)
+	return p
 }
 
 func (p *Request) WithForm(body url.Values) *Request {
@@ -216,7 +220,7 @@ func (p *Request) WithFormEx(body any) *Request {
 	case url.Values:
 		vals = v
 	default:
-		log.Panicf("request with form: unexpected type %T\n", body)
+		fatalf("request with form: unexpected type %T\n", body)
 	}
 	return p.WithText(mimeForm, vals.Encode())
 }
@@ -233,7 +237,7 @@ func (p *Request) doSend() (resp *http.Response, err error) {
 	body := p.body
 	req, err := p.ctx.newRequest(p.method, p.url, body)
 	if err != nil {
-		log.Panicf("newRequest(%s, %s) failed: %v\n", p.method, p.url, err)
+		fatalf("newRequest(%s, %s) failed: %v\n", p.method, p.url, err)
 	}
 
 	mergeHeader(req.Header, p.ctx.DefaultHeader)
@@ -245,11 +249,11 @@ func (p *Request) doSend() (resp *http.Response, err error) {
 		}
 		req.ContentLength = body.Size()
 	}
-	t := p.ctx.transport
+	tr := p.ctx.transport
 	if p.auth != nil {
-		t = p.auth.Compose(t)
+		tr = p.auth.Compose(tr)
 	}
-	c := &http.Client{Transport: t}
+	c := &http.Client{Transport: tr}
 	return c.Do(req)
 }
 
@@ -260,14 +264,16 @@ const (
 func (p *Request) Send() *Request {
 	resp, err := p.doSend()
 	if err != nil {
-		log.Panicf("sendRequest(%v, %v) failed: %v\n", p.method, p.url, err)
+		fatalf("sendRequest(%v, %v) failed: %v\n", p.method, p.url, err)
 	}
 	p.resp = newResponse(resp)
 	return p
 }
 
 func (p *Request) RetWith(code any) *Request {
-	p.Send().resp.MatchCode(code)
+	t := p.t()
+	t.Helper()
+	p.Send().resp.MatchCode(t, code)
 	return p
 }
 

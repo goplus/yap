@@ -17,7 +17,6 @@
 package ytest
 
 import (
-	"log"
 	"net/http"
 )
 
@@ -37,14 +36,15 @@ func (p *Response) Code() int {
 	return p.code
 }
 
-func (p *Response) MatchCode(code any) {
+func (p *Response) MatchCode(t CaseT, code any) {
+	t.Helper()
 	switch v := code.(type) {
 	case int:
-		Match__0(p.code, v)
+		Gopt_Case_Match__0(t, p.code, v)
 	case *Var__0[int]:
-		v.Match(p.code)
+		v.Match(t, p.code)
 	default:
-		log.Panicf("match status code failed! unexpected type: %T\n", code)
+		t.Fatalf("match status code failed! unexpected type: %T\n", code)
 	}
 }
 
@@ -52,30 +52,27 @@ func (p *Response) Header() http.Header {
 	return p.header
 }
 
-func (p *Response) MatchHeader(key string, value any) {
+func (p *Response) MatchHeader(t CaseT, key string, value any) {
+	t.Helper()
 	switch v := value.(type) {
 	case string:
-		Match__0(v, p.header.Get(key))
+		Gopt_Case_Match__0(t, v, p.header.Get(key))
 	case []string:
-		Match__3(v, p.header[key])
+		Gopt_Case_Match__3(t, v, p.header[key])
 	case *Var__0[string]:
-		v.Match(p.header.Get(key))
+		v.Match(t, p.header.Get(key))
 	case *Var__3[[]string]:
-		v.Match(p.header[key])
+		v.Match(t, p.header[key])
 	default:
-		log.Panicf("match header failed! unexpected value type: %T\n", value)
+		t.Fatalf("match header failed! unexpected value type: %T\n", value)
 	}
 }
 
 func (p *Response) Body() any {
-	return nil
+	return nil // TODO
 }
 
-func (p *Response) MatchBody(bodyType string, body any) {
-}
-
-func (p *Response) MatchJson(body any) {
-}
-
-func (p *Response) MatchForm(body any) {
+func (p *Response) MatchBody(t CaseT, bodyType string, body any) {
+	t.Helper()
+	// t.Fatal("todo")
 }
