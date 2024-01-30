@@ -16,7 +16,7 @@ func (this *case_bar) Main() {
 //line ytest/demo/foo/bar_ytest.gox:1:1
 	this.TestServer("foo.com", new(foo))
 //line ytest/demo/foo/bar_ytest.gox:3:1
-	this.Run("get /p/$id", func() {
+	this.Run("test get /p/$id", func() {
 //line ytest/demo/foo/bar_ytest.gox:4:1
 		id := "123"
 //line ytest/demo/foo/bar_ytest.gox:5:1
@@ -32,7 +32,7 @@ func (this *case_foo) Main() {
 //line ytest/demo/foo/foo_ytest.gox:1:1
 	this.Mock("foo.com", new(foo))
 //line ytest/demo/foo/foo_ytest.gox:3:1
-	this.Run("get /p/$id", func() {
+	this.Run("test get /p/$id", func() {
 //line ytest/demo/foo/foo_ytest.gox:4:1
 		id := "123"
 //line ytest/demo/foo/foo_ytest.gox:5:1

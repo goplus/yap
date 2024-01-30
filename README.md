@@ -7,6 +7,24 @@ yap - Yet Another Go/Go+ HTTP Web Framework
 [![Coverage Status](https://codecov.io/gh/goplus/yap/branch/main/graph/badge.svg)](https://codecov.io/gh/goplus/yap)
 [![GoDoc](https://pkg.go.dev/badge/github.com/goplus/yap.svg)](https://pkg.go.dev/github.com/goplus/yap)
 
+### How to use in Go+
+
+This repo contains two Go+ classfiles: `yap` (a HTTP Web Framework) and `yaptest` (a HTTP Test Framework).
+
+The classfile `yap` has the file suffix `_yap.gox`. And the classfile `yaptest` has the file suffix `_ytest.gox`.
+
+Before using `yap` or `yaptest`, you need to add `github.com/goplus/yap` to `go.mod` by using `go get`:
+
+```sh
+go get github.com/goplus/yap@latest
+```
+
+Then find `require github.com/goplus/yap` statement in `go.mod` and add `//gop:class` at the end of the line:
+
+```go.mod
+require github.com/goplus/yap v0.7.2 //gop:class
+```
+
 ### Router and Parameters
 
 demo in Go ([hello.go](demo/hello/hello.go)):
@@ -102,3 +120,53 @@ get "/p/:id", ctx => {
 
 run ":8080"
 ```
+
+### YAP Test Framework
+
+Suppose we have a web server named `foo` ([demo/foo/foo_yap.gox](ytest/demo/foo/foo_yap.gox)):
+
+```go
+get "/p/:id", ctx => {
+	ctx.json {
+		"id": ctx.param("id"),
+	}
+}
+
+run ":8080"
+```
+
+Then we create a yaptest file ([demo/foo/foo_ytest.gox](ytest/demo/foo/foo_ytest.gox)):
+
+```go
+mock "foo.com", new(foo)
+
+run "test get /p/$id", => {
+	id := "123"
+	get "http://foo.com/p/${id}"
+	ret 200
+	json {
+		"id": id,
+	}
+}
+```
+
+The directive `mock` creates the `foo` server by [mockhttp](https://pkg.go.dev/github.com/qiniu/x/mockhttp). Then we call the directive `run` to run a subtest.
+
+You can change the directive `mock` to `testServer` (see [demo/foo/bar_ytest.gox](ytest/demo/foo/bar_ytest.gox)), and keep everything else unchanged:
+
+```go
+testServer "foo.com", new(foo)
+
+run "test get /p/$id", => {
+	id := "123"
+	get "http://foo.com/p/${id}"
+	ret 200
+	json {
+		"id": id,
+	}
+}
+```
+
+The directive `testServer` creates the `foo` server by [net/http/httptest](https://pkg.go.dev/net/http/httptest#NewServer) and obtained a random port as the service address. Then it calls the directive [host](https://pkg.go.dev/github.com/goplus/yap/ytest#App.Host) to map the random service address to `foo.com`. This makes all other code no need to changed.
+
+For more details, see [yaptest - Go+ HTTP Test Framework](ytest).
