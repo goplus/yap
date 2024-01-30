@@ -85,14 +85,19 @@ func (p *Request) WithHeader(key string, value any) *Request {
 // Header sets a Header for this request (if request is not sended), or matches
 // a Header for response of this request (after response is returned).
 // Here value can be: string, []string, Var(string), Var([]string).
-func (p *Request) Header(key string, value any) *Request {
+func (p *Request) Header__0(key string, value any) *Request {
 	if p.resp == nil {
 		return p.WithHeader(key, value)
 	}
 	t := p.t()
 	t.Helper()
-	p.resp.MatchHeader(t, key, value)
+	p.resp.matchHeader(t, key, value)
 	return p
+}
+
+// Header returns header of current request.
+func (p *Request) Header__1() http.Header {
+	return p.header
 }
 
 // -----------------------------------------------------------------------------
@@ -106,7 +111,7 @@ func (p *Request) Body(bodyType string, body any) *Request {
 	}
 	t := p.t()
 	t.Helper()
-	p.resp.MatchBody(t, bodyType, body)
+	p.resp.matchBody(t, bodyType, body)
 	return p
 }
 
@@ -141,6 +146,7 @@ func (p *Request) WithBody(bodyType string, body RequestBody) *Request {
 }
 
 const (
+	mimeNone   = ""
 	mimeForm   = "application/x-www-form-urlencoded"
 	mimeJson   = "application/json"
 	mimeBinary = "application/octet-stream"
@@ -182,7 +188,7 @@ func (p *Request) Json(body any) *Request {
 	}
 	t := p.t()
 	t.Helper()
-	p.resp.MatchBody(t, mimeJson, body)
+	p.resp.matchBody(t, mimeJson, body)
 	return p
 }
 
@@ -202,7 +208,7 @@ func (p *Request) Form(body any) *Request {
 	}
 	t := p.t()
 	t.Helper()
-	p.resp.MatchBody(t, mimeForm, body)
+	p.resp.matchBody(t, mimeForm, body)
 	return p
 }
 
@@ -266,6 +272,7 @@ func (p *Request) Send() *Request {
 	if err != nil {
 		fatalf("sendRequest(%v, %v) failed: %v\n", p.method, p.url, err)
 	}
+	defer resp.Body.Close()
 	p.resp = newResponse(resp)
 	return p
 }
@@ -273,7 +280,7 @@ func (p *Request) Send() *Request {
 func (p *Request) RetWith(code any) *Request {
 	t := p.t()
 	t.Helper()
-	p.Send().resp.MatchCode(t, code)
+	p.Send().resp.matchCode(t, code)
 	return p
 }
 
