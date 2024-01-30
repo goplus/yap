@@ -14,22 +14,44 @@
  * limitations under the License.
  */
 
-package ytest
+package token
 
 import (
+	"net/http"
+
 	"github.com/goplus/yap/ytest/auth"
-	"github.com/goplus/yap/ytest/auth/token"
 )
 
 // -----------------------------------------------------------------------------
 
-func Oauth2(auth string) auth.RTComposer {
-	return nil
+type tokenRounderTripper struct {
+	rt    http.RoundTripper
+	token string
 }
 
-// Token creates an Authorization by specified token.
-func Token(auth string) auth.RTComposer {
-	return token.New(auth)
+func (p *tokenRounderTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("Authorization", p.token)
+	return p.rt.RoundTrip(req)
+}
+
+// -----------------------------------------------------------------------------
+
+type tokenAuth struct {
+	token string
+}
+
+func (p *tokenAuth) Compose(rt http.RoundTripper) http.RoundTripper {
+	return &tokenRounderTripper{
+		rt:    rt,
+		token: p.token,
+	}
+}
+
+// New creates an Authorization by specified token.
+func New(token string) auth.RTComposer {
+	return &tokenAuth{
+		token: token,
+	}
 }
 
 // -----------------------------------------------------------------------------

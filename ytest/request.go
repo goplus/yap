@@ -24,11 +24,9 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-)
 
-type RTComposer interface {
-	Compose(base http.RoundTripper) http.RoundTripper
-}
+	"github.com/goplus/yap/ytest/auth"
+)
 
 type RequestBody interface {
 	io.Reader
@@ -40,7 +38,7 @@ type Request struct {
 	method   string
 	url      string
 	header   http.Header
-	auth     RTComposer
+	auth     auth.RTComposer
 	bodyType string
 	body     RequestBody
 	resp     *Response
@@ -56,7 +54,7 @@ func newRequest(ctx *Case, method, url string) *Request {
 	}
 }
 
-func (p *Request) Auth(auth RTComposer) *Request {
+func (p *Request) Auth(auth auth.RTComposer) *Request {
 	p.auth = auth
 	return p
 }
