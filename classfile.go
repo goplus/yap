@@ -29,61 +29,47 @@ const (
 )
 
 type App struct {
-	*Engine
-}
-
-func (p *App) initApp() {
-	p.Engine = New()
-}
-
-// InitYap initialize a YAP application.
-func (p *App) InitYap(fs ...fs.FS) {
-	if p.Engine == nil {
-		p.initApp()
-	}
-	if fs != nil {
-		p.initYapFS(fs[0])
-	}
+	Engine
 }
 
 // Get is a shortcut for router.Route(http.MethodGet, path, handle)
-func (p App) Get(path string, handle func(ctx *Context)) {
+func (p *App) Get(path string, handle func(ctx *Context)) {
 	p.Route(http.MethodGet, path, handle)
 }
 
 // Head is a shortcut for router.Route(http.MethodHead, path, handle)
-func (p App) Head(path string, handle func(ctx *Context)) {
+func (p *App) Head(path string, handle func(ctx *Context)) {
 	p.Route(http.MethodHead, path, handle)
 }
 
 // Options is a shortcut for router.Route(http.MethodOptions, path, handle)
-func (p App) Options(path string, handle func(ctx *Context)) {
+func (p *App) Options(path string, handle func(ctx *Context)) {
 	p.Route(http.MethodOptions, path, handle)
 }
 
 // Post is a shortcut for router.Route(http.MethodPost, path, handle)
-func (p App) Post(path string, handle func(ctx *Context)) {
+func (p *App) Post(path string, handle func(ctx *Context)) {
 	p.Route(http.MethodPost, path, handle)
 }
 
 // Put is a shortcut for router.Route(http.MethodPut, path, handle)
-func (p App) Put(path string, handle func(ctx *Context)) {
+func (p *App) Put(path string, handle func(ctx *Context)) {
 	p.Route(http.MethodPut, path, handle)
 }
 
 // Patch is a shortcut for router.Route(http.MethodPatch, path, handle)
-func (p App) Patch(path string, handle func(ctx *Context)) {
+func (p *App) Patch(path string, handle func(ctx *Context)) {
 	p.Route(http.MethodPatch, path, handle)
 }
 
 // Static serves static files from a dir (default is "$YapFS/static").
-func (p App) Static__0(pattern string, dir ...fs.FS) {
+func (p *App) Static__0(pattern string, dir ...fs.FS) {
 	p.Static(pattern, dir...)
 }
 
 // Static serves static files from a http file system scheme (url).
 // See https://pkg.go.dev/github.com/qiniu/x/http/fsx for more information.
-func (p App) Static__1(pattern string, ctx context.Context, url string) (closer fsx.Closer, err error) {
+func (p *App) Static__1(pattern string, ctx context.Context, url string) (closer fsx.Closer, err error) {
 	fs, closer, err := fsx.Open(ctx, url)
 	if err == nil {
 		p.StaticHttp(pattern, fs, false)
@@ -92,16 +78,25 @@ func (p App) Static__1(pattern string, ctx context.Context, url string) (closer 
 }
 
 // Static serves static files from a http file system.
-func (p App) Static__2(pattern string, fs http.FileSystem, allowRedirect ...bool) {
+func (p *App) Static__2(pattern string, fs http.FileSystem, allowRedirect ...bool) {
 	p.StaticHttp(pattern, fs, allowRedirect...)
 }
 
+// AppType represents an abstract of YAP applications.
+type AppType interface {
+	InitYap(fs ...fs.FS)
+	SetLAS(listenAndServe func(addr string, handler http.Handler) error)
+}
+
+var (
+	_ AppType = (*App)(nil)
+	_ AppType = (*Engine)(nil)
+)
+
 // Gopt_App_Main is required by Go+ compiler as the entry of a YAP project.
-func Gopt_App_Main(app interface{ initApp() }) {
-	app.initApp()
-	if me, ok := app.(interface{ MainEntry() }); ok {
-		me.MainEntry()
-	}
+func Gopt_App_Main(app AppType) {
+	app.InitYap()
+	app.(interface{ MainEntry() }).MainEntry()
 }
 
 const (

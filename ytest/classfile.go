@@ -25,6 +25,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/goplus/yap"
 	"github.com/qiniu/x/mockhttp"
 )
 
@@ -43,6 +44,28 @@ func (p *App) initApp() *App {
 	p.hosts = make(map[string]string)
 	p.transport = http.DefaultTransport
 	return p
+}
+
+// Mock runs a YAP server by mockhttp.
+func (p *App) Mock(host string, app yap.AppType) {
+	tr := mockhttp.NewTransport()
+	p.transport = tr
+	app.InitYap()
+	app.SetLAS(func(addr string, h http.Handler) error {
+		return tr.ListenAndServe(host, h)
+	})
+	app.(interface{ MainEntry() }).MainEntry()
+}
+
+// TestServer runs a YAP server by httptest.Server.
+func (p *App) TestServer(host string, app yap.AppType) {
+	app.InitYap()
+	app.SetLAS(func(addr string, h http.Handler) error {
+		svr := httptest.NewServer(h)
+		p.Host(host, svr.URL)
+		return nil
+	})
+	app.(interface{ MainEntry() }).MainEntry()
 }
 
 // RunMock runs a HTTP server by mockhttp.

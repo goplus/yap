@@ -34,18 +34,26 @@ type Engine struct {
 
 	tpls map[string]Template
 	fs   fs.FS
+	las  func(addr string, handler http.Handler) error
 }
 
 // New creates a YAP engine.
 func New(fs ...fs.FS) *Engine {
-	e := &Engine{
-		Mux: http.NewServeMux(),
-	}
-	e.router.init()
-	if fs != nil {
-		e.initYapFS(fs[0])
-	}
+	e := new(Engine)
+	e.InitYap(fs...)
 	return e
+}
+
+// InitYap initialize a YAP application.
+func (p *Engine) InitYap(fs ...fs.FS) {
+	if p.Mux == nil {
+		p.Mux = http.NewServeMux()
+		p.las = http.ListenAndServe
+		p.router.init()
+	}
+	if fs != nil {
+		p.initYapFS(fs[0])
+	}
 }
 
 func (p *Engine) initYapFS(fsys fs.FS) {
@@ -132,7 +140,13 @@ func (p *Engine) Handler(mws ...func(h http.Handler) http.Handler) http.Handler 
 // Accepted connections are configured to enable TCP keep-alives.
 func (p *Engine) Run(addr string, mws ...func(h http.Handler) http.Handler) error {
 	h := p.Handler(mws...)
-	return http.ListenAndServe(addr, h)
+	return p.las(addr, h)
+}
+
+// SetLAS sets listenAndServe func to listens on the TCP network address addr
+// and to handle requests on incoming connections.
+func (p *Engine) SetLAS(listenAndServe func(addr string, handler http.Handler) error) {
+	p.las = listenAndServe
 }
 
 func (p *Engine) templ(path string) (t Template, err error) {
