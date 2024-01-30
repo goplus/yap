@@ -1,6 +1,6 @@
 testServer "foo.com", new(foo)
 
-run "get /p/$id", => {
+run "test get /p/$id", => {
 	id := "123"
 	get "http://foo.com/p/${id}"
 	ret 200
