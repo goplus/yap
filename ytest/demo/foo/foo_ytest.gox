@@ -5,6 +5,6 @@ run "get /p/$id", => {
 	get "http://foo.com/p/${id}"
 	ret 200
 	json {
-		"id": "12",
+		"id": id,
 	}
 }

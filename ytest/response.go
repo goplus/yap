@@ -17,26 +17,38 @@
 package ytest
 
 import (
+	"encoding/json"
+	"io"
 	"net/http"
+	"net/url"
 )
 
 type Response struct {
 	code   int
 	header http.Header
+	raw    []byte
+	mime   string
+	body   any
 }
 
 func newResponse(resp *http.Response) *Response {
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fatal("ReadAll resp.Body:", err)
+	}
 	return &Response{
 		code:   resp.StatusCode,
 		header: resp.Header,
+		raw:    raw,
 	}
 }
 
+// Code returns the status code of this response.
 func (p *Response) Code() int {
 	return p.code
 }
 
-func (p *Response) MatchCode(t CaseT, code any) {
+func (p *Response) matchCode(t CaseT, code any) {
 	t.Helper()
 	switch v := code.(type) {
 	case int:
@@ -44,15 +56,16 @@ func (p *Response) MatchCode(t CaseT, code any) {
 	case *Var__0[int]:
 		v.Match(t, p.code)
 	default:
-		t.Fatalf("match status code failed! unexpected type: %T\n", code)
+		t.Fatalf("match status code failed - unexpected type: %T\n", code)
 	}
 }
 
+// Header returns header of this response.
 func (p *Response) Header() http.Header {
 	return p.header
 }
 
-func (p *Response) MatchHeader(t CaseT, key string, value any) {
+func (p *Response) matchHeader(t CaseT, key string, value any) {
 	t.Helper()
 	switch v := value.(type) {
 	case string:
@@ -68,11 +81,42 @@ func (p *Response) MatchHeader(t CaseT, key string, value any) {
 	}
 }
 
-func (p *Response) Body() any {
-	return nil // TODO
+// RawBody returns raw response body as []byte (byte slice).
+func (p *Response) RawBody() []byte {
+	return p.raw
 }
 
-func (p *Response) MatchBody(t CaseT, bodyType string, body any) {
+// Body returns response body decoded according Content-Type.
+func (p *Response) Body() (ret any) {
+	if p.mime == mimeNone {
+		mime := p.header.Get("Content-Type")
+		switch mime {
+		case mimeJson:
+			if err := json.Unmarshal(p.raw, &ret); err != nil {
+				fatal("json.Unmarshal resp.Body:", err)
+			}
+		case mimeForm:
+			form, err := url.ParseQuery(string(p.raw))
+			if err != nil {
+				fatal("url.ParseQuery resp.Body:", err)
+			}
+			ret = form
+		case mimeNone:
+			mime = mimeBinary
+			fallthrough
+		default:
+			ret = p.raw
+		}
+		p.mime, p.body = mime, ret
+	}
+	return p.body
+}
+
+func (p *Response) matchBody(t CaseT, bodyType string, body any) {
 	t.Helper()
-	// t.Fatal("todo")
+	mime := p.header.Get("Content-Type")
+	if mime != bodyType {
+		t.Fatalf("resp.MatchBody: unmatched mime type - got: %s, expected: %s\n", mime, bodyType)
+	}
+	Gopt_Case_Match__4(t, body, p.Body())
 }

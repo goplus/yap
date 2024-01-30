@@ -24,7 +24,7 @@ func (this *case_bar) Main() {
 //line ytest/demo/foo/bar_ytest.gox:6:1
 		this.RetWith(200)
 //line ytest/demo/foo/bar_ytest.gox:7:1
-		this.Json(map[string]string{"id": "12"})
+		this.Json(map[string]string{"id": id})
 	})
 }
 //line ytest/demo/foo/foo_ytest.gox:1
@@ -40,7 +40,7 @@ func (this *case_foo) Main() {
 //line ytest/demo/foo/foo_ytest.gox:6:1
 		this.RetWith(200)
 //line ytest/demo/foo/foo_ytest.gox:7:1
-		this.Json(map[string]string{"id": "12"})
+		this.Json(map[string]string{"id": id})
 	})
 }
 func Test_bar(t *testing.T) {
