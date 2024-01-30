@@ -4,7 +4,7 @@ var (
 	yap.App
 )
 
-App.init
+initYap
 
 get "/p/:id", ctx => {
 	ctx.json {

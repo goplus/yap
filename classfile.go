@@ -36,8 +36,8 @@ func (p *App) initApp() {
 	p.Engine = New()
 }
 
-// Init initialize a YAP application.
-func (p *App) Init(fs ...fs.FS) {
+// InitYap initialize a YAP application.
+func (p *App) InitYap(fs ...fs.FS) {
 	if p.Engine == nil {
 		p.initApp()
 	}

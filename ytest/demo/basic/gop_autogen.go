@@ -10,7 +10,7 @@ type foo struct {
 //line ytest/demo/basic/foo.gox:7
 func (this *foo) Main() {
 //line ytest/demo/basic/foo.gox:7:1
-	this.App.Init()
+	this.InitYap()
 //line ytest/demo/basic/foo.gox:9:1
 	this.Get("/p/:id", func(ctx *yap.Context) {
 //line ytest/demo/basic/foo.gox:10:1
