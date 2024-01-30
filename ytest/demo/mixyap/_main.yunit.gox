@@ -1,5 +1,0 @@
-import "github.com/goplus/yap"
-
-var (
-	yap.App
-)

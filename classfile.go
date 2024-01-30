@@ -36,8 +36,8 @@ func (p *App) initApp() {
 	p.Engine = New()
 }
 
-// InitYapApp initialize a YAP application.
-func (p *App) InitYapApp(fs ...fs.FS) {
+// Init initialize a YAP application.
+func (p *App) Init(fs ...fs.FS) {
 	if p.Engine == nil {
 		p.initApp()
 	}
@@ -99,7 +99,9 @@ func (p App) Static__2(pattern string, fs http.FileSystem, allowRedirect ...bool
 // Gopt_App_Main is required by Go+ compiler as the entry of a YAP project.
 func Gopt_App_Main(app interface{ initApp() }) {
 	app.initApp()
-	app.(interface{ MainEntry() }).MainEntry()
+	if me, ok := app.(interface{ MainEntry() }); ok {
+		me.MainEntry()
+	}
 }
 
 const (

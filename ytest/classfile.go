@@ -20,9 +20,12 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/qiniu/x/mockhttp"
 )
 
 const (
@@ -40,6 +43,19 @@ func (p *App) initApp() *App {
 	p.hosts = make(map[string]string)
 	p.transport = http.DefaultTransport
 	return p
+}
+
+// RunMock runs a HTTP server by mockhttp.
+func (p *App) RunMock(host string, h http.Handler) {
+	tr := mockhttp.NewTransport()
+	p.transport = tr
+	tr.ListenAndServe(host, h)
+}
+
+// RunTestServer runs a HTTP server by httptest.Server.
+func (p *App) RunTestServer(host string, h http.Handler) {
+	svr := httptest.NewServer(h)
+	p.Host(host, svr.URL)
 }
 
 // Gopt_App_TestMain is required by Go+ compiler as the TestMain entry of a YAP testing project.

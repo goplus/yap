@@ -149,7 +149,7 @@ type Case struct {
 	DefaultHeader http.Header
 }
 
-func New() *Case {
+func NewCase() *Case {
 	return &Case{}
 }
 
