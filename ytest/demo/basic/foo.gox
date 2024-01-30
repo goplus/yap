@@ -1,0 +1,13 @@
+import "github.com/goplus/yap"
+
+var (
+	yap.App
+)
+
+initYap
+
+get "/p/:id", ctx => {
+	ctx.json {
+		"id": ctx.param("id"),
+	}
+}

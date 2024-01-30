@@ -118,14 +118,20 @@ func (p *Engine) Handle(pattern string, f func(ctx *Context)) {
 	})
 }
 
-// Run listens on the TCP network address addr and then calls
-// Serve with handler to handle requests on incoming connections.
-// Accepted connections are configured to enable TCP keep-alives.
-func (p *Engine) Run(addr string, mws ...func(h http.Handler) http.Handler) error {
+// Handler returns the main entry that responds to HTTP requests.
+func (p *Engine) Handler(mws ...func(h http.Handler) http.Handler) http.Handler {
 	h := http.Handler(p)
 	for _, mw := range mws {
 		h = mw(h)
 	}
+	return h
+}
+
+// Run listens on the TCP network address addr and then calls
+// Serve with handler to handle requests on incoming connections.
+// Accepted connections are configured to enable TCP keep-alives.
+func (p *Engine) Run(addr string, mws ...func(h http.Handler) http.Handler) error {
+	h := p.Handler(mws...)
 	return http.ListenAndServe(addr, h)
 }
 
