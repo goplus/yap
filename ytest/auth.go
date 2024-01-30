@@ -18,25 +18,25 @@ package ytest
 
 import "net/http"
 
-type JwtAuth struct {
+type tokenAuth struct {
 	// Type     string
-	JwtToken string
+	Token string
 }
 
-type JwtRoundTripper struct {
+type tokenRounderTripper struct {
 	RoundTripper http.RoundTripper
 	Token        string
 }
 
-func (rt *JwtRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+func (rt *tokenRounderTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("Authorization", rt.Token)
 	return rt.RoundTripper.RoundTrip(req)
 }
 
-func (p *JwtAuth) Compose(rt http.RoundTripper) http.RoundTripper {
-	return &JwtRoundTripper{
+func (p *tokenAuth) Compose(rt http.RoundTripper) http.RoundTripper {
+	return &tokenRounderTripper{
 		RoundTripper: rt,
-		Token:        p.JwtToken,
+		Token:        p.Token,
 	}
 }
 
