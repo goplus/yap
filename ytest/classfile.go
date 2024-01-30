@@ -62,7 +62,7 @@ func (p *App) TestServer(host string, app yap.AppType) {
 	app.InitYap()
 	app.SetLAS(func(addr string, h http.Handler) error {
 		svr := httptest.NewServer(h)
-		p.Host(host, svr.URL)
+		p.Host("http://"+host, svr.URL)
 		return nil
 	})
 	app.(interface{ MainEntry() }).MainEntry()
@@ -78,7 +78,7 @@ func (p *App) RunMock(host string, h http.Handler) {
 // RunTestServer runs a HTTP server by httptest.Server.
 func (p *App) RunTestServer(host string, h http.Handler) {
 	svr := httptest.NewServer(h)
-	p.Host(host, svr.URL)
+	p.Host("http://"+host, svr.URL)
 }
 
 // Gopt_App_TestMain is required by Go+ compiler as the TestMain entry of a YAP testing project.
