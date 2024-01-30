@@ -18,7 +18,6 @@ package ytest
 
 import (
 	"io"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -91,7 +90,7 @@ func Gopt_App_TestMain(app interface{ initApp() *App }, m *testing.M) {
 }
 
 // Gopt_App_Main is required by Go+ compiler as the Main entry of a YAP testing project.
-func Gopt_App_Main(app interface{ initApp() *App }, workers ...interface{ initCase(*App, caseT) }) {
+func Gopt_App_Main(app interface{ initApp() *App }, workers ...interface{ initCase(*App, CaseT) }) {
 	a := app.initApp()
 	if me, ok := app.(interface{ MainEntry() }); ok {
 		me.MainEntry()
@@ -108,7 +107,7 @@ func Gopt_App_Main(app interface{ initApp() *App }, workers ...interface{ initCa
 //	host "http://example.com" "http://localhost:8888"
 func (p *App) Host(host, real string) {
 	if !strings.HasPrefix(host, "http") {
-		log.Panicf("invalid host `%s`: should start with http:// or https://\n", host)
+		fatalf("invalid host `%s`: should start with http:// or https://\n", host)
 	}
 	p.hosts[host] = real
 }

@@ -24,7 +24,7 @@ import (
 
 // -----------------------------------------------------------------------------
 
-type caseT interface {
+type CaseT interface {
 	// Name returns the name of the running (sub-) test or benchmark.
 	//
 	// The name will include the name of the test along with the names of
@@ -128,15 +128,19 @@ type testingT struct {
 
 // Errorln is equivalent to Log followed by Fail.
 func (p testingT) Errorln(args ...any) {
-	p.T.Error(args...)
+	t := p.T
+	t.Helper()
+	t.Error(args...)
 }
 
 // Run runs f as a subtest of t called name.
 //
 // Run may be called simultaneously from multiple goroutines, but all such calls
 // must return before the outer test function for t returns.
-func (p testingT) Run(name string, f func()) bool {
-	return p.T.Run(name, func(t *testing.T) { f() })
+func (p testingT) Run(name string, doSth func()) bool {
+	return p.T.Run(name, func(t *testing.T) {
+		doSth()
+	})
 }
 
 // -----------------------------------------------------------------------------
@@ -144,26 +148,27 @@ func (p testingT) Run(name string, f func()) bool {
 type Case struct {
 	*Request
 	*App
-	caseT
+	CaseT
 
 	DefaultHeader http.Header
 }
 
-func NewCase() *Case {
-	return &Case{}
-}
-
 // Gopt_Case_TestMain is required by Go+ compiler as the entry of a YAP test case.
-func Gopt_Case_TestMain(c interface{ initCase(*App, caseT) }, t *testing.T) {
+func Gopt_Case_TestMain(c interface{ initCase(*App, CaseT) }, t *testing.T) {
 	app := new(App).initApp()
 	c.initCase(app, testingT{t})
 	c.(interface{ Main() }).Main()
 }
 
-func (p *Case) initCase(app *App, t caseT) {
+func (p *Case) initCase(app *App, t CaseT) {
 	p.App = app
-	p.caseT = t
+	p.CaseT = t
 	p.DefaultHeader = make(http.Header)
+}
+
+// T returns the testing object.
+func (p *Case) T() CaseT {
+	return p.CaseT
 }
 
 // Req create a new request given a method and url.
