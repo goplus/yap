@@ -25,7 +25,7 @@ func (this *case_foo) Main() {
 //line ytest/demo/basic/foo_ytest.gox:8:1
 		this.RetWith(200)
 //line ytest/demo/basic/foo_ytest.gox:9:1
-		this.Json(map[string]string{"id": "12"})
+		this.Json(map[string]string{"id": id})
 	})
 }
 func Test_foo(t *testing.T) {
