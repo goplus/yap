@@ -18,18 +18,14 @@ package ytest
 
 import (
 	"github.com/goplus/yap/ytest/auth"
-	"github.com/goplus/yap/ytest/auth/token"
+	"github.com/goplus/yap/ytest/auth/bearer"
 )
 
 // -----------------------------------------------------------------------------
 
-func Oauth2(auth string) auth.RTComposer {
-	return nil
-}
-
-// Token creates an Authorization by specified token.
-func Token(auth string) auth.RTComposer {
-	return token.New(auth)
+// Bearer creates a Bearer Authorization by specified token.
+func Bearer(token string) auth.RTComposer {
+	return bearer.New(token)
 }
 
 // -----------------------------------------------------------------------------

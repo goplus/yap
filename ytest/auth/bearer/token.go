@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package token
+package bearer
 
 import (
 	"net/http"
@@ -30,7 +30,7 @@ type tokenRounderTripper struct {
 }
 
 func (p *tokenRounderTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("Authorization", p.token)
+	req.Header.Set("Authorization", "Bearer "+p.token)
 	return p.rt.RoundTrip(req)
 }
 
