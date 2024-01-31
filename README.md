@@ -9,7 +9,7 @@ yap - Yet Another Go/Go+ HTTP Web Framework
 
 ### How to use in Go+
 
-This repo contains two Go+ classfiles: `yap` (a HTTP Web Framework) and `yaptest` (a HTTP Test Framework).
+This repo contains two [Go+ classfiles](https://github.com/goplus/gop/blob/main/doc/classfile.md): `yap` (a HTTP Web Framework) and `yaptest` (a HTTP Test Framework).
 
 The classfile `yap` has the file suffix `_yap.gox`. And the classfile `yaptest` has the file suffix `_ytest.gox`.
 
