@@ -78,12 +78,17 @@ end
 </html>
 `
 
+var (
+	left  = "{{"
+	right = "}}"
+)
+
 func TestTranslate(t *testing.T) {
-	if ret := Translate(yapScriptIn); ret != yapScriptOut {
+	if ret := Translate(yapScriptIn, left, right); ret != yapScriptOut {
 		t.Fatal("TestTranslate:", len(ret), len(yapScriptOut), len(yapScriptIn)+11*4, ret)
 	}
 	noScript := "abc"
-	if Translate(noScript) != noScript {
+	if Translate(noScript, left, right) != noScript {
 		t.Fatal("translate(noScript)")
 	}
 	noScriptEnd := `{{abc
@@ -92,7 +97,7 @@ efg
 	noScriptEndOut := `{{abc}}{{
 efg
 `
-	if ret := Translate(noScriptEnd); ret != noScriptEndOut {
+	if ret := Translate(noScriptEnd, left, right); ret != noScriptEndOut {
 		t.Fatal("translate(noScriptEnd):", ret)
 	}
 }

@@ -17,6 +17,7 @@
 package yap
 
 import (
+	"html/template"
 	"io/fs"
 	"log"
 	"net/http"
@@ -30,11 +31,12 @@ type H map[string]interface{}
 
 type Engine struct {
 	router
-	Mux *http.ServeMux
-
-	tpls map[string]Template
-	fs   fs.FS
-	las  func(addr string, handler http.Handler) error
+	las     func(addr string, handler http.Handler) error
+	Mux     *http.ServeMux
+	funcMap template.FuncMap
+	tpl     *Template
+	fs      fs.FS
+	delims  Delims
 }
 
 // New creates a YAP engine.
@@ -65,7 +67,21 @@ func (p *Engine) initYapFS(fsys fs.FS) {
 		}
 	}
 	p.fs = fsys
-	p.tpls = make(map[string]Template)
+}
+
+// Load template,
+// if not called in advance, it will be automatically loaded when the template is first accessed
+func (p *Engine) LoadTempalte(patterns ...string) {
+	p.tpl = NewTemplate("")
+	p.tpl.SetDelims(p.delims)
+	p.tpl.Funcs(p.funcMap)
+	if len(patterns) == 0 {
+		patterns = append(patterns, "**")
+	}
+	_, e := p.tpl.ParseFS(p.yapFS(), patterns...)
+	if e != nil {
+		log.Panicln(e)
+	}
 }
 
 func (p *Engine) yapFS() fs.FS {
@@ -73,6 +89,16 @@ func (p *Engine) yapFS() fs.FS {
 		p.initYapFS(os.DirFS("."))
 	}
 	return p.fs
+}
+
+// set Yap support functions
+func (p *Engine) SetFuncMap(funcMap template.FuncMap) {
+	p.funcMap = funcMap
+}
+
+// set yap Delims
+func (p *Engine) SetDelims(Left, Right string) {
+	p.delims = Delims{Left, Right}
 }
 
 func (p *Engine) NewContext(w http.ResponseWriter, r *http.Request) *Context {
@@ -149,20 +175,15 @@ func (p *Engine) SetLAS(listenAndServe func(addr string, handler http.Handler) e
 	p.las = listenAndServe
 }
 
-func (p *Engine) templ(path string) (t Template, err error) {
-	fsys := p.yapFS()
-	if p.tpls == nil {
-		return Template{}, os.ErrNotExist
+func (p *Engine) templ(path string) (t *template.Template, err error) {
+	if p.tpl == nil {
+		p.LoadTempalte()
 	}
-	t, ok := p.tpls[path]
-	if !ok {
-		t, err = ParseFSFile(fsys, path+"_yap.html")
-		if err != nil {
-			return
-		}
-		p.tpls[path] = t
+	t2 := p.tpl.Lookup(path)
+	if t2 == nil {
+		return nil, os.ErrNotExist
 	}
-	return
+	return t2, nil
 }
 
 // SubFS returns a sub filesystem by specified a dir.

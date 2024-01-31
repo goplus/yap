@@ -20,16 +20,16 @@ import (
 	"strings"
 )
 
-func Translate(text string) string {
+func Translate(text, left, right string) string {
 	offs := make([]int, 0, 16)
 	base := 0
 	for {
-		pos := strings.Index(text[base:], "{{")
+		pos := strings.Index(text[base:], left)
 		if pos < 0 {
 			break
 		}
 		begin := base + pos + 2 // script begin
-		n := strings.Index(text[begin:], "}}")
+		n := strings.Index(text[begin:], right)
 		if n < 0 {
 			n = len(text) - begin // script length
 		}

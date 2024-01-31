@@ -66,6 +66,9 @@ func (p *App) Patch(path string, handle func(ctx *Context)) {
 func (p *App) Static__0(pattern string, dir ...fs.FS) {
 	p.Static(pattern, dir...)
 }
+func (p *App) Delims(left, right string) {
+	p.SetDelims(left, right)
+}
 
 // Static serves static files from a http file system scheme (url).
 // See https://pkg.go.dev/github.com/qiniu/x/http/fsx for more information.
