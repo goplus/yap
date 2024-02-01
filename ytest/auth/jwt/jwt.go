@@ -76,18 +76,18 @@ func newSign(method jwt.SigningMethod, secret any) *Signaturer {
 }
 
 // HS256 creates a signing methods by using the HMAC-SHA256.
-func HS256(key []byte) *Signaturer {
-	return newSign(jwt.SigningMethodHS256, key)
+func HS256(key string) *Signaturer {
+	return newSign(jwt.SigningMethodHS256, []byte(key))
 }
 
 // HS384 creates a signing methods by using the HMAC-SHA384.
-func HS384(key []byte) *Signaturer {
-	return newSign(jwt.SigningMethodHS384, key)
+func HS384(key string) *Signaturer {
+	return newSign(jwt.SigningMethodHS384, []byte(key))
 }
 
 // HS512 creates a signing methods by using the HMAC-SHA512.
-func HS512(key []byte) *Signaturer {
-	return newSign(jwt.SigningMethodHS512, key)
+func HS512(key string) *Signaturer {
+	return newSign(jwt.SigningMethodHS512, []byte(key))
 }
 
 // -----------------------------------------------------------------------------
