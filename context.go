@@ -142,13 +142,10 @@ func (p *Context) JSON(code int, data interface{}) {
 
 func (p *Context) YAP(code int, yapFile string, data interface{}) {
 	w := p.ResponseWriter
-	t, err := p.engine.templ(yapFile)
-	if err != nil {
-		log.Panicf("YAP `%s`: %v\n", yapFile, err)
-	}
+	t := p.engine.templ(yapFile)
 	h := w.Header()
 	h.Set("Content-Type", "text/html")
-	err = t.Execute(w, data)
+	err := t.Execute(w, data)
 	if err != nil {
 		log.Panicln("YAP:", err)
 	}
