@@ -24,3 +24,24 @@ import (
 type RTComposer interface {
 	Compose(base http.RoundTripper) http.RoundTripper
 }
+
+// -----------------------------------------------------------------------------
+
+type tokenRT struct {
+	rt    http.RoundTripper
+	token string
+}
+
+func (p *tokenRT) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("Authorization", p.token)
+	return p.rt.RoundTrip(req)
+}
+
+func WithToken(rt http.RoundTripper, token string) http.RoundTripper {
+	return &tokenRT{
+		rt:    rt,
+		token: token,
+	}
+}
+
+// -----------------------------------------------------------------------------
