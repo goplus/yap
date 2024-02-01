@@ -24,27 +24,12 @@ import (
 
 // -----------------------------------------------------------------------------
 
-type tokenRounderTripper struct {
-	rt    http.RoundTripper
-	token string
-}
-
-func (p *tokenRounderTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("Authorization", "Bearer "+p.token)
-	return p.rt.RoundTrip(req)
-}
-
-// -----------------------------------------------------------------------------
-
 type tokenAuth struct {
 	token string
 }
 
 func (p *tokenAuth) Compose(rt http.RoundTripper) http.RoundTripper {
-	return &tokenRounderTripper{
-		rt:    rt,
-		token: p.token,
-	}
+	return auth.WithToken(rt, "Bearer "+p.token)
 }
 
 // New creates an Authorization by specified token.
