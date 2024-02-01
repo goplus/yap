@@ -82,6 +82,12 @@ func (p *App) Static__2(pattern string, fs http.FileSystem, allowRedirect ...boo
 	p.StaticHttp(pattern, fs, allowRedirect...)
 }
 
+// custom delimiter,
+// example:{{  }} => ${  }$
+func (p *App) SetDelims(left, right string) {
+	p.Engine.SetDelims(left, right)
+}
+
 // AppType represents an abstract of YAP applications.
 type AppType interface {
 	InitYap(fs ...fs.FS)

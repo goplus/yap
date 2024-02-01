@@ -24,28 +24,38 @@ import (
 	"github.com/goplus/yap/internal/templ"
 )
 
+// template delimiter, default is {{ }}
+type Delims struct {
+	Left  string
+	Right string
+}
+
 // Template is the representation of a parsed template. The *parse.Tree
 // field is exported only for use by html/template and should be treated
 // as unexported by all other clients.
 type Template struct {
 	*template.Template
+	delims Delims
 }
 
 // NewTemplate allocates a new, undefined template with the given name.
 func NewTemplate(name string) Template {
-	return Template{template.New(name)}
+	return Template{template.New(name), Delims{"{{", "}}"}}
 }
 
 func (t Template) Parse(text string) (ret Template, err error) {
-	ret.Template, err = t.Template.Parse(templ.Translate(text))
+	t.Template.Delims(t.delims.Left, t.delims.Right)
+	ret.Template, err = t.Template.Parse(templ.Translate(text, t.delims.Left, t.delims.Right))
 	return
 }
 
-func ParseFSFile(f fs.FS, file string) (t Template, err error) {
+func ParseFSFile(f fs.FS, file string, delims Delims) (t Template, err error) {
 	b, err := fs.ReadFile(f, file)
 	if err != nil {
 		return
 	}
 	name := filepath.Base(file)
-	return NewTemplate(name).Parse(string(b))
+	t = NewTemplate(name)
+	t.delims = delims
+	return t.Parse(string(b))
 }

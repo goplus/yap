@@ -32,15 +32,17 @@ type Engine struct {
 	router
 	Mux *http.ServeMux
 
-	tpls map[string]Template
-	fs   fs.FS
-	las  func(addr string, handler http.Handler) error
+	tpls   map[string]Template
+	fs     fs.FS
+	las    func(addr string, handler http.Handler) error
+	delims Delims
 }
 
 // New creates a YAP engine.
 func New(fs ...fs.FS) *Engine {
 	e := new(Engine)
 	e.InitYap(fs...)
+	e.SetDelims("{{", "}}")
 	return e
 }
 
@@ -66,6 +68,13 @@ func (p *Engine) initYapFS(fsys fs.FS) {
 	}
 	p.fs = fsys
 	p.tpls = make(map[string]Template)
+}
+
+func (p *Engine) SetDelims(left, right string) {
+	if !(len(left) == 2 && len(right) == 2) {
+		log.Panicln("The length of the delimiter must be two")
+	}
+	p.delims = Delims{left, right}
 }
 
 func (p *Engine) yapFS() fs.FS {
@@ -156,7 +165,7 @@ func (p *Engine) templ(path string) (t Template, err error) {
 	}
 	t, ok := p.tpls[path]
 	if !ok {
-		t, err = ParseFSFile(fsys, path+"_yap.html")
+		t, err = ParseFSFile(fsys, path+"_yap.html", p.delims)
 		if err != nil {
 			return
 		}
