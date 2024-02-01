@@ -1,0 +1,8 @@
+setDelims "${","}$"
+get "/p/:id", ctx => {
+	ctx.yap "article", {
+		"id": ctx.param("id"),
+	}
+}
+
+run ":8080"
