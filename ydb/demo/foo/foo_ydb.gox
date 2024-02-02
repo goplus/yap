@@ -1,0 +1,80 @@
+import "time"
+
+engine "mysql"
+
+table "user v0.1.0", => {
+	col [32]byte, "id"
+	col string, "spwd"
+	col string, "salt"
+	col string, "nickname"
+	col string, "email"
+	col string, "tel"
+	col date, "born"
+	col [6]datetime, "ctime" // 1000-01-01 00:00:00.000000
+
+	unique "id"
+	index "email"
+	index "tel"
+	index "born"
+	index "ctime"
+}
+
+class "Users", => {
+	use "user"
+
+	api "register", func(id, pwd, nickname, email, tel string, ctime time.Time) error {
+		if email == "" && tel == "" {
+			return ErrNoEmailAndTel
+		}
+		limit 3, "email={email}" // one email can't register >3 accounts
+		limit 3, "tel={tel}"
+
+		salt := rand
+		spwd := hmac(pwd, salt)
+		insert "id", id, "spwd", spwd, "salt", salt, "nickname", nickname,
+			"email", email, "tel", tel, "ctime", ctime
+		// ErrDuplicated
+		return nil
+	}
+	call "user", "pwd", "nickname", "", "", time.now
+	ret ErrNoEmailAndTel
+	call "user", "pwd", "nickname", "user@foo.com", "", time.now
+	ret nil
+	call "user", "pwd", "nickname", "user@foo.com", "13500000000", time.now
+	ret ErrDuplicated
+
+	api "login", func(id, pwd string) bool {
+		var spwd, salt string
+		query "id={id}"
+		ret "salt", &salt, "spwd", &spwd
+		return hmac(pwd, salt) == spwd
+	}
+	call "", ""
+	ret false
+	call "user", "pwd"
+	ret true
+}
+
+table "article v0.1.0", => {
+	col string, "id"
+	col string, "author", "name@user"
+	col string, "title"
+	col blob, "body"
+
+	unique "id"
+	index "author"
+
+	from "oldart v0.9.1", => {
+		// migrate from oldart table because it's an incompatible change
+		// ...
+	}
+}
+
+table "tag v0.1.0", => {
+	col string, "id", "id@article"
+	col string, "tag"
+	unique "id", "tag"
+}
+
+class "Articles", => {
+}
