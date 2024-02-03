@@ -74,7 +74,7 @@ func (p *Sql) Table(nameVer string, spec func()) {
 	p.dbTable = tbl
 	p.tables[name] = tbl
 	spec()
-	p.create(context.TODO(), p)
+	tbl.create(context.TODO(), p)
 	p.dbTable = nil
 }
 
@@ -84,17 +84,6 @@ func (p *Sql) Class(name string, spec func()) {
 	p.classes[name] = p.dbClass
 	spec()
 	p.dbClass = nil
-}
-
-// Ret checks a query or call result.
-func (p *Sql) Ret(args ...any) {
-	if tbl := p.dbTable; tbl != nil {
-		tbl.Ret(args...)
-	} else if cls := p.dbClass; cls != nil {
-		cls.Ret(args...)
-	} else {
-		log.Panicln("pelase use ret after query or call")
-	}
 }
 
 // -----------------------------------------------------------------------------

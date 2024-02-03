@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package ytest
+package test
 
 import (
 	"log"
 )
 
-func fatal(v ...any) {
+func Fatal(v ...any) {
 	log.Panicln(v...)
 }
 
-func fatalf(format string, v ...any) {
+func Fatalf(format string, v ...any) {
 	log.Panicf(format, v...)
 }

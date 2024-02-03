@@ -20,10 +20,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
 
+	"github.com/goplus/yap/test"
 	"github.com/goplus/yap/ytest/auth"
 )
 
@@ -72,12 +74,12 @@ func (p *Request) WithHeader(key string, value any) *Request {
 		p.header.Set(key, v)
 	case []string:
 		p.header[key] = v
-	case *Var__0[string]:
+	case *test.Var__0[string]:
 		p.header.Set(key, v.Val())
-	case *Var__3[[]string]:
+	case *test.Var__3[[]string]:
 		p.header[key] = v.Val()
 	default:
-		fatalf("set header failed! unexpected value type: %T\n", value)
+		test.Fatalf("set header failed! unexpected value type: %T\n", value)
 	}
 	return p
 }
@@ -119,14 +121,14 @@ func (p *Request) WithBodyEx(bodyType string, body any) *Request {
 	switch v := body.(type) {
 	case string:
 		return p.WithText(bodyType, v)
-	case *Var__0[string]:
+	case *test.Var__0[string]:
 		return p.WithText(bodyType, v.Val())
 	case []byte:
 		return p.WithBinary(bodyType, v)
 	case RequestBody:
 		return p.WithBody(bodyType, v)
 	default:
-		fatalf("set body failed! unexpected value type: %T\n", body)
+		test.Fatalf("set body failed! unexpected value type: %T\n", body)
 	}
 	return p
 }
@@ -195,7 +197,7 @@ func (p *Request) Json(body any) *Request {
 func (p *Request) WithJson(body any) *Request {
 	b, err := json.Marshal(body)
 	if err != nil {
-		fatal("json.Marshal failed:", err)
+		test.Fatal("json.Marshal failed:", err)
 	}
 	return p.WithBinary(mimeJson, b)
 }
@@ -221,12 +223,12 @@ func (p *Request) WithFormEx(body any) *Request {
 	switch v := body.(type) {
 	case map[string]any:
 		vals = Form(v)
-	case *Var__1[map[string]any]:
+	case *test.Var__1[map[string]any]:
 		vals = Form(v.Val())
 	case url.Values:
 		vals = v
 	default:
-		fatalf("request with form: unexpected type %T\n", body)
+		test.Fatalf("request with form: unexpected type %T\n", body)
 	}
 	return p.WithText(mimeForm, vals.Encode())
 }
@@ -243,7 +245,7 @@ func (p *Request) doSend() (resp *http.Response, err error) {
 	body := p.body
 	req, err := p.ctx.newRequest(p.method, p.url, body)
 	if err != nil {
-		fatalf("newRequest(%s, %s) failed: %v\n", p.method, p.url, err)
+		log.Fatalf("newRequest(%s, %s) failed: %v\n", p.method, p.url, err)
 	}
 
 	mergeHeader(req.Header, p.ctx.DefaultHeader)
@@ -270,7 +272,7 @@ const (
 func (p *Request) Send() *Request {
 	resp, err := p.doSend()
 	if err != nil {
-		fatalf("sendRequest(%v, %v) failed: %v\n", p.method, p.url, err)
+		test.Fatalf("sendRequest(%v, %v) failed: %v\n", p.method, p.url, err)
 	}
 	defer resp.Body.Close()
 	p.resp = newResponse(resp)

@@ -25,6 +25,7 @@ import (
 	"testing"
 
 	"github.com/goplus/yap"
+	"github.com/goplus/yap/test"
 	"github.com/qiniu/x/mockhttp"
 )
 
@@ -107,7 +108,7 @@ func Gopt_App_Main(app interface{ initApp() *App }, workers ...interface{ initCa
 //	host "http://example.com" "http://localhost:8888"
 func (p *App) Host(host, real string) {
 	if !strings.HasPrefix(host, "http") {
-		fatalf("invalid host `%s`: should start with http:// or https://\n", host)
+		test.Fatalf("invalid host `%s`: should start with http:// or https://\n", host)
 	}
 	p.hosts[host] = real
 }
