@@ -31,7 +31,7 @@ func Hmac(pwd string, salt string) string {
 //line ydb/demo/foo/foo_ydb.gox:5
 func (this *foo) Main() {
 //line ydb/demo/foo/foo_ydb.gox:5:1
-	this.Engine("mysql")
+	this.Engine__0("mysql")
 //line ydb/demo/foo/foo_ydb.gox:7:1
 	this.Table("user v0.1.0", func() {
 //line ydb/demo/foo/foo_ydb.gox:8:1
