@@ -125,21 +125,6 @@ func newTable(name, ver string) *Table {
 func (p *Table) From(old string, migrate func()) {
 }
 
-func (p *Table) Insert(kvPair ...any) {
-}
-
-func (p *Table) Ret(kvPair ...any) {
-}
-
-func (p *Table) Query(query string) {
-}
-
-func (p *Table) Limit__0(n int) {
-}
-
-func (p *Table) Limit__1(n int, query string) {
-}
-
 // -----------------------------------------------------------------------------
 
 func (p *Table) Unique(name ...string) {

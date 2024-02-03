@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package ytest
+package test
 
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"strconv"
 	"strings"
 )
@@ -42,46 +41,6 @@ func toMapAny[T basetype](val map[string]T) map[string]any {
 		ret[k] = v
 	}
 	return ret
-}
-
-// -----------------------------------------------------------------------------
-
-// JsonEncode encodes a value into string in json format.
-func JsonEncode(v any) string {
-	b, err := json.Marshal(v)
-	if err != nil {
-		fatal("json.Marshal failed:", err)
-	}
-	return string(b)
-}
-
-// Form encodes a map value into string in form format.
-func Form(m map[string]any) (ret url.Values) {
-	ret = make(url.Values)
-	for k, v := range m {
-		ret[k] = formVal(v)
-	}
-	return ret
-}
-
-func formVal(val any) []string {
-	switch v := val.(type) {
-	case string:
-		return []string{v}
-	case []string:
-		return v
-	case int:
-		return []string{strconv.Itoa(v)}
-	case bool:
-		if v {
-			return []string{"true"}
-		}
-		return []string{"false"}
-	case float64:
-		return []string{strconv.FormatFloat(v, 'g', -1, 64)}
-	}
-	fatalf("formVal unexpected type: %T\n", val)
-	return nil
 }
 
 // -----------------------------------------------------------------------------
@@ -448,7 +407,7 @@ type Var__0[T basetype] struct {
 
 func (p *Var__0[T]) check() {
 	if !p.valid {
-		fatal("read variable value before initialization")
+		Fatal("read variable value before initialization")
 	}
 }
 
@@ -498,22 +457,12 @@ type Var__1[T map[string]any] struct {
 
 func (p *Var__1[T]) check() {
 	if p.val == nil {
-		fatal("read variable value before initialization")
+		Fatal("read variable value before initialization")
 	}
 }
 
 func (p *Var__1[T]) Valid() bool {
 	return p.val != nil
-}
-
-func (p *Var__1[T]) Form() string {
-	p.check()
-	return Form(p.val).Encode()
-}
-
-func (p *Var__1[T]) Json() string {
-	p.check()
-	return JsonEncode(p.val)
 }
 
 func (p *Var__1[T]) Val() T {
@@ -554,17 +503,12 @@ type Var__2[T []any] struct {
 
 func (p *Var__2[T]) check() {
 	if !p.valid {
-		fatal("read variable value before initialization")
+		Fatal("read variable value before initialization")
 	}
 }
 
 func (p *Var__2[T]) Valid() bool {
 	return p.valid
-}
-
-func (p *Var__2[T]) Json() string {
-	p.check()
-	return JsonEncode(p.val)
 }
 
 func (p *Var__2[T]) Val() T {
@@ -606,17 +550,12 @@ type Var__3[T baseslice] struct {
 
 func (p *Var__3[T]) check() {
 	if !p.valid {
-		fatal("read variable value before initialization")
+		Fatal("read variable value before initialization")
 	}
 }
 
 func (p *Var__3[T]) Valid() bool {
 	return p.valid
-}
-
-func (p *Var__3[T]) Json() string {
-	p.check()
-	return JsonEncode(p.val)
 }
 
 func (p *Var__3[T]) Val() T {

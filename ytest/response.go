@@ -21,6 +21,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+
+	"github.com/goplus/yap/test"
 )
 
 type Response struct {
@@ -34,7 +36,7 @@ type Response struct {
 func newResponse(resp *http.Response) *Response {
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fatal("ReadAll resp.Body:", err)
+		test.Fatal("ReadAll resp.Body:", err)
 	}
 	return &Response{
 		code:   resp.StatusCode,
@@ -52,8 +54,8 @@ func (p *Response) matchCode(t CaseT, code any) {
 	t.Helper()
 	switch v := code.(type) {
 	case int:
-		Gopt_Case_Match__0(t, p.code, v)
-	case *Var__0[int]:
+		test.Gopt_Case_Match__0(t, p.code, v)
+	case *test.Var__0[int]:
 		v.Match(t, p.code)
 	default:
 		t.Fatalf("match status code failed - unexpected type: %T\n", code)
@@ -69,12 +71,12 @@ func (p *Response) matchHeader(t CaseT, key string, value any) {
 	t.Helper()
 	switch v := value.(type) {
 	case string:
-		Gopt_Case_Match__0(t, v, p.header.Get(key))
+		test.Gopt_Case_Match__0(t, v, p.header.Get(key))
 	case []string:
-		Gopt_Case_Match__3(t, v, p.header[key])
-	case *Var__0[string]:
+		test.Gopt_Case_Match__3(t, v, p.header[key])
+	case *test.Var__0[string]:
 		v.Match(t, p.header.Get(key))
-	case *Var__3[[]string]:
+	case *test.Var__3[[]string]:
 		v.Match(t, p.header[key])
 	default:
 		t.Fatalf("match header failed! unexpected value type: %T\n", value)
@@ -93,12 +95,12 @@ func (p *Response) Body() (ret any) {
 		switch mime {
 		case mimeJson:
 			if err := json.Unmarshal(p.raw, &ret); err != nil {
-				fatal("json.Unmarshal resp.Body:", err)
+				test.Fatal("json.Unmarshal resp.Body:", err)
 			}
 		case mimeForm:
 			form, err := url.ParseQuery(string(p.raw))
 			if err != nil {
-				fatal("url.ParseQuery resp.Body:", err)
+				test.Fatal("url.ParseQuery resp.Body:", err)
 			}
 			ret = form
 		case mimeNone:
@@ -118,5 +120,5 @@ func (p *Response) matchBody(t CaseT, bodyType string, body any) {
 	if mime != bodyType {
 		t.Fatalf("resp.MatchBody: unmatched mime type - got: %s, expected: %s\n", mime, bodyType)
 	}
-	Gopt_Case_Match__4(t, body, p.Body())
+	test.Gopt_Case_Match__4(t, body, p.Body())
 }
