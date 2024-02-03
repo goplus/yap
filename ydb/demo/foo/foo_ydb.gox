@@ -1,16 +1,18 @@
-import "time"
+import (
+	"time"
+)
 
 engine "mysql"
 
 table "user v0.1.0", => {
-	col [32]byte, "id"
-	col string, "spwd"
-	col string, "salt"
-	col string, "nickname"
-	col string, "email"
-	col string, "tel"
-	col date, "born"
-	col [6]datetime, "ctime" // 1000-01-01 00:00:00.000000
+	col [32]Byte, "id"
+	col String, "spwd"
+	col String, "salt"
+	col String, "nickname"
+	col String, "email"
+	col String, "tel"
+	col Date, "born"
+	col [6]DateTime, "ctime" // 1000-01-01 00:00:00.000000
 
 	unique "id"
 	index "email"
@@ -56,10 +58,10 @@ class "Users", => {
 }
 
 table "article v0.1.0", => {
-	col string, "id"
-	col string, "author", "name@user"
-	col string, "title"
-	col blob, "body"
+	col String, "id"
+	col String, "author", "name@user"
+	col String, "title"
+	col Blob, "body"
 
 	unique "id"
 	index "author"
@@ -71,8 +73,9 @@ table "article v0.1.0", => {
 }
 
 table "tag v0.1.0", => {
-	col string, "id", "id@article"
-	col string, "tag"
+	col String, "id", "id@article"
+	col String, "tag"
+
 	unique "id", "tag"
 }
 

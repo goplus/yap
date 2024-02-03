@@ -32,7 +32,7 @@ func newClass(name string) *Class {
 func (p *Class) Use(table string) {
 }
 
-func (p *Class) Api(name string, creator func(), fnlit ...*ast.FuncLit) {
+func (p *Class) Api(name string, creator any, fnlit ...*ast.FuncLit) {
 }
 
 func (p *Class) Call(args ...any) {

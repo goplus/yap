@@ -17,23 +17,33 @@
 package ydb
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
 	"time"
 )
 
-type (
-	blob  []byte
-	float float64
+var (
+	ErrDuplicated = errors.New("duplicated")
+)
 
-	date      time.Time
-	datetime  time.Time
-	timestamp time.Time
+type (
+	String = string
+	Int    = int
+	Bool   = bool
+	Byte   = byte
+
+	Blob  []byte
+	Float float64
+
+	Date      time.Time
+	DateTime  time.Time
+	Timestamp time.Time
 )
 
 type basetype interface {
-	string | int | bool | blob | date | datetime | timestamp | float
+	string | int | bool | Blob | Date | DateTime | Timestamp | Float
 }
 
 func colBaseType(v any) string {
@@ -44,15 +54,15 @@ func colBaseType(v any) string {
 		return "INT"
 	case *bool:
 		return "BOOL"
-	case *blob:
+	case *Blob:
 		return "BLOB"
-	case *date:
+	case *Date:
 		return "DATE"
-	case *datetime:
+	case *DateTime:
 		return "DATETIME"
-	case *timestamp:
+	case *Timestamp:
 		return "TIMESTAMP"
-	case *float:
+	case *Float:
 		return "DOUBLE"
 	default:
 		panic("unknown column type: " + reflect.TypeOf(v).Elem().String())
@@ -77,16 +87,16 @@ func colArrType(v any, n int) string {
 		return "LONGTEXT"
 	case int:
 		return "BIGINT(" + strconv.Itoa(n) + ")"
-	case blob:
+	case Blob:
 		if n <= 16777215 {
 			return "MEDIUMBLOB"
 		}
 		return "LONGBLOB"
-	case datetime:
+	case DateTime:
 		return "DATETIME(" + strconv.Itoa(n) + ")"
-	case timestamp:
+	case Timestamp:
 		return "TIMESTAMP(" + strconv.Itoa(n) + ")"
-	case float:
+	case Float:
 		return "FLOAT(" + strconv.Itoa(n) + ")"
 	default:
 		panic(fmt.Sprintf("unknown column type: [%d]%T", n, v))
@@ -127,14 +137,17 @@ func (p *Table) Limit__0(n int) {
 func (p *Table) Limit__1(n int, query string) {
 }
 
+func (p *Table) defineCol() {
+}
+
 // -----------------------------------------------------------------------------
 
-func Gopt_Table_Gopx_Col__0[T basetype](p *Table, name string) {
+func Gopt_Table_Gopx_Col__0[T basetype](tbl interface{ defineCol() }, name string, link ...string) {
 	tcol := colBaseType((*T)(nil))
 	_ = tcol
 }
 
-func Gopt_Table_Gopx_Col__1[Array any](p *Table, name string) {
+func Gopt_Table_Gopx_Col__1[Array any](tbl interface{ defineCol() }, name string, link ...string) {
 	varr := (*Array)(nil)
 	tarr := reflect.TypeOf(varr).Elem()
 	if tarr.Kind() != reflect.Array {
