@@ -17,10 +17,14 @@
 package ydb
 
 import (
+	"context"
+	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -43,16 +47,22 @@ type (
 )
 
 type basetype interface {
-	string | int | bool | Blob | Date | DateTime | Timestamp | Float
+	String | Int | Bool | Blob | Date | DateTime | Timestamp | Float
 }
+
+/*
+type baseelem interface {
+	Byte | Int | Blob | DateTime | Timestamp | Float
+}
+*/
 
 func colBaseType(v any) string {
 	switch v.(type) {
-	case *string:
+	case *String:
 		return "TEXT"
-	case *int:
+	case *Int:
 		return "INT"
-	case *bool:
+	case *Bool:
 		return "BOOL"
 	case *Blob:
 		return "BLOB"
@@ -69,15 +79,9 @@ func colBaseType(v any) string {
 	}
 }
 
-/*
-type baseelem interface {
-	byte | int | blob | datetime | timestamp | float
-}
-*/
-
 func colArrType(v any, n int) string {
 	switch v.(type) {
-	case byte:
+	case *Byte:
 		if n <= 65535 {
 			return "TEXT(" + strconv.Itoa(n) + ")"
 		}
@@ -85,18 +89,18 @@ func colArrType(v any, n int) string {
 			return "MEDIUMTEXT"
 		}
 		return "LONGTEXT"
-	case int:
+	case *Int:
 		return "BIGINT(" + strconv.Itoa(n) + ")"
-	case Blob:
+	case *Blob:
 		if n <= 16777215 {
 			return "MEDIUMBLOB"
 		}
 		return "LONGBLOB"
-	case DateTime:
+	case *DateTime:
 		return "DATETIME(" + strconv.Itoa(n) + ")"
-	case Timestamp:
+	case *Timestamp:
 		return "TIMESTAMP(" + strconv.Itoa(n) + ")"
-	case Float:
+	case *Float:
 		return "FLOAT(" + strconv.Itoa(n) + ")"
 	default:
 		panic(fmt.Sprintf("unknown column type: [%d]%T", n, v))
@@ -106,16 +110,15 @@ func colArrType(v any, n int) string {
 // -----------------------------------------------------------------------------
 
 type Table struct {
+	name  string
+	ver   string
+	cols  []*column
+	uniqs [][]string
+	idxs  [][]string
 }
 
 func newTable(name, ver string) *Table {
-	return &Table{}
-}
-
-func (p *Table) Unique(name ...string) {
-}
-
-func (p *Table) Index(name ...string) {
+	return &Table{name: name, ver: ver}
 }
 
 // From migrates from old table because it's an incompatible change
@@ -137,17 +140,98 @@ func (p *Table) Limit__0(n int) {
 func (p *Table) Limit__1(n int, query string) {
 }
 
-func (p *Table) defineCol() {
+// -----------------------------------------------------------------------------
+
+func (p *Table) Unique(name ...string) {
+	p.uniqs = append(p.uniqs, name)
+}
+
+func (p *Table) Index(name ...string) {
+	p.idxs = append(p.idxs, name)
 }
 
 // -----------------------------------------------------------------------------
 
-func Gopt_Table_Gopx_Col__0[T basetype](tbl interface{ defineCol() }, name string, link ...string) {
-	tcol := colBaseType((*T)(nil))
-	_ = tcol
+type column struct {
+	typ  string // type in DB
+	name string // column name
+	link string // optional
+	zero any    // zero is (*basetype)(nil) if n == 0; else zero is (*baseelem)(nil)
+	n    int    // array if n != 0
 }
 
-func Gopt_Table_Gopx_Col__1[Array any](tbl interface{ defineCol() }, name string, link ...string) {
+func (p *Table) create(ctx context.Context, sql *Sql) {
+	n := len(p.cols)
+	if n == 0 {
+		log.Panicln("empty table:", p.name, p.ver)
+	}
+	fldQuery := strings.Repeat("? ?,\n", n)
+	query := "CREATE TABLE ? (" + fldQuery[:len(fldQuery)-2] + ")"
+	args := make([]any, 1, n*2+1)
+	args[0] = p.name
+	for _, c := range p.cols {
+		args = append(args, c.name, c.typ)
+	}
+	db := sql.db
+	_, err := db.ExecContext(ctx, query, args...)
+	if err != nil {
+		log.Panicf("create table (%s): %v\n", p.name, err)
+	}
+
+	for _, uniq := range p.uniqs {
+		name := indexName(uniq, true)
+		_, err = execWithStrArgs(db, ctx, "CREATE UNIQUE INDEX ? ON ? (", ")", name, p.name, uniq)
+		if err != nil {
+			log.Panicln("create unique index:", err)
+		}
+	}
+	for _, idx := range p.idxs {
+		name := indexName(idx, false)
+		_, err = execWithStrArgs(db, ctx, "CREATE INDEX ? ON ? (", ")", name, p.name, idx)
+		if err != nil {
+			log.Panicln("create index:", err)
+		}
+	}
+}
+
+func indexName(name []string, uniq bool) string {
+	panic("todo")
+}
+
+func execWithStrArgs(db *sql.DB, ctx context.Context, queryPrefix, querySuffix string, v1, v2 string, args []string) (sql.Result, error) {
+	switch len(args) {
+	case 1:
+		return db.ExecContext(ctx, queryPrefix+"?"+querySuffix, v1, v2, args[0])
+	case 2:
+		return db.ExecContext(ctx, queryPrefix+"?,?"+querySuffix, v1, v2, args[0], args[1])
+	default:
+		fldQuery := strings.Repeat("?,", len(args))
+		query := queryPrefix + fldQuery[:len(fldQuery)-1] + querySuffix
+		vArgs := make([]any, 2+len(args))
+		vArgs[0], vArgs[1] = v1, v2
+		for i, arg := range args {
+			vArgs[2+i] = arg
+		}
+		return db.ExecContext(ctx, query, vArgs...)
+	}
+}
+
+func (p *Table) defineCol(c *column) {
+	p.cols = append(p.cols, c)
+}
+
+func Gopt_Table_Gopx_Col__0[T basetype](tbl interface{ defineCol(c *column) }, name string, link ...string) {
+	vcol := (*T)(nil)
+	tcol := colBaseType(vcol)
+	tbl.defineCol(&column{
+		typ:  tcol,
+		name: name,
+		link: optString(link),
+		zero: vcol,
+	})
+}
+
+func Gopt_Table_Gopx_Col__1[Array any](tbl interface{ defineCol(c *column) }, name string, link ...string) {
 	varr := (*Array)(nil)
 	tarr := reflect.TypeOf(varr).Elem()
 	if tarr.Kind() != reflect.Array {
@@ -155,9 +239,22 @@ func Gopt_Table_Gopx_Col__1[Array any](tbl interface{ defineCol() }, name string
 	}
 	n := tarr.Len()
 	elem := tarr.Elem()
-	v := reflect.Zero(reflect.PointerTo(elem)).Interface()
-	tcol := colArrType(v, n)
-	_ = tcol
+	velem := reflect.Zero(reflect.PointerTo(elem)).Interface()
+	tcol := colArrType(velem, n)
+	tbl.defineCol(&column{
+		typ:  tcol,
+		name: name,
+		link: optString(link),
+		zero: velem,
+		n:    n,
+	})
+}
+
+func optString(v []string) string {
+	if v != nil {
+		return v[0]
+	}
+	return ""
 }
 
 // -----------------------------------------------------------------------------

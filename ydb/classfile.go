@@ -17,6 +17,9 @@
 package ydb
 
 import (
+	"context"
+	"database/sql"
+	"log"
 	"strings"
 )
 
@@ -33,6 +36,7 @@ type Sql struct {
 	driver  string
 	tables  map[string]*Table
 	classes map[string]*Class
+	db      *sql.DB
 	*dbTable
 	*dbClass
 }
@@ -42,29 +46,43 @@ func (p *Sql) initSql() {
 	p.classes = make(map[string]*Class)
 }
 
-// Engine sets engine name of a sql driver.
-func (p *Sql) Engine(name string) {
-	p.driver = name
+// Engine initializes database by specified engine name.
+func (p *Sql) Engine__0(name string) {
+	if defaultDataSource, ok := engineDataSource[name]; ok {
+		db, err := sql.Open(name, defaultDataSource)
+		if err != nil {
+			log.Panicln("sql.Open:", err)
+		}
+		p.db = db
+		p.driver = name
+	}
+}
+
+// Engine returns engine name of the database.
+func (p *Sql) Engine__1() string {
+	return p.driver
 }
 
 // Table creates a new table.
-func (p *Sql) Table(nameVer string, creator func()) {
+func (p *Sql) Table(nameVer string, spec func()) {
 	pos := strings.IndexByte(nameVer, ' ') // user v0.1.0
 	if pos < 0 {
-		panic("table name should have a version: eg. `user v0.1.0`")
+		log.Panicln("table name should have a version: eg. `user v0.1.0`")
 	}
 	name, ver := nameVer[:pos], strings.TrimLeft(nameVer[pos+1:], " \t")
-	p.dbTable = newTable(name, ver)
-	p.tables[name] = p.dbTable
-	creator()
+	tbl := newTable(name, ver)
+	p.dbTable = tbl
+	p.tables[name] = tbl
+	spec()
+	p.create(context.TODO(), p)
 	p.dbTable = nil
 }
 
 // Class creates a new class.
-func (p *Sql) Class(name string, creator func()) {
+func (p *Sql) Class(name string, spec func()) {
 	p.dbClass = newClass(name)
 	p.classes[name] = p.dbClass
-	creator()
+	spec()
 	p.dbClass = nil
 }
 
@@ -75,8 +93,19 @@ func (p *Sql) Ret(args ...any) {
 	} else if cls := p.dbClass; cls != nil {
 		cls.Ret(args...)
 	} else {
-		panic("pelase use ret after query or call")
+		log.Panicln("pelase use ret after query or call")
 	}
+}
+
+// -----------------------------------------------------------------------------
+
+var (
+	engineDataSource map[string]string // engineName => defaultDataSource
+)
+
+// Register registers a engine and its default data source.
+func Register(name, defaultDataSource string) {
+	engineDataSource[name] = defaultDataSource
 }
 
 // -----------------------------------------------------------------------------
