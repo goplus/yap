@@ -1,0 +1,15 @@
+import (
+	"errors"
+)
+
+var (
+	ErrNoEmailAndTel = errors.New("no email and telephone")
+)
+
+func Rand() string {
+	return ""
+}
+
+func Hmac(pwd, salt string) string {
+	return ""
+}
