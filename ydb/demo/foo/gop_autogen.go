@@ -137,13 +137,17 @@ func (this *foo) Main() {
 			this.Query__1("id=?", ids)
 //line ydb/demo/foo/foo_ydb.gox:90:1
 			this.Ret__1(&result)
+//line ydb/demo/foo/foo_ydb.gox:91:1
+			return
 		})
-//line ydb/demo/foo/foo_ydb.gox:93:1
-		this.Api("listByAuthor", func(author string) (result []ArticleEntry) {
 //line ydb/demo/foo/foo_ydb.gox:94:1
-			this.Query__1("author=?", author)
+		this.Api("listByAuthor", func(author string) (result []ArticleEntry) {
 //line ydb/demo/foo/foo_ydb.gox:95:1
+			this.Query__1("author=?", author)
+//line ydb/demo/foo/foo_ydb.gox:96:1
 			this.Ret__1(&result)
+//line ydb/demo/foo/foo_ydb.gox:97:1
+			return
 		})
 	})
 }

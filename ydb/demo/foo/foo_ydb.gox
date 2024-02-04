@@ -88,10 +88,12 @@ class "Articles", => {
 
 		query "id=?", ids
 		ret &result
+		return
 	}
 
 	api "listByAuthor", func(author string) (result []ArticleEntry) {
 		query "author=?", author
 		ret &result
+		return
 	}
 }
