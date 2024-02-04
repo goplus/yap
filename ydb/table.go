@@ -26,6 +26,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/goplus/gop/ast"
 )
 
 var (
@@ -122,17 +124,25 @@ func newTable(name, ver string) *Table {
 }
 
 // From migrates from old table because it's an incompatible change
-func (p *Table) From(old string, migrate func()) {
+func (p *Table) From(old string, migrate func(), src ...ast.Node) {
 }
 
 // -----------------------------------------------------------------------------
 
-func (p *Table) Unique(name ...string) {
-	p.uniqs = append(p.uniqs, name)
+func (p *Table) Unique__0(name string, src ...ast.Node) {
+	p.uniqs = append(p.uniqs, []string{name})
 }
 
-func (p *Table) Index(name ...string) {
-	p.idxs = append(p.idxs, name)
+func (p *Table) Unique__1(names []string, src ...ast.Node) {
+	p.uniqs = append(p.uniqs, names)
+}
+
+func (p *Table) Index__0(name string, src ...ast.Node) {
+	p.idxs = append(p.idxs, []string{name})
+}
+
+func (p *Table) Index__1(names []string, src ...ast.Node) {
+	p.idxs = append(p.idxs, names)
 }
 
 // -----------------------------------------------------------------------------
@@ -205,18 +215,26 @@ func (p *Table) defineCol(c *column) {
 	p.cols = append(p.cols, c)
 }
 
-func Gopt_Table_Gopx_Col__0[T basetype](tbl interface{ defineCol(c *column) }, name string, link ...string) {
+func Gopt_Table_Gopx_Col__0[T basetype](tbl interface{ defineCol(c *column) }, name string, src ...ast.Node) {
+	Gopt_Table_Gopx_Col__1[T](tbl, name, "", src...)
+}
+
+func Gopt_Table_Gopx_Col__1[T basetype](tbl interface{ defineCol(c *column) }, name string, link string, src ...ast.Node) {
 	vcol := (*T)(nil)
 	tcol := colBaseType(vcol)
 	tbl.defineCol(&column{
 		typ:  tcol,
 		name: name,
-		link: optString(link),
+		link: link,
 		zero: vcol,
 	})
 }
 
-func Gopt_Table_Gopx_Col__1[Array any](tbl interface{ defineCol(c *column) }, name string, link ...string) {
+func Gopt_Table_Gopx_Col__2[Array any](tbl interface{ defineCol(c *column) }, name string, src ...ast.Node) {
+	Gopt_Table_Gopx_Col__3[Array](tbl, name, "", src...)
+}
+
+func Gopt_Table_Gopx_Col__3[Array any](tbl interface{ defineCol(c *column) }, name string, link string, src ...ast.Node) {
 	varr := (*Array)(nil)
 	tarr := reflect.TypeOf(varr).Elem()
 	if tarr.Kind() != reflect.Array {
@@ -229,17 +247,10 @@ func Gopt_Table_Gopx_Col__1[Array any](tbl interface{ defineCol(c *column) }, na
 	tbl.defineCol(&column{
 		typ:  tcol,
 		name: name,
-		link: optString(link),
+		link: link,
 		zero: velem,
 		n:    n,
 	})
-}
-
-func optString(v []string) string {
-	if v != nil {
-		return v[0]
-	}
-	return ""
 }
 
 // -----------------------------------------------------------------------------

@@ -76,7 +76,7 @@ table "tag v0.1.0", => {
 	col String, "id", "id@article"
 	col String, "tag"
 
-	unique "id", "tag"
+	unique ["id", "tag"]
 }
 
 class "Articles", => {

@@ -35,7 +35,7 @@ func (this *foo) Main() {
 //line ydb/demo/foo/foo_ydb.gox:7:1
 	this.Table("user v0.1.0", func() {
 //line ydb/demo/foo/foo_ydb.gox:8:1
-		ydb.Gopt_Table_Gopx_Col__1[[32]byte](this, "id")
+		ydb.Gopt_Table_Gopx_Col__2[[32]byte](this, "id")
 //line ydb/demo/foo/foo_ydb.gox:9:1
 		ydb.Gopt_Table_Gopx_Col__0[string](this, "spwd")
 //line ydb/demo/foo/foo_ydb.gox:10:1
@@ -49,17 +49,17 @@ func (this *foo) Main() {
 //line ydb/demo/foo/foo_ydb.gox:14:1
 		ydb.Gopt_Table_Gopx_Col__0[ydb.Date](this, "born")
 //line ydb/demo/foo/foo_ydb.gox:15:1
-		ydb.Gopt_Table_Gopx_Col__1[[6]ydb.DateTime](this, "ctime")
+		ydb.Gopt_Table_Gopx_Col__2[[6]ydb.DateTime](this, "ctime")
 //line ydb/demo/foo/foo_ydb.gox:17:1
-		this.Unique("id")
+		this.Unique__0("id")
 //line ydb/demo/foo/foo_ydb.gox:18:1
-		this.Index("email")
+		this.Index__0("email")
 //line ydb/demo/foo/foo_ydb.gox:19:1
-		this.Index("tel")
+		this.Index__0("tel")
 //line ydb/demo/foo/foo_ydb.gox:20:1
-		this.Index("born")
+		this.Index__0("born")
 //line ydb/demo/foo/foo_ydb.gox:21:1
-		this.Index("ctime")
+		this.Index__0("ctime")
 	})
 //line ydb/demo/foo/foo_ydb.gox:24:1
 	this.Class("Users", func() {
@@ -81,22 +81,22 @@ func (this *foo) Main() {
 //line ydb/demo/foo/foo_ydb.gox:35:1
 			spwd := Hmac(pwd, salt)
 //line ydb/demo/foo/foo_ydb.gox:36:1
-			this.Insert("id", id, "spwd", spwd, "salt", salt, "nickname", nickname, "email", email, "tel", tel, "ctime", ctime)
+			this.Insert__1("id", id, "spwd", spwd, "salt", salt, "nickname", nickname, "email", email, "tel", tel, "ctime", ctime)
 //line ydb/demo/foo/foo_ydb.gox:39:1
 			return nil
 		})
 //line ydb/demo/foo/foo_ydb.gox:41:1
-		this.Call("user", "pwd", "nickname", "", "", time.Now())
+		this.Call__1("user", "pwd", "nickname", "", "", time.Now())
 //line ydb/demo/foo/foo_ydb.gox:42:1
-		this.Ret(ErrNoEmailAndTel)
+		this.Ret__1(ErrNoEmailAndTel)
 //line ydb/demo/foo/foo_ydb.gox:43:1
-		this.Call("user", "pwd", "nickname", "user@foo.com", "", time.Now())
+		this.Call__1("user", "pwd", "nickname", "user@foo.com", "", time.Now())
 //line ydb/demo/foo/foo_ydb.gox:44:1
-		this.Ret(nil)
+		this.Ret__0(nil)
 //line ydb/demo/foo/foo_ydb.gox:45:1
-		this.Call("user", "pwd", "nickname", "user@foo.com", "13500000000", time.Now())
+		this.Call__1("user", "pwd", "nickname", "user@foo.com", "13500000000", time.Now())
 //line ydb/demo/foo/foo_ydb.gox:46:1
-		this.Ret(ydb.ErrDuplicated)
+		this.Ret__1(ydb.ErrDuplicated)
 //line ydb/demo/foo/foo_ydb.gox:48:1
 		this.Api("login", func(id string, pwd string) bool {
 //line ydb/demo/foo/foo_ydb.gox:49:1
@@ -104,33 +104,33 @@ func (this *foo) Main() {
 //line ydb/demo/foo/foo_ydb.gox:50:1
 			this.Query("id={id}")
 //line ydb/demo/foo/foo_ydb.gox:51:1
-			this.Ret("salt", &salt, "spwd", &spwd)
+			this.Ret__1("salt", &salt, "spwd", &spwd)
 //line ydb/demo/foo/foo_ydb.gox:52:1
 			return Hmac(pwd, salt) == spwd
 		})
 //line ydb/demo/foo/foo_ydb.gox:54:1
-		this.Call("", "")
+		this.Call__1("", "")
 //line ydb/demo/foo/foo_ydb.gox:55:1
-		this.Ret(false)
+		this.Ret__1(false)
 //line ydb/demo/foo/foo_ydb.gox:56:1
-		this.Call("user", "pwd")
+		this.Call__1("user", "pwd")
 //line ydb/demo/foo/foo_ydb.gox:57:1
-		this.Ret(true)
+		this.Ret__1(true)
 	})
 //line ydb/demo/foo/foo_ydb.gox:60:1
 	this.Table("article v0.1.0", func() {
 //line ydb/demo/foo/foo_ydb.gox:61:1
 		ydb.Gopt_Table_Gopx_Col__0[string](this, "id")
 //line ydb/demo/foo/foo_ydb.gox:62:1
-		ydb.Gopt_Table_Gopx_Col__0[string](this, "author", "name@user")
+		ydb.Gopt_Table_Gopx_Col__1[string](this, "author", "name@user")
 //line ydb/demo/foo/foo_ydb.gox:63:1
 		ydb.Gopt_Table_Gopx_Col__0[string](this, "title")
 //line ydb/demo/foo/foo_ydb.gox:64:1
 		ydb.Gopt_Table_Gopx_Col__0[ydb.Blob](this, "body")
 //line ydb/demo/foo/foo_ydb.gox:66:1
-		this.Unique("id")
+		this.Unique__0("id")
 //line ydb/demo/foo/foo_ydb.gox:67:1
-		this.Index("author")
+		this.Index__0("author")
 //line ydb/demo/foo/foo_ydb.gox:69:1
 		this.From("oldart v0.9.1", func() {
 		})
@@ -138,11 +138,11 @@ func (this *foo) Main() {
 //line ydb/demo/foo/foo_ydb.gox:75:1
 	this.Table("tag v0.1.0", func() {
 //line ydb/demo/foo/foo_ydb.gox:76:1
-		ydb.Gopt_Table_Gopx_Col__0[string](this, "id", "id@article")
+		ydb.Gopt_Table_Gopx_Col__1[string](this, "id", "id@article")
 //line ydb/demo/foo/foo_ydb.gox:77:1
 		ydb.Gopt_Table_Gopx_Col__0[string](this, "tag")
 //line ydb/demo/foo/foo_ydb.gox:79:1
-		this.Unique("id", "tag")
+		this.Unique__1([]string{"id", "tag"})
 	})
 //line ydb/demo/foo/foo_ydb.gox:82:1
 	this.Class("Articles", func() {
