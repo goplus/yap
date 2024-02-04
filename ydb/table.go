@@ -16,6 +16,9 @@
 
 package ydb
 
+import "reflect"
+
+/*
 import (
 	"context"
 	"database/sql"
@@ -28,10 +31,6 @@ import (
 	"time"
 
 	"github.com/goplus/gop/ast"
-)
-
-var (
-	ErrDuplicated = errors.New("duplicated")
 )
 
 type (
@@ -56,7 +55,7 @@ type basetype interface {
 type baseelem interface {
 	Byte | Int | Blob | DateTime | Timestamp | Float
 }
-*/
+*/ /*
 
 func colBaseType(v any) string {
 	switch v.(type) {
@@ -121,10 +120,6 @@ type Table struct {
 
 func newTable(name, ver string) *Table {
 	return &Table{name: name, ver: ver}
-}
-
-// From migrates from old table because it's an incompatible change
-func (p *Table) From(old string, migrate func(), src ...ast.Node) {
 }
 
 // -----------------------------------------------------------------------------
@@ -251,6 +246,16 @@ func Gopt_Table_Gopx_Col__3[Array any](tbl interface{ defineCol(c *column) }, na
 		zero: velem,
 		n:    n,
 	})
+}
+*/
+
+type Table struct {
+	name string
+	ver  string
+}
+
+func newTable(name, ver string, tSchema reflect.Type) *Table {
+	return &Table{name: name, ver: ver}
 }
 
 // -----------------------------------------------------------------------------
