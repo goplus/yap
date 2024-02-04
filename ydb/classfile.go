@@ -21,6 +21,8 @@ import (
 	"database/sql"
 	"log"
 	"strings"
+
+	"github.com/goplus/gop/ast"
 )
 
 const (
@@ -47,7 +49,7 @@ func (p *Sql) initSql() {
 }
 
 // Engine initializes database by specified engine name.
-func (p *Sql) Engine__0(name string) {
+func (p *Sql) Engine__0(name string, src ...ast.Node) {
 	if defaultDataSource, ok := engineDataSource[name]; ok {
 		db, err := sql.Open(name, defaultDataSource)
 		if err != nil {
@@ -63,8 +65,8 @@ func (p *Sql) Engine__1() string {
 	return p.driver
 }
 
-// Table creates a new table.
-func (p *Sql) Table(nameVer string, spec func()) {
+// Table creates a new table by a spec.
+func (p *Sql) Table(nameVer string, spec func(), src ...ast.Node) {
 	pos := strings.IndexByte(nameVer, ' ') // user v0.1.0
 	if pos < 0 {
 		log.Panicln("table name should have a version: eg. `user v0.1.0`")
@@ -78,11 +80,13 @@ func (p *Sql) Table(nameVer string, spec func()) {
 	p.dbTable = nil
 }
 
-// Class creates a new class.
-func (p *Sql) Class(name string, spec func()) {
-	p.dbClass = newClass(name)
-	p.classes[name] = p.dbClass
+// Class creates a new class by a spec.
+func (p *Sql) Class(name string, spec func(), src ...ast.Node) {
+	cls := newClass(name)
+	p.dbClass = cls
+	p.classes[name] = cls
 	spec()
+	cls.create(context.TODO(), p)
 	p.dbClass = nil
 }
 

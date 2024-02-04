@@ -17,6 +17,7 @@
 package ydb
 
 import (
+	"context"
 	"log"
 	"reflect"
 
@@ -28,58 +29,77 @@ import (
 type Class struct {
 	name   string
 	tbl    string
-	apis   map[string]*dbApi
-	api    *dbApi
+	apis   map[string]*api
+	api    *api
 	result []reflect.Value
 	ret    func(args ...any)
 }
 
 func newClass(name string) *Class {
-	apis := make(map[string]*dbApi)
+	apis := make(map[string]*api)
 	return &Class{name: name, apis: apis}
 }
 
+func (p *Class) create(ctx context.Context, sql *Sql) {
+}
+
 // Ret checks a query or call result.
-func (p *Class) Ret(args ...any) {
+func (p *Class) Ret__0(src ast.Node, args ...any) {
+	p.ret(args...)
+}
+
+// Ret checks a query or call result.
+func (p *Class) Ret__1(args ...any) {
 	p.ret(args...)
 }
 
 // -----------------------------------------------------------------------------
 
-func (p *Class) Use(table string) {
+// Use sets the default table used in following sql operations.
+func (p *Class) Use(table string, src ...ast.Node) {
 	p.tbl = table
 }
 
-func (p *Class) Insert(kvPair ...any) {
+// Insert inserts a new row.
+func (p *Class) Insert__0(src ast.Node, kvPair ...any) {
+}
+
+// Insert inserts a new row.
+func (p *Class) Insert__1(kvPair ...any) {
 }
 
 func (p *Class) queryRet(kvPair ...any) {
 }
 
-func (p *Class) Query(query string) {
+// Query creates a new query.
+func (p *Class) Query(query string, src ...ast.Node) {
 	p.ret = p.queryRet
 }
 
-func (p *Class) Limit__0(n int) {
+// Limit sets query result rows limit.
+func (p *Class) Limit__0(n int, src ...ast.Node) {
 }
 
-func (p *Class) Limit__1(n int, query string) {
+// Limit checks if query result rows is < n or not.
+func (p *Class) Limit__1(n int, query string, src ...ast.Node) {
 }
 
 // -----------------------------------------------------------------------------
 
-type dbApi struct {
+type api struct {
 	name string
 	spec any
 }
 
-func (p *Class) Api(name string, spec any, fnlit ...*ast.FuncLit) {
-	api := &dbApi{name: name, spec: spec}
+// Api creates a new api by a spec.
+func (p *Class) Api(name string, spec any, src ...*ast.FuncLit) {
+	api := &api{name: name, spec: spec}
 	p.api = api
 	p.apis[name] = api
 }
 
-func (p *Class) Call(args ...any) {
+// Call calls an api with specified args.
+func (p *Class) Call__0(src ast.Node, args ...any) {
 	if p.api == nil {
 		log.Panicln("please call after an api definition")
 	}
@@ -89,6 +109,11 @@ func (p *Class) Call(args ...any) {
 	}
 	p.result = reflect.ValueOf(p.api).Call(vArgs)
 	p.ret = p.callRet
+}
+
+// Call calls an api with specified args.
+func (p *Class) Call__1(args ...any) {
+	p.Call__0(nil, args...)
 }
 
 func (p *Class) callRet(args ...any) {
