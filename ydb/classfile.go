@@ -74,16 +74,20 @@ func (p *Sql) defineTable(nameVer string, zeroSchema any) {
 	} else {
 		name, ver = nameVer[:pos], strings.TrimLeft(nameVer[pos+1:], " \t")
 	}
-	tSchema := reflect.TypeOf(zeroSchema).Elem()
-	if name == "" {
-		name = tSchema.Name()
+	if _, ok := p.tables[name]; ok {
+		log.Panicf("table `%s` exists\n", name)
 	}
-	tbl := newTable(name, ver, tSchema)
+	schema := reflect.TypeOf(zeroSchema).Elem()
+	if name == "" {
+		name = schema.Name()
+	}
+	tbl := newTable(name, ver, schema)
+	tbl.create(context.TODO(), p)
 	p.dbTable = tbl
 	p.tables[name] = tbl
 }
 
-// Table creates a new table by a spec.
+// Table creates a new table by specified Schema.
 func Gopt_Sql_Gopx_Table[Schema any](sql interface{ defineTable(string, any) }, nameVer string, src ...ast.Node) {
 	sql.defineTable(nameVer, (*Schema)(nil))
 }
