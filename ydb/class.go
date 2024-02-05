@@ -18,70 +18,192 @@ package ydb
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"log"
 	"reflect"
 
 	"github.com/goplus/gop/ast"
 )
 
+var (
+	ErrDuplicated = errors.New("duplicated")
+)
+
 // -----------------------------------------------------------------------------
 
 type Class struct {
-	name   string
-	tbl    string
-	apis   map[string]*api
+	name string
+	tbl  string
+	sql  *Sql
+	db   *sql.DB
+	apis map[string]*api
+
+	query *query // query
+
 	api    *api
-	result []reflect.Value
-	ret    func(args ...any)
+	result []reflect.Value // result of an api call
+
+	ret func(args ...any)
 }
 
-func newClass(name string) *Class {
-	apis := make(map[string]*api)
-	return &Class{name: name, apis: apis}
+func newClass(name string, sql *Sql) *Class {
+	if sql.db == nil {
+		log.Panicln("please call `engine <sqlDriverName>` first")
+	}
+	return &Class{
+		name: name,
+		sql:  sql,
+		db:   sql.db,
+		apis: make(map[string]*api),
+	}
 }
 
-func (p *Class) create(ctx context.Context, sql *Sql) {
+func (p *Class) gen(ctx context.Context) {
+}
+
+// Use sets the default table used in following sql operations.
+func (p *Class) Use(table string, src ...ast.Node) {
+	if _, ok := p.sql.tables[table]; !ok {
+		log.Panicln("table not found:", table)
+	}
+	p.tbl = table
 }
 
 // Ret checks a query or call result.
+//
+// For checking query result:
+//   - ret <colName1>, &<var1>, <colName2>, &<var2>, ...
+//   - ret <colName1>, &<varSlice1>, <colName2>, &<varSlice2>, ...
+//   - ret &<structVar>
+//   - ret &<structSlice>
+//
+// For checking call result:
+//   - TODO
 func (p *Class) Ret__0(src ast.Node, args ...any) {
+	if p.ret == nil {
+		log.Panicln("please call `ret` after a `query` or `call` statement")
+	}
 	p.ret(args...)
 }
 
 // Ret checks a query or call result.
 func (p *Class) Ret__1(args ...any) {
-	p.ret(args...)
+	p.Ret__0(nil, args...)
 }
 
 // -----------------------------------------------------------------------------
 
-// Use sets the default table used in following sql operations.
-func (p *Class) Use(table string, src ...ast.Node) {
-	p.tbl = table
-}
-
 // Insert inserts a new row.
+//   - insert <colName1>, <val1>, <colName2>, <val2>, ...
+//   - insert <structValOrPtr>
+//   - insert <structSlice>
 func (p *Class) Insert__0(src ast.Node, kvPair ...any) {
+
 }
 
 // Insert inserts a new row.
 func (p *Class) Insert__1(kvPair ...any) {
+	p.Insert__0(nil, kvPair...)
 }
 
-func (p *Class) queryRet(kvPair ...any) {
+// Count returns rows of a query result.
+func (p *Class) Count__0(src ast.Node, cond string, args ...any) (n int) {
+	if p.tbl == "" {
+		log.Panicln("please call `use <tableName>` to specified a table name")
+	}
+	row := p.db.QueryRowContext(context.TODO(), "SELECT COUNT(*) FROM "+p.tbl+" WHERE "+cond, args...)
+	if err := row.Scan(&n); err != nil {
+		log.Panicln("count:", err)
+	}
+	return
+}
+
+// Count returns rows of a query result.
+func (p *Class) Count__1(cond string, args ...any) (n int) {
+	return p.Count__0(nil, cond, args...)
+}
+
+// -----------------------------------------------------------------------------
+
+type query struct {
+	cond  string // where
+	args  []any  // one of query argument <argN> can be a slice
+	limit int    // 0 means no limit
+}
+
+// For checking query result:
+//   - ret <colName1>, &<var1>, <colName2>, &<var2>, ...
+//   - ret <colName1>, &<varSlice1>, <colName2>, &<varSlice2>, ...
+//   - ret &<structVar>
+//   - ret &<structSlice>
+func (p *Class) queryRet(args ...any) {
+	nArg := len(args)
+	if nArg == 1 {
+		p.queryRetPtr(args[0])
+	} else {
+		p.queryRetKvPair(args...)
+	}
+	p.query = nil
+	p.ret = nil
+}
+
+// For checking query result:
+//   - ret &<structVar>
+//   - ret &<structSlice>
+func (p *Class) queryRetPtr(arg any) {
+}
+
+// For checking query result:
+//   - ret <colName1>, &<var1>, <colName2>, &<var2>, ...
+//   - ret <colName1>, &<varSlice1>, <colName2>, &<varSlice2>, ...
+func (p *Class) queryRetKvPair(kvPair ...any) {
+	nPair := len(kvPair)
+	if nPair < 2 || nPair&1 != 0 {
+		log.Panicln("usage: ret <colName1> &<var1> <colName2> &<var2> ...")
+	}
+	n := nPair >> 1
+	names := make([]string, n)
+	rets := make([]any, n)
+	for i := 0; i < nPair; i += 2 {
+		names[i>>1] = kvPair[i].(string)
+		rets[i>>1] = kvPair[i+1]
+	}
 }
 
 // Query creates a new query.
-func (p *Class) Query(query string, src ...ast.Node) {
+//   - query <cond>, <arg1>, <arg2>, ...
+func (p *Class) Query__0(src ast.Node, cond string, args ...any) {
+	p.query = &query{
+		cond: cond, args: args,
+	}
 	p.ret = p.queryRet
+}
+
+// Query creates a new query.
+func (p *Class) Query__1(cond string, args ...any) {
+	p.Query__0(nil, cond, args...)
 }
 
 // Limit sets query result rows limit.
 func (p *Class) Limit__0(n int, src ...ast.Node) {
+	if p.query == nil {
+		log.Panicln("please call `limit` after a query statement")
+	}
+	p.query.limit = n
 }
 
 // Limit checks if query result rows is < n or not.
-func (p *Class) Limit__1(n int, query string, src ...ast.Node) {
+func (p *Class) Limit__1(src ast.Node, n int, cond string, args ...any) {
+	ret := p.Count__0(src, cond, args...)
+	if ret >= n {
+		log.Panicf("limit %s: got %d, expected <%d\n", cond, ret, n)
+	}
+}
+
+// Limit checks if query result rows is < n or not.
+func (p *Class) Limit__2(n int, cond string, args ...any) {
+	p.Limit__1(nil, n, cond, args...)
 }
 
 // -----------------------------------------------------------------------------
@@ -101,7 +223,7 @@ func (p *Class) Api(name string, spec any, src ...*ast.FuncLit) {
 // Call calls an api with specified args.
 func (p *Class) Call__0(src ast.Node, args ...any) {
 	if p.api == nil {
-		log.Panicln("please call after an api definition")
+		log.Panicln("please call `call` after an api definition")
 	}
 	vArgs := make([]reflect.Value, len(args))
 	for i, arg := range args {
@@ -117,6 +239,7 @@ func (p *Class) Call__1(args ...any) {
 }
 
 func (p *Class) callRet(args ...any) {
+	p.ret = nil
 }
 
 // -----------------------------------------------------------------------------

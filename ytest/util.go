@@ -22,7 +22,16 @@ import (
 	"strconv"
 
 	"github.com/goplus/yap/test"
+	"github.com/goplus/yap/ytest/auth"
+	"github.com/goplus/yap/ytest/auth/bearer"
 )
+
+// -----------------------------------------------------------------------------
+
+// Bearer creates a Bearer Authorization by specified token.
+func Bearer(token string) auth.RTComposer {
+	return bearer.New(token)
+}
 
 // -----------------------------------------------------------------------------
 

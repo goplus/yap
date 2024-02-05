@@ -19,169 +19,185 @@ package ydb
 import (
 	"context"
 	"database/sql"
-	"errors"
-	"fmt"
 	"log"
 	"reflect"
-	"strconv"
 	"strings"
 	"time"
-
-	"github.com/goplus/gop/ast"
 )
 
-var (
-	ErrDuplicated = errors.New("duplicated")
-)
-
-type (
-	String = string
-	Int    = int
-	Bool   = bool
-	Byte   = byte
-
-	Blob  []byte
-	Float float64
-
-	Date      time.Time
-	DateTime  time.Time
-	Timestamp time.Time
-)
-
-type basetype interface {
-	String | Int | Bool | Blob | Date | DateTime | Timestamp | Float
-}
-
-/*
-type baseelem interface {
-	Byte | Int | Blob | DateTime | Timestamp | Float
-}
-*/
-
-func colBaseType(v any) string {
-	switch v.(type) {
-	case *String:
-		return "TEXT"
-	case *Int:
-		return "INT"
-	case *Bool:
-		return "BOOL"
-	case *Blob:
-		return "BLOB"
-	case *Date:
-		return "DATE"
-	case *DateTime:
-		return "DATETIME"
-	case *Timestamp:
-		return "TIMESTAMP"
-	case *Float:
-		return "DOUBLE"
-	default:
-		panic("unknown column type: " + reflect.TypeOf(v).Elem().String())
-	}
-}
-
-func colArrType(v any, n int) string {
-	switch v.(type) {
-	case *Byte:
-		if n <= 65535 {
-			return "TEXT(" + strconv.Itoa(n) + ")"
-		}
-		if n <= 16777215 {
-			return "MEDIUMTEXT"
-		}
-		return "LONGTEXT"
-	case *Int:
-		return "BIGINT(" + strconv.Itoa(n) + ")"
-	case *Blob:
-		if n <= 16777215 {
-			return "MEDIUMBLOB"
-		}
-		return "LONGBLOB"
-	case *DateTime:
-		return "DATETIME(" + strconv.Itoa(n) + ")"
-	case *Timestamp:
-		return "TIMESTAMP(" + strconv.Itoa(n) + ")"
-	case *Float:
-		return "FLOAT(" + strconv.Itoa(n) + ")"
-	default:
-		panic(fmt.Sprintf("unknown column type: [%d]%T", n, v))
-	}
-}
-
-// -----------------------------------------------------------------------------
+type dbType = reflect.Type
 
 type Table struct {
-	name  string
-	ver   string
-	cols  []*column
-	uniqs [][]string
-	idxs  [][]string
+	name   string
+	ver    string
+	schema dbType
+	cols   []*column
+	uniqs  [][]string
+	idxs   [][]string
 }
-
-func newTable(name, ver string) *Table {
-	return &Table{name: name, ver: ver}
-}
-
-// From migrates from old table because it's an incompatible change
-func (p *Table) From(old string, migrate func(), src ...ast.Node) {
-}
-
-// -----------------------------------------------------------------------------
-
-func (p *Table) Unique__0(name string, src ...ast.Node) {
-	p.uniqs = append(p.uniqs, []string{name})
-}
-
-func (p *Table) Unique__1(names []string, src ...ast.Node) {
-	p.uniqs = append(p.uniqs, names)
-}
-
-func (p *Table) Index__0(name string, src ...ast.Node) {
-	p.idxs = append(p.idxs, []string{name})
-}
-
-func (p *Table) Index__1(names []string, src ...ast.Node) {
-	p.idxs = append(p.idxs, names)
-}
-
-// -----------------------------------------------------------------------------
 
 type column struct {
 	typ  string // type in DB
 	name string // column name
-	link string // optional
-	zero any    // zero is (*basetype)(nil) if n == 0; else zero is (*baseelem)(nil)
-	n    int    // array if n != 0
+	fld  field
 }
+
+type field struct {
+	typ    dbType  // field type
+	offset uintptr // offset within struct, in bytes
+	index  []int   // index sequence for Type.FieldByIndex
+}
+
+func newTable(name, ver string, schema dbType) *Table {
+	n := schema.NumField()
+	cols := make([]*column, 0, n)
+	p := &Table{name: name, ver: ver, schema: schema, cols: cols}
+	p.defineCols(n, schema)
+	return p
+}
+
+func (p *Table) defineCols(n int, t dbType) {
+	for i := 0; i < n; i++ {
+		fld := t.Field(i)
+		if fld.Anonymous {
+			fldType := fld.Type
+			p.defineCols(fldType.NumField(), fldType)
+			continue
+		}
+		if fld.IsExported() {
+			col := &column{fld: field{fld.Type, fld.Offset, fld.Index}}
+			if tag := string(fld.Tag); tag != "" {
+				if parts := strings.Fields(tag); len(parts) > 0 {
+					if c := parts[0][0]; c >= 'a' && c <= 'z' { // suppose a column name is lower case
+						col.name = parts[0]
+						parts = parts[1:]
+					} else {
+						col.name = columnName(fld.Name)
+					}
+					for _, part := range parts {
+						cmd, params := part, "" // cmd(params)
+						if pos := strings.IndexByte(part, '('); pos > 0 && part[len(part)-1] == ')' {
+							cmd, params = part[:pos], part[pos+1:len(part)-1]
+						}
+						switch cmd {
+						case `UNIQUE`:
+							p.uniqs = append(p.uniqs, makeIndex(col.name, params))
+						case `INDEX`:
+							p.idxs = append(p.idxs, makeIndex(col.name, params))
+						default:
+							if col.typ != "" {
+								log.Panicf("invalid tag `%s`: multiple column types?\n", tag)
+							}
+							col.typ = part
+						}
+					}
+				}
+			}
+			if col.name == "" {
+				col.name = columnName(fld.Name)
+			}
+			if col.typ == "" {
+				col.typ = columnType(fld.Type)
+			}
+			p.cols = append(p.cols, col)
+		}
+	}
+}
+
+var (
+	tyString  = reflect.TypeOf("")
+	tyInt     = reflect.TypeOf(0)
+	tyBool    = reflect.TypeOf(false)
+	tyBlob    = reflect.TypeOf([]byte(nil))
+	tyTime    = reflect.TypeOf(time.Time{})
+	tyFloat64 = reflect.TypeOf(float64(0))
+	tyFloat32 = reflect.TypeOf(float32(0))
+)
+
+func columnType(fldType dbType) string {
+	switch fldType {
+	case tyString:
+		return "TEXT"
+	case tyInt:
+		return "INT"
+	case tyBool:
+		return "BOOL"
+	case tyBlob:
+		return "BLOB"
+	case tyTime:
+		return "DATETIME"
+	case tyFloat64:
+		return "DOUBLE"
+	case tyFloat32:
+		return "FLOAT"
+	}
+	panic("unknown column type: " + fldType.String())
+}
+
+func columnName(fldName string) string {
+	c := fldName[0]
+	if c >= 'A' && c <= 'Z' {
+		c += ('a' - 'A')
+	}
+	return string(c) + fldName[1:]
+}
+
+func makeIndex(name string, params string) []string {
+	if params == "" {
+		return []string{name}
+	}
+	pos := strings.IndexByte(params, ',')
+	if pos < 0 {
+		return []string{name, params}
+	}
+	ret := make([]string, 1, 4)
+	ret[0] = name
+	for {
+		ret = append(ret, params[:pos])
+		params = params[pos+1:]
+		pos = strings.IndexByte(params, ',')
+		if pos < 0 {
+			break
+		}
+	}
+	return append(ret, params)
+}
+
+// -----------------------------------------------------------------------------
 
 func (p *Table) create(ctx context.Context, sql *Sql) {
 	n := len(p.cols)
 	if n == 0 {
 		log.Panicln("empty table:", p.name, p.ver)
 	}
-	fldQuery := strings.Repeat("? ?,\n", n)
-	query := "CREATE TABLE ? (" + fldQuery[:len(fldQuery)-2] + ")"
-	args := make([]any, 1, n*2+1)
-	args[0] = p.name
+
+	query := make([]byte, 0, 64)
+	query = append(query, "CREATE TABLE "...)
+	query = append(query, p.name...)
+	query = append(query, ' ', '(')
 	for _, c := range p.cols {
-		args = append(args, c.name, c.typ)
+		query = append(query, c.name...)
+		query = append(query, ' ')
+		query = append(query, c.typ...)
+		query = append(query, ',')
 	}
+	query[len(query)-1] = ')'
+
 	db := sql.db
-	_, err := db.ExecContext(ctx, query, args...)
+	_, err := db.ExecContext(ctx, string(query))
 	if err != nil {
 		log.Panicf("create table (%s): %v\n", p.name, err)
 	}
 
 	for _, uniq := range p.uniqs {
-		name := indexName(uniq, true)
+		name := indexName(uniq, "uniq_")
 		_, err = execWithStrArgs(db, ctx, "CREATE UNIQUE INDEX ? ON ? (", ")", name, p.name, uniq)
 		if err != nil {
 			log.Panicln("create unique index:", err)
 		}
 	}
 	for _, idx := range p.idxs {
-		name := indexName(idx, false)
+		name := indexName(idx, "idx_")
 		_, err = execWithStrArgs(db, ctx, "CREATE INDEX ? ON ? (", ")", name, p.name, idx)
 		if err != nil {
 			log.Panicln("create index:", err)
@@ -189,8 +205,8 @@ func (p *Table) create(ctx context.Context, sql *Sql) {
 	}
 }
 
-func indexName(name []string, uniq bool) string {
-	panic("todo")
+func indexName(name []string, prefix string) string {
+	return prefix + strings.Join(name, "_")
 }
 
 func execWithStrArgs(db *sql.DB, ctx context.Context, queryPrefix, querySuffix string, v1, v2 string, args []string) (sql.Result, error) {
@@ -209,48 +225,6 @@ func execWithStrArgs(db *sql.DB, ctx context.Context, queryPrefix, querySuffix s
 		}
 		return db.ExecContext(ctx, query, vArgs...)
 	}
-}
-
-func (p *Table) defineCol(c *column) {
-	p.cols = append(p.cols, c)
-}
-
-func Gopt_Table_Gopx_Col__0[T basetype](tbl interface{ defineCol(c *column) }, name string, src ...ast.Node) {
-	Gopt_Table_Gopx_Col__1[T](tbl, name, "", src...)
-}
-
-func Gopt_Table_Gopx_Col__1[T basetype](tbl interface{ defineCol(c *column) }, name string, link string, src ...ast.Node) {
-	vcol := (*T)(nil)
-	tcol := colBaseType(vcol)
-	tbl.defineCol(&column{
-		typ:  tcol,
-		name: name,
-		link: link,
-		zero: vcol,
-	})
-}
-
-func Gopt_Table_Gopx_Col__2[Array any](tbl interface{ defineCol(c *column) }, name string, src ...ast.Node) {
-	Gopt_Table_Gopx_Col__3[Array](tbl, name, "", src...)
-}
-
-func Gopt_Table_Gopx_Col__3[Array any](tbl interface{ defineCol(c *column) }, name string, link string, src ...ast.Node) {
-	varr := (*Array)(nil)
-	tarr := reflect.TypeOf(varr).Elem()
-	if tarr.Kind() != reflect.Array {
-		panic(fmt.Sprintf("unknown column type: %T", varr))
-	}
-	n := tarr.Len()
-	elem := tarr.Elem()
-	velem := reflect.Zero(reflect.PointerTo(elem)).Interface()
-	tcol := colArrType(velem, n)
-	tbl.defineCol(&column{
-		typ:  tcol,
-		name: name,
-		link: link,
-		zero: velem,
-		n:    n,
-	})
 }
 
 // -----------------------------------------------------------------------------

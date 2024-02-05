@@ -20,6 +20,7 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"reflect"
 	"strings"
 
 	"github.com/goplus/gop/ast"
@@ -65,28 +66,46 @@ func (p *Sql) Engine__1() string {
 	return p.driver
 }
 
-// Table creates a new table by a spec.
-func (p *Sql) Table(nameVer string, spec func(), src ...ast.Node) {
+func (p *Sql) defineTable(nameVer string, zeroSchema any) {
+	var name, ver string
 	pos := strings.IndexByte(nameVer, ' ') // user v0.1.0
 	if pos < 0 {
-		log.Panicln("table name should have a version: eg. `user v0.1.0`")
+		ver = nameVer
+	} else {
+		name, ver = nameVer[:pos], strings.TrimLeft(nameVer[pos+1:], " \t")
 	}
-	name, ver := nameVer[:pos], strings.TrimLeft(nameVer[pos+1:], " \t")
-	tbl := newTable(name, ver)
+	if _, ok := p.tables[name]; ok {
+		log.Panicf("table `%s` exists\n", name)
+	}
+	schema := reflect.TypeOf(zeroSchema).Elem()
+	if name == "" {
+		name = schema.Name()
+	}
+	tbl := newTable(name, ver, schema)
+	tbl.create(context.TODO(), p)
 	p.dbTable = tbl
 	p.tables[name] = tbl
-	spec()
-	tbl.create(context.TODO(), p)
-	p.dbTable = nil
+}
+
+// Table creates a new table by specified Schema.
+func Gopt_Sql_Gopx_Table[Schema any](sql interface{ defineTable(string, any) }, nameVer string, src ...ast.Node) {
+	sql.defineTable(nameVer, (*Schema)(nil))
+}
+
+// From migrates from old table because it's an incompatible change
+func (p *Sql) From(old string, migrate func(), src ...ast.Node) {
+	if p.dbTable == nil {
+		log.Panicln("please call `from` after a `table` statement")
+	}
 }
 
 // Class creates a new class by a spec.
 func (p *Sql) Class(name string, spec func(), src ...ast.Node) {
-	cls := newClass(name)
+	cls := newClass(name, p)
 	p.dbClass = cls
 	p.classes[name] = cls
 	spec()
-	cls.create(context.TODO(), p)
+	cls.gen(context.TODO())
 	p.dbClass = nil
 }
 
