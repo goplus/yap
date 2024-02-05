@@ -23,6 +23,7 @@ import (
 	"reflect"
 	"strings"
 	"time"
+	"unsafe"
 )
 
 type dbType = reflect.Type
@@ -45,27 +46,63 @@ type column struct {
 type field struct {
 	typ    dbType  // field type
 	offset uintptr // offset within struct, in bytes
-	index  []int   // index sequence for Type.FieldByIndex
 }
 
 func newTable(name, ver string, schema dbType) *Table {
 	n := schema.NumField()
 	cols := make([]*column, 0, n)
 	p := &Table{name: name, ver: ver, schema: schema, cols: cols}
-	p.defineCols(n, schema)
+	p.defineCols(n, schema, 0)
 	return p
 }
 
-func (p *Table) defineCols(n int, t dbType) {
+func getVals(vals []any, v reflect.Value, cols []field) []any {
+	this := uintptr(v.Addr().UnsafePointer())
+	for _, col := range cols {
+		val := reflect.NewAt(col.typ, unsafe.Pointer(this+col.offset)).Interface()
+		vals = append(vals, val)
+	}
+	return vals
+}
+
+func getCols(names []string, cols []field, n int, t dbType, base uintptr) ([]string, []field) {
 	for i := 0; i < n; i++ {
 		fld := t.Field(i)
 		if fld.Anonymous {
 			fldType := fld.Type
-			p.defineCols(fldType.NumField(), fldType)
+			names, cols = getCols(names, cols, fldType.NumField(), fldType, base+fld.Offset)
 			continue
 		}
 		if fld.IsExported() {
-			col := &column{fld: field{fld.Type, fld.Offset, fld.Index}}
+			name := ""
+			if tag := string(fld.Tag); tag != "" {
+				if c := tag[0]; c >= 'a' && c <= 'z' { // suppose a column name is lower case
+					if pos := strings.IndexByte(tag, ' '); pos > 0 {
+						tag = tag[:pos]
+					}
+					name = tag
+				}
+			}
+			if name == "" {
+				name = dbName(fld.Name)
+			}
+			names = append(names, name)
+			cols = append(cols, field{fld.Type, base + fld.Offset})
+		}
+	}
+	return names, cols
+}
+
+func (p *Table) defineCols(n int, t dbType, base uintptr) {
+	for i := 0; i < n; i++ {
+		fld := t.Field(i)
+		if fld.Anonymous {
+			fldType := fld.Type
+			p.defineCols(fldType.NumField(), fldType, base+fld.Offset)
+			continue
+		}
+		if fld.IsExported() {
+			col := &column{fld: field{fld.Type, base + fld.Offset}}
 			if tag := string(fld.Tag); tag != "" {
 				if parts := strings.Fields(tag); len(parts) > 0 {
 					if c := parts[0][0]; c >= 'a' && c <= 'z' { // suppose a column name is lower case
