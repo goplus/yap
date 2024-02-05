@@ -23,8 +23,10 @@ import (
 	"log"
 	"reflect"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/goplus/gop/ast"
+	"github.com/qiniu/x/ctype"
 )
 
 var (
@@ -77,8 +79,8 @@ func (p *Class) Use(table string, src ...ast.Node) {
 // Ret checks a query or call result.
 //
 // For checking query result:
-//   - ret <colName1>, &<var1>, <colName2>, &<var2>, ...
-//   - ret <colName1>, &<varSlice1>, <colName2>, &<varSlice2>, ...
+//   - ret <expr1>, &<var1>, <expr2>, &<var2>, ...
+//   - ret <expr1>, &<varSlice1>, <expr2>, &<varSlice2>, ...
 //   - ret &<structVar>
 //   - ret &<structSlice>
 //
@@ -104,9 +106,9 @@ func (p *Class) Ret__1(args ...any) {
 //   - insert <structValOrPtr>
 //   - insert <structOrPtrSlice>
 func (p *Class) Insert__0(src ast.Node, args ...any) {
-	/* if p.tbl == "" {
-		TODO:
-	} */
+	if p.tbl == "" {
+		log.Panicln("please call `use <tableName>` to specified current table")
+	}
 	nArg := len(args)
 	if nArg == 1 {
 		p.insertStruc(args[0])
@@ -307,8 +309,8 @@ type query struct {
 }
 
 // For checking query result:
-//   - ret <colName1>, &<var1>, <colName2>, &<var2>, ...
-//   - ret <colName1>, &<varSlice1>, <colName2>, &<varSlice2>, ...
+//   - ret <expr1>, &<var1>, <expr2>, &<var2>, ...
+//   - ret <expr1>, &<varSlice1>, <expr2>, &<varSlice2>, ...
 //   - ret &<structVar>
 //   - ret &<structSlice>
 func (p *Class) queryRet(args ...any) {
@@ -329,20 +331,114 @@ func (p *Class) queryRetPtr(arg any) {
 }
 
 // For checking query result:
-//   - ret <colName1>, &<var1>, <colName2>, &<var2>, ...
-//   - ret <colName1>, &<varSlice1>, <colName2>, &<varSlice2>, ...
+//   - ret <expr1>, &<var1>, <expr2>, &<var2>, ...
+//   - ret <expr1>, &<varSlice1>, <expr2>, &<varSlice2>, ...
 func (p *Class) queryRetKvPair(kvPair ...any) {
 	nPair := len(kvPair)
 	if nPair < 2 || nPair&1 != 0 {
-		log.Panicln("usage: ret <colName1>, &<var1>, <colName2>, &<var2>, ...")
+		log.Panicln("usage: ret <expr1>, &<var1>, <expr2>, &<var2>, ...")
 	}
+
+	q := p.query
+	tbl := p.exprTblname(q.cond)
+
 	n := nPair >> 1
-	names := make([]string, n)
+	exprs := make([]string, n)
 	rets := make([]any, n)
 	for i := 0; i < nPair; i += 2 {
-		names[i>>1] = kvPair[i].(string)
+		expr := kvPair[i].(string)
+		if etbl := p.exprTblname(expr); etbl != tbl {
+			log.Panicf(
+				"query currently doesn't support multiple tables: `query` use `%s` but `ret` use `%s`\n",
+				tbl, etbl,
+			)
+		}
+		exprs[i>>1] = expr
 		rets[i>>1] = kvPair[i+1]
 	}
+}
+
+func (p *Class) exprTblname(cond string) string {
+	tbls := exprTblnames(cond)
+	tbl := ""
+	switch len(tbls) {
+	case 0:
+	case 1:
+		tbl = tbls[0]
+	default:
+		log.Panicln("query currently doesn't support multiple tables")
+	}
+	if tbl == "" {
+		tbl = p.tbl
+	}
+	return tbl
+}
+
+func exprTblnames(expr string) (tbls []string) {
+	for expr != "" {
+		pos := ctype.ScanCSymbol(expr)
+		if pos != 0 {
+			name := ""
+			if pos > 0 {
+				switch expr[pos] {
+				case '.':
+					name = expr[:pos]
+					expr = ctype.SkipCSymbol(expr[pos+1:])
+				case '(': // function call, eg. SUM(...)
+					expr = expr[pos+1:]
+					continue
+				default:
+					expr = expr[pos:]
+				}
+			} else {
+				expr = ""
+			}
+			switch name {
+			case "AND", "OR":
+			default:
+				tbls = addTblname(tbls, name)
+			}
+			continue
+		}
+		pos = ctype.ScanTypeEx(ctype.FLOAT_FIRST_CHAT, ctype.CSYMBOL_NEXT_CHAR, expr)
+		if pos == 0 {
+			c, size := utf8.DecodeRuneInString(expr)
+			switch c {
+			case '\'':
+				expr = skipStringConst(expr[1:], '\'')
+			default:
+				expr = expr[size:]
+			}
+		} else if pos < 0 {
+			break
+		} else {
+			expr = expr[pos:]
+		}
+	}
+	return
+}
+
+func skipStringConst(next string, quot rune) string {
+	skip := false
+	for i, c := range next {
+		if skip {
+			skip = false
+		} else if c == '\\' {
+			skip = true
+		} else if c == quot {
+			return next[i+1:]
+		}
+	}
+	return ""
+}
+
+func addTblname(tbls []string, tbl string) []string {
+	for _, v := range tbls {
+		if v == tbl {
+			return tbls
+		}
+	}
+	return append(tbls, tbl)
 }
 
 // Query creates a new query.
