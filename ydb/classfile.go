@@ -74,17 +74,25 @@ func (p *Sql) defineTable(nameVer string, zeroSchema any) {
 	} else {
 		name, ver = nameVer[:pos], strings.TrimLeft(nameVer[pos+1:], " \t")
 	}
+	schema := reflect.TypeOf(zeroSchema).Elem()
+	if name == "" {
+		name = dbName(schema.Name())
+	}
 	if _, ok := p.tables[name]; ok {
 		log.Panicf("table `%s` exists\n", name)
 	}
-	schema := reflect.TypeOf(zeroSchema).Elem()
-	if name == "" {
-		name = schema.Name()
-	}
 	tbl := newTable(name, ver, schema)
-	tbl.create(context.TODO(), p)
 	p.dbTable = tbl
 	p.tables[name] = tbl
+	tbl.create(context.TODO(), p)
+}
+
+func dbName(fldName string) string {
+	c := fldName[0]
+	if c >= 'A' && c <= 'Z' {
+		c += ('a' - 'A')
+	}
+	return string(c) + fldName[1:]
 }
 
 // Table creates a new table by specified Schema.

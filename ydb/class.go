@@ -22,6 +22,7 @@ import (
 	"errors"
 	"log"
 	"reflect"
+	"strings"
 
 	"github.com/goplus/gop/ast"
 )
@@ -96,10 +97,120 @@ func (p *Class) Ret__1(args ...any) {
 
 // Insert inserts a new row.
 //   - insert <colName1>, <val1>, <colName2>, <val2>, ...
+//   - insert <colName1>, <valSlice1>, <colName2>, <valSlice2>, ...
 //   - insert <structValOrPtr>
 //   - insert <structSlice>
-func (p *Class) Insert__0(src ast.Node, kvPair ...any) {
+func (p *Class) Insert__0(src ast.Node, args ...any) {
+	/* if p.tbl == "" {
+		TODO:
+	} */
+	nArg := len(args)
+	if nArg == 1 {
+		p.insertStruc(args[0])
+	} else {
+		p.insertKvPair(args...)
+	}
+}
 
+// Insert inserts a new row.
+//   - insert <structValOrPtr>
+//   - insert <structSlice>
+func (p *Class) insertStruc(arg any) {
+}
+
+const (
+	valFlagNormal = 1
+	valFlagSlice  = 2
+)
+
+// Insert inserts a new row.
+//   - insert <colName1>, <val1>, <colName2>, <val2>, ...
+//   - insert <colName1>, <valSlice1>, <colName2>, <valSlice2>, ...
+func (p *Class) insertKvPair(kvPair ...any) {
+	nPair := len(kvPair)
+	if nPair < 2 || nPair&1 != 0 {
+		log.Panicln("usage: insert <colName1>, <val1>, <colName2>, <val2>, ...")
+	}
+	n := nPair >> 1
+	names := make([]string, n)
+	vals := make([]any, n)
+	rows := -1
+	kind := 0
+	for i := 0; i < nPair; i += 2 {
+		val := kvPair[i+1]
+		names[i>>1] = kvPair[i].(string)
+		vals[i>>1] = val
+		switch v := reflect.ValueOf(val); v.Kind() {
+		case reflect.Slice:
+			vals = append(vals, v)
+			if kind == 0 {
+				rows = v.Len()
+				kind = valFlagSlice
+			} else if vlen := v.Len(); rows != vlen {
+				log.Panicf("insert: unexpected slice length. got %d, expected %d\n", vlen, rows)
+			}
+		default:
+			vals = append(vals, val)
+			kind |= valFlagNormal
+		}
+	}
+	switch kind {
+	case valFlagNormal:
+		p.insertRow(names, vals)
+	case valFlagSlice:
+		p.insertRows(names, vals, rows)
+	default:
+		log.Panicln("can't insert mix slice and normal value")
+	}
+}
+
+func (p *Class) insertRows(names []string, args []any, rows int) {
+	n := len(args)
+	valparam := valParam(n)
+	valparams := strings.Repeat(valparam+",", rows)
+	valparams = valparams[:len(valparams)-1]
+
+	query := insertQuery(p.tbl, names)
+	query = append(query, valparams...)
+
+	vals := make([]any, 0, n*rows)
+	for i := 0; i < rows; i++ {
+		for _, arg := range args {
+			v := arg.(reflect.Value)
+			vals = append(vals, v.Index(i).Interface())
+		}
+	}
+	result, err := p.db.ExecContext(context.TODO(), string(query), vals...)
+	insertRet(result, err)
+}
+
+func (p *Class) insertRow(names []string, vals []any) {
+	query := insertQuery(p.tbl, names)
+	query = append(query, valParam(len(vals))...)
+	result, err := p.db.ExecContext(context.TODO(), string(query), vals...)
+	insertRet(result, err)
+}
+
+func insertRet(result sql.Result, err error) {
+	if err != nil {
+		log.Panicln("insert:", err)
+	}
+}
+
+func insertQuery(tbl string, names []string) []byte {
+	query := make([]byte, 0, 128)
+	query = append(query, "INSERT INTO "...)
+	query = append(query, tbl...)
+	query = append(query, ' ', '(')
+	query = append(query, strings.Join(names, ",")...)
+	query = append(query, ") VALUES "...)
+	return query
+}
+
+func valParam(n int) string {
+	valparam := strings.Repeat("?,", n)
+	valparam = "(" + valparam[:len(valparam)-1] + ")"
+	return valparam
 }
 
 // Insert inserts a new row.
@@ -160,7 +271,7 @@ func (p *Class) queryRetPtr(arg any) {
 func (p *Class) queryRetKvPair(kvPair ...any) {
 	nPair := len(kvPair)
 	if nPair < 2 || nPair&1 != 0 {
-		log.Panicln("usage: ret <colName1> &<var1> <colName2> &<var2> ...")
+		log.Panicln("usage: ret <colName1>, &<var1>, <colName2>, &<var2>, ...")
 	}
 	n := nPair >> 1
 	names := make([]string, n)
