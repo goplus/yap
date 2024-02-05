@@ -54,8 +54,7 @@ class "Users", => {
 
 		salt := rand
 		spwd := hmac(pwd, salt)
-		insert "id", id, "spwd", spwd, "salt", salt, "nickname", nickname,
-			"email", email, "tel", tel, "ctime", ctime
+		insert &User{Id: id, Spwd: spwd, Salt: salt, Nickname: nickname, Email: email, Tel: tel, Ctime: ctime}
 		// ErrDuplicated
 		return nil
 	}

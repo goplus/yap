@@ -72,7 +72,7 @@ func (p *Table) defineCols(n int, t dbType) {
 						col.name = parts[0]
 						parts = parts[1:]
 					} else {
-						col.name = columnName(fld.Name)
+						col.name = dbName(fld.Name)
 					}
 					for _, part := range parts {
 						cmd, params := part, "" // cmd(params)
@@ -94,7 +94,7 @@ func (p *Table) defineCols(n int, t dbType) {
 				}
 			}
 			if col.name == "" {
-				col.name = columnName(fld.Name)
+				col.name = dbName(fld.Name)
 			}
 			if col.typ == "" {
 				col.typ = columnType(fld.Type)
@@ -132,14 +132,6 @@ func columnType(fldType dbType) string {
 		return "FLOAT"
 	}
 	panic("unknown column type: " + fldType.String())
-}
-
-func columnName(fldName string) string {
-	c := fldName[0]
-	if c >= 'A' && c <= 'Z' {
-		c += ('a' - 'A')
-	}
-	return string(c) + fldName[1:]
 }
 
 func makeIndex(name string, params string) []string {
