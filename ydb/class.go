@@ -36,6 +36,7 @@ var (
 type Class struct {
 	name string
 	tbl  string
+	tobj *Table
 	sql  *Sql
 	db   *sql.DB
 	apis map[string]*api
@@ -65,10 +66,12 @@ func (p *Class) gen(ctx context.Context) {
 
 // Use sets the default table used in following sql operations.
 func (p *Class) Use(table string, src ...ast.Node) {
-	if _, ok := p.sql.tables[table]; !ok {
+	tblobj, ok := p.sql.tables[table]
+	if !ok {
 		log.Panicln("table not found:", table)
 	}
 	p.tbl = table
+	p.tobj = tblobj
 }
 
 // Ret checks a query or call result.
@@ -99,7 +102,7 @@ func (p *Class) Ret__1(args ...any) {
 //   - insert <colName1>, <val1>, <colName2>, <val2>, ...
 //   - insert <colName1>, <valSlice1>, <colName2>, <valSlice2>, ...
 //   - insert <structValOrPtr>
-//   - insert <structSlice>
+//   - insert <structOrPtrSlice>
 func (p *Class) Insert__0(src ast.Node, args ...any) {
 	/* if p.tbl == "" {
 		TODO:
@@ -114,8 +117,56 @@ func (p *Class) Insert__0(src ast.Node, args ...any) {
 
 // Insert inserts a new row.
 //   - insert <structValOrPtr>
-//   - insert <structSlice>
+//   - insert <structOrPtrSlice>
 func (p *Class) insertStruc(arg any) {
+	vArg := reflect.ValueOf(arg)
+	switch vArg.Kind() {
+	case reflect.Slice:
+		p.insertStrucRows(vArg)
+	case reflect.Pointer:
+		vArg = vArg.Elem()
+		fallthrough
+	default:
+		p.insertStrucRow(vArg)
+	}
+}
+
+func (p *Class) insertStrucRows(vSlice reflect.Value) {
+	rows := vSlice.Len()
+	if rows == 0 {
+		return
+	}
+	hasPtr := false
+	elem := vSlice.Type().Elem()
+	kind := elem.Kind()
+	if kind == reflect.Pointer {
+		elem, hasPtr = elem.Elem(), true
+		kind = elem.Kind()
+	}
+	if kind != reflect.Struct {
+		log.Panicln("usage: insert <structOrPtrSlice>")
+	}
+	n := elem.NumField()
+	names, cols := getCols(make([]string, 0, n), make([]field, 0, n), n, elem, 0)
+	vals := make([]any, 0, len(names)*rows)
+	for row := 0; row < rows; row++ {
+		vElem := vSlice.Index(row)
+		if hasPtr {
+			vElem = vElem.Elem()
+		}
+		vals = getVals(vals, vElem, cols)
+	}
+	p.insertRowsVals(names, vals, rows)
+}
+
+func (p *Class) insertStrucRow(vArg reflect.Value) {
+	if vArg.Kind() != reflect.Struct {
+		log.Panicln("usage: insert <structValOrPtr>")
+	}
+	n := vArg.NumField()
+	names, cols := getCols(make([]string, 0, n), make([]field, 0, n), n, vArg.Type(), 0)
+	vals := getVals(make([]any, 0, len(cols)), vArg, cols)
+	p.insertRow(names, vals)
 }
 
 const (
@@ -158,33 +209,38 @@ func (p *Class) insertKvPair(kvPair ...any) {
 	case valFlagNormal:
 		p.insertRow(names, vals)
 	case valFlagSlice:
-		p.insertRows(names, vals, rows)
+		p.insertSliceRows(names, vals, rows)
 	default:
 		log.Panicln("can't insert mix slice and normal value")
 	}
 }
 
-func (p *Class) insertRows(names []string, args []any, rows int) {
-	n := len(args)
-	valparam := valParam(n)
-	valparams := strings.Repeat(valparam+",", rows)
-	valparams = valparams[:len(valparams)-1]
-
-	query := insertQuery(p.tbl, names)
-	query = append(query, valparams...)
-
-	vals := make([]any, 0, n*rows)
+// NOTE: len(args) == len(names)
+func (p *Class) insertSliceRows(names []string, args []any, rows int) {
+	vals := make([]any, 0, len(names)*rows)
 	for i := 0; i < rows; i++ {
 		for _, arg := range args {
 			v := arg.(reflect.Value)
 			vals = append(vals, v.Index(i).Interface())
 		}
 	}
+	p.insertRowsVals(names, vals, rows)
+}
+
+// NOTE: len(vals) == len(names) * rows
+func (p *Class) insertRowsVals(names []string, vals []any, rows int) {
+	n := len(names)
+	query := insertQuery(p.tbl, names)
+	query = append(query, valParams(n, rows)...)
+
 	result, err := p.db.ExecContext(context.TODO(), string(query), vals...)
 	insertRet(result, err)
 }
 
 func (p *Class) insertRow(names []string, vals []any) {
+	if len(names) == 0 {
+		log.Panicln("insert: nothing to insert")
+	}
 	query := insertQuery(p.tbl, names)
 	query = append(query, valParam(len(vals))...)
 	result, err := p.db.ExecContext(context.TODO(), string(query), vals...)
@@ -205,6 +261,13 @@ func insertQuery(tbl string, names []string) []byte {
 	query = append(query, strings.Join(names, ",")...)
 	query = append(query, ") VALUES "...)
 	return query
+}
+
+func valParams(n, rows int) string {
+	valparam := valParam(n)
+	valparams := strings.Repeat(valparam+",", rows)
+	valparams = valparams[:len(valparams)-1]
+	return valparams
 }
 
 func valParam(n int) string {
