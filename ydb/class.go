@@ -50,7 +50,8 @@ type Class struct {
 	api    *api
 	result []reflect.Value // result of an api call
 
-	ret func(args ...any)
+	ret   func(args ...any)
+	onErr func(err error)
 }
 
 func newClass(name string, sql *Sql) *Class {
@@ -76,6 +77,18 @@ func (p *Class) Use(table string, src ...ast.Node) {
 	}
 	p.tbl = table
 	p.tobj = tblobj
+}
+
+// OnErr sets error processing of a sql execution.
+func (p *Class) OnErr(onErr func(error), src ...ast.Node) {
+	p.onErr = onErr
+}
+
+func (p *Class) handleErr(prompt string, err error) {
+	if p.onErr == nil {
+		log.Panicln(prompt, err)
+	}
+	p.onErr(err)
 }
 
 // Ret checks a query or call result.
@@ -107,38 +120,37 @@ func (p *Class) Ret__1(args ...any) {
 //   - insert <colName1>, <valSlice1>, <colName2>, <valSlice2>, ...
 //   - insert <structValOrPtr>
 //   - insert <structOrPtrSlice>
-func (p *Class) Insert__0(src ast.Node, args ...any) {
+func (p *Class) Insert__0(src ast.Node, args ...any) (sql.Result, error) {
 	if p.tbl == "" {
 		log.Panicln("please call `use <tableName>` to specified current table")
 	}
 	nArg := len(args)
 	if nArg == 1 {
-		p.insertStruc(args[0])
-	} else {
-		p.insertKvPair(args...)
+		return p.insertStruc(args[0])
 	}
+	return p.insertKvPair(args...)
 }
 
 // Insert inserts a new row.
 //   - insert <structValOrPtr>
 //   - insert <structOrPtrSlice>
-func (p *Class) insertStruc(arg any) {
+func (p *Class) insertStruc(arg any) (sql.Result, error) {
 	vArg := reflect.ValueOf(arg)
 	switch vArg.Kind() {
 	case reflect.Slice:
-		p.insertStrucRows(vArg)
+		return p.insertStrucRows(vArg)
 	case reflect.Pointer:
 		vArg = vArg.Elem()
 		fallthrough
 	default:
-		p.insertStrucRow(vArg)
+		return p.insertStrucRow(vArg)
 	}
 }
 
-func (p *Class) insertStrucRows(vSlice reflect.Value) {
+func (p *Class) insertStrucRows(vSlice reflect.Value) (sql.Result, error) {
 	rows := vSlice.Len()
 	if rows == 0 {
-		return
+		return nil, nil
 	}
 	hasPtr := false
 	elem := vSlice.Type().Elem()
@@ -160,17 +172,17 @@ func (p *Class) insertStrucRows(vSlice reflect.Value) {
 		}
 		vals = getVals(vals, vElem, cols)
 	}
-	p.insertRowsVals(names, vals, rows)
+	return p.insertRowsVals(names, vals, rows)
 }
 
-func (p *Class) insertStrucRow(vArg reflect.Value) {
+func (p *Class) insertStrucRow(vArg reflect.Value) (sql.Result, error) {
 	if vArg.Kind() != reflect.Struct {
 		log.Panicln("usage: insert <structValOrPtr>")
 	}
 	n := vArg.NumField()
 	names, cols := getCols(make([]string, 0, n), make([]field, 0, n), n, vArg.Type(), 0)
 	vals := getVals(make([]any, 0, len(cols)), vArg, cols)
-	p.insertRow(names, vals)
+	return p.insertRow(names, vals)
 }
 
 const (
@@ -182,7 +194,7 @@ const (
 // Insert inserts a new row.
 //   - insert <colName1>, <val1>, <colName2>, <val2>, ...
 //   - insert <colName1>, <valSlice1>, <colName2>, <valSlice2>, ...
-func (p *Class) insertKvPair(kvPair ...any) {
+func (p *Class) insertKvPair(kvPair ...any) (sql.Result, error) {
 	nPair := len(kvPair)
 	if nPair < 2 || nPair&1 != 0 {
 		log.Panicln("usage: insert <colName1>, <val1>, <colName2>, <val2>, ...")
@@ -212,16 +224,17 @@ func (p *Class) insertKvPair(kvPair ...any) {
 	}
 	switch kind {
 	case valFlagNormal:
-		p.insertRow(names, vals)
+		return p.insertRow(names, vals)
 	case valFlagSlice:
-		p.insertSliceRows(names, vals, rows)
+		return p.insertSliceRows(names, vals, rows)
 	default:
 		log.Panicln("can't insert mix slice and normal value")
 	}
+	return nil, nil
 }
 
 // NOTE: len(args) == len(names)
-func (p *Class) insertSliceRows(names []string, args []any, rows int) {
+func (p *Class) insertSliceRows(names []string, args []any, rows int) (sql.Result, error) {
 	vals := make([]any, 0, len(names)*rows)
 	for i := 0; i < rows; i++ {
 		for _, arg := range args {
@@ -229,33 +242,34 @@ func (p *Class) insertSliceRows(names []string, args []any, rows int) {
 			vals = append(vals, v.Index(i).Interface())
 		}
 	}
-	p.insertRowsVals(names, vals, rows)
+	return p.insertRowsVals(names, vals, rows)
 }
 
 // NOTE: len(vals) == len(names) * rows
-func (p *Class) insertRowsVals(names []string, vals []any, rows int) {
+func (p *Class) insertRowsVals(names []string, vals []any, rows int) (sql.Result, error) {
 	n := len(names)
 	query := insertQuery(p.tbl, names)
 	query = append(query, valParams(n, rows)...)
 
 	result, err := p.db.ExecContext(context.TODO(), string(query), vals...)
-	insertRet(result, err)
+	return p.insertRet(result, err)
 }
 
-func (p *Class) insertRow(names []string, vals []any) {
+func (p *Class) insertRow(names []string, vals []any) (sql.Result, error) {
 	if len(names) == 0 {
 		log.Panicln("insert: nothing to insert")
 	}
 	query := insertQuery(p.tbl, names)
 	query = append(query, valParam(len(vals))...)
 	result, err := p.db.ExecContext(context.TODO(), string(query), vals...)
-	insertRet(result, err)
+	return p.insertRet(result, err)
 }
 
-func insertRet(result sql.Result, err error) {
+func (p *Class) insertRet(result sql.Result, err error) (sql.Result, error) {
 	if err != nil {
-		log.Panicln("insert:", err)
+		p.handleErr("insert:", err)
 	}
+	return result, err
 }
 
 func insertQuery(tbl string, names []string) []byte {
@@ -282,24 +296,24 @@ func valParam(n int) string {
 }
 
 // Insert inserts a new row.
-func (p *Class) Insert__1(kvPair ...any) {
-	p.Insert__0(nil, kvPair...)
+func (p *Class) Insert__1(kvPair ...any) (sql.Result, error) {
+	return p.Insert__0(nil, kvPair...)
 }
 
 // Count returns rows of a query result.
-func (p *Class) Count__0(src ast.Node, cond string, args ...any) (n int) {
+func (p *Class) Count__0(src ast.Node, cond string, args ...any) (n int, err error) {
 	if p.tbl == "" {
 		log.Panicln("please call `use <tableName>` to specified a table name")
 	}
 	row := p.db.QueryRowContext(context.TODO(), "SELECT COUNT(*) FROM "+p.tbl+" WHERE "+cond, args...)
-	if err := row.Scan(&n); err != nil {
-		log.Panicln("count:", err)
+	if err = row.Scan(&n); err != nil {
+		p.handleErr("count:", err)
 	}
 	return
 }
 
 // Count returns rows of a query result.
-func (p *Class) Count__1(cond string, args ...any) (n int) {
+func (p *Class) Count__1(cond string, args ...any) (n int, err error) {
 	return p.Count__0(nil, cond, args...)
 }
 
@@ -427,7 +441,6 @@ func makeSliceRets(rets []any) (vRets []reflect.Value, oneRet []any) {
 	oneRet = make([]any, len(rets))
 	for i, ret := range rets {
 		slice := reflect.ValueOf(ret).Elem()
-		slice.SetZero()
 		vRets[i] = slice
 
 		elem := slice.Type().Elem()
@@ -436,7 +449,28 @@ func makeSliceRets(rets []any) (vRets []reflect.Value, oneRet []any) {
 	return
 }
 
+func sqlQueryOne(db *sql.DB, ctx context.Context, query string, args, oneRet []any, vRets []reflect.Value) {
+	rows, err := db.QueryContext(ctx, query, args...)
+	if err != nil {
+		log.Panicln("query:", err)
+	}
+	defer rows.Close()
+
+	sqlRetRows(rows, vRets, oneRet, true)
+}
+
 func sqlMultiQuery(db *sql.DB, ctx context.Context, query string, iArgSlice int, args, rets []any) {
+	argSlice := args[iArgSlice]
+	defer func() {
+		args[iArgSlice] = argSlice
+	}()
+	vRets, oneRet := makeSliceRets(rets)
+	vArgSlice := reflect.ValueOf(argSlice)
+	for i, n := 0, vArgSlice.Len(); i < n; i++ {
+		arg := vArgSlice.Index(i).Interface()
+		args[iArgSlice] = arg
+		sqlQueryOne(db, ctx, query, args, oneRet, vRets)
+	}
 }
 
 // For checking query result:
@@ -594,16 +628,20 @@ func (p *Class) Limit__0(n int, src ...ast.Node) {
 }
 
 // Limit checks if query result rows is < n or not.
-func (p *Class) Limit__1(src ast.Node, n int, cond string, args ...any) {
-	ret := p.Count__0(src, cond, args...)
+func (p *Class) Limit__1(src ast.Node, n int, cond string, args ...any) error {
+	ret, err := p.Count__0(src, cond, args...)
+	if err != nil {
+		return err
+	}
 	if ret >= n {
 		log.Panicf("limit %s: got %d, expected <%d\n", cond, ret, n)
 	}
+	return nil
 }
 
 // Limit checks if query result rows is < n or not.
-func (p *Class) Limit__2(n int, cond string, args ...any) {
-	p.Limit__1(nil, n, cond, args...)
+func (p *Class) Limit__2(n int, cond string, args ...any) error {
+	return p.Limit__1(nil, n, cond, args...)
 }
 
 // -----------------------------------------------------------------------------
