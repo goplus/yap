@@ -22,6 +22,7 @@ import (
 	"errors"
 	"log"
 	"reflect"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -30,6 +31,7 @@ import (
 )
 
 var (
+	ErrNoRows     = sql.ErrNoRows
 	ErrDuplicated = errors.New("duplicated")
 )
 
@@ -172,8 +174,9 @@ func (p *Class) insertStrucRow(vArg reflect.Value) {
 }
 
 const (
-	valFlagNormal = 1
-	valFlagSlice  = 2
+	valFlagNormal  = 1
+	valFlagSlice   = 2
+	valFlagInvalid = valFlagNormal | valFlagSlice
 )
 
 // Insert inserts a new row.
@@ -330,6 +333,77 @@ func (p *Class) queryRet(args ...any) {
 func (p *Class) queryRetPtr(arg any) {
 }
 
+func isSlice(v any) bool {
+	return reflect.ValueOf(v).Kind() == reflect.Slice
+}
+
+func retKind(ret any) int {
+	v := reflect.ValueOf(ret)
+	if v.Kind() != reflect.Pointer {
+		log.Panicln("usage: ret <expr1>, &<var1>, <expr2>, &<var2>, ...")
+	}
+	if v.Elem().Kind() == reflect.Slice {
+		return valFlagSlice
+	}
+	return valFlagNormal
+}
+
+func sqlRetRow(rows *sql.Rows, rets []any) {
+	if !rows.Next() {
+		err := rows.Err()
+		if err == nil {
+			err = ErrNoRows
+		}
+		log.Panicln("ret:", err)
+	}
+	err := rows.Scan(rets...)
+	if err != nil {
+		log.Panicln("ret:", err)
+	}
+}
+
+func sqlRetRows(rows *sql.Rows, rets []any) {
+}
+
+// sqlQuery NOTE:
+//   - one of args maybe is a slice
+func sqlQuery(db *sql.DB, ctx context.Context, query string, args, rets []any, retSlice bool) {
+	iArgSlice := -1
+	for i, arg := range args {
+		if isSlice(arg) {
+			if iArgSlice >= 0 {
+				log.Panicf(
+					"query: multiple arguments (%dth, %dth) are slices (only one can be)\n",
+					iArgSlice+1, i+1,
+				)
+			}
+			iArgSlice = i
+		}
+	}
+	if iArgSlice >= 0 {
+		if !retSlice {
+			log.Panicln("one of `query` arguments is a slice, but `ret` arguments are not")
+		}
+		sqlMultiQuery(db, ctx, query, iArgSlice, args, rets)
+		return
+	}
+
+	rows, err := db.QueryContext(ctx, query, args...)
+	if err != nil {
+		log.Panicln("query:", err)
+	}
+	defer rows.Close()
+
+	if retSlice {
+		sqlRetRows(rows, rets)
+		return
+	}
+	sqlRetRow(rows, rets)
+}
+
+func sqlMultiQuery(db *sql.DB, ctx context.Context, query string, iArgSlice int, args, rets []any) {
+}
+
 // For checking query result:
 //   - ret <expr1>, &<var1>, <expr2>, &<var2>, ...
 //   - ret <expr1>, &<varSlice1>, <expr2>, &<varSlice2>, ...
@@ -345,6 +419,7 @@ func (p *Class) queryRetKvPair(kvPair ...any) {
 	n := nPair >> 1
 	exprs := make([]string, n)
 	rets := make([]any, n)
+	kind := 0
 	for i := 0; i < nPair; i += 2 {
 		expr := kvPair[i].(string)
 		if etbl := p.exprTblname(expr); etbl != tbl {
@@ -353,9 +428,29 @@ func (p *Class) queryRetKvPair(kvPair ...any) {
 				tbl, etbl,
 			)
 		}
+		ret := kvPair[i+1]
+		kind |= retKind(ret)
 		exprs[i>>1] = expr
-		rets[i>>1] = kvPair[i+1]
+		rets[i>>1] = ret
 	}
+	if kind == valFlagInvalid {
+		log.Panicln(`all ret arguments should be address of slices or address of normal variable:
+	ret <expr1>, &<var1>, <expr2>, &<var2>, ...
+	ret <expr1>, &<varSlice1>, <expr2>, &<varSlice2>, ...`)
+	}
+
+	query := make([]byte, 0, 128)
+	query = append(query, "SELECT "...)
+	query = append(query, strings.Join(exprs, ",")...)
+	query = append(query, " FROM "...)
+	query = append(query, tbl...)
+	query = append(query, " WHERE "...)
+	query = append(query, q.cond...)
+	if q.limit > 0 {
+		query = append(query, " LIMIT "...)
+		query = append(query, strconv.Itoa(q.limit)...)
+	}
+	sqlQuery(p.db, context.TODO(), string(query), q.args, rets, kind == valFlagSlice)
 }
 
 func (p *Class) exprTblname(cond string) string {
