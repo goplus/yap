@@ -362,7 +362,27 @@ func sqlRetRow(rows *sql.Rows, rets []any) {
 	}
 }
 
-func sqlRetRows(rows *sql.Rows, rets []any) {
+func sqlRetRows(rows *sql.Rows, vRets []reflect.Value, oneRet []any, needInit bool) {
+	for rows.Next() {
+		if needInit {
+			for _, ret := range oneRet {
+				reflect.ValueOf(ret).Elem().SetZero()
+			}
+		} else {
+			needInit = true
+		}
+		err := rows.Scan(oneRet...)
+		if err != nil {
+			log.Panicln("ret:", err)
+		}
+		for i, vRet := range vRets {
+			v := reflect.ValueOf(oneRet[i])
+			vRet.Set(reflect.Append(vRet, v.Elem()))
+		}
+	}
+	if err := rows.Err(); err != nil {
+		log.Panicln("ret:", err)
+	}
 }
 
 // sqlQuery NOTE:
@@ -395,10 +415,25 @@ func sqlQuery(db *sql.DB, ctx context.Context, query string, args, rets []any, r
 	defer rows.Close()
 
 	if retSlice {
-		sqlRetRows(rows, rets)
+		vRets, oneRet := makeSliceRets(rets)
+		sqlRetRows(rows, vRets, oneRet, false)
 		return
 	}
 	sqlRetRow(rows, rets)
+}
+
+func makeSliceRets(rets []any) (vRets []reflect.Value, oneRet []any) {
+	vRets = make([]reflect.Value, len(rets))
+	oneRet = make([]any, len(rets))
+	for i, ret := range rets {
+		slice := reflect.ValueOf(ret).Elem()
+		slice.SetZero()
+		vRets[i] = slice
+
+		elem := slice.Type().Elem()
+		oneRet[i] = reflect.New(elem).Interface()
+	}
+	return
 }
 
 func sqlMultiQuery(db *sql.DB, ctx context.Context, query string, iArgSlice int, args, rets []any) {
