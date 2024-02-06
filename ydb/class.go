@@ -27,6 +27,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/goplus/gop/ast"
+	"github.com/goplus/yap/test"
+	"github.com/goplus/yap/test/logt"
 	"github.com/qiniu/x/ctype"
 )
 
@@ -53,6 +55,8 @@ type Class struct {
 
 	ret   func(args ...any) error
 	onErr func(err error)
+
+	test.CaseT
 }
 
 func newClass(name string, sql *Sql) *Class {
@@ -65,6 +69,13 @@ func newClass(name string, sql *Sql) *Class {
 		db:   sql.db,
 		apis: make(map[string]*api),
 	}
+}
+
+func (p *Class) t() test.CaseT {
+	if p.CaseT == nil {
+		p.CaseT = logt.New()
+	}
+	return p.CaseT
 }
 
 func (p *Class) gen(ctx context.Context) {
@@ -795,7 +806,7 @@ func (p *Class) Call__0(src ast.Node, args ...any) {
 	for i, arg := range args {
 		vArgs[i] = reflect.ValueOf(arg)
 	}
-	p.result = reflect.ValueOf(p.api).Call(vArgs)
+	p.result = reflect.ValueOf(p.api.spec).Call(vArgs)
 	p.ret = p.callRet
 }
 
@@ -805,6 +816,18 @@ func (p *Class) Call__1(args ...any) {
 }
 
 func (p *Class) callRet(args ...any) error {
+	t := p.t()
+	result := p.result
+	if len(result) != len(args) {
+		t.Fatalf(
+			"call ret: unmatched result parameters count - got %d, expected %d\n",
+			len(args), len(result),
+		)
+	}
+	for i, arg := range args {
+		ret := result[i].Interface()
+		test.Gopt_Case_Match__4(t, arg, ret)
+	}
 	p.ret = nil
 	return nil
 }
