@@ -33,6 +33,7 @@ import (
 var (
 	ErrNoRows     = sql.ErrNoRows
 	ErrDuplicated = errors.New("duplicated")
+	ErrOutOfLimit = errors.New("out of limit")
 )
 
 // -----------------------------------------------------------------------------
@@ -362,21 +363,23 @@ func retKind(ret any) int {
 	return valFlagNormal
 }
 
-func sqlRetRow(rows *sql.Rows, rets []any) {
+func (p *Class) sqlRetRow(rows *sql.Rows, rets []any) error {
 	if !rows.Next() {
 		err := rows.Err()
 		if err == nil {
 			err = ErrNoRows
 		}
-		log.Panicln("ret:", err)
+		p.handleErr("ret:", err)
+		return err
 	}
 	err := rows.Scan(rets...)
 	if err != nil {
-		log.Panicln("ret:", err)
+		p.handleErr("ret:", err)
 	}
+	return err
 }
 
-func sqlRetRows(rows *sql.Rows, vRets []reflect.Value, oneRet []any, needInit bool) {
+func (p *Class) sqlRetRows(rows *sql.Rows, vRets []reflect.Value, oneRet []any, needInit bool) error {
 	for rows.Next() {
 		if needInit {
 			for _, ret := range oneRet {
@@ -387,21 +390,24 @@ func sqlRetRows(rows *sql.Rows, vRets []reflect.Value, oneRet []any, needInit bo
 		}
 		err := rows.Scan(oneRet...)
 		if err != nil {
-			log.Panicln("ret:", err)
+			p.handleErr("ret:", err)
+			return err
 		}
 		for i, vRet := range vRets {
 			v := reflect.ValueOf(oneRet[i])
 			vRet.Set(reflect.Append(vRet, v.Elem()))
 		}
 	}
-	if err := rows.Err(); err != nil {
-		log.Panicln("ret:", err)
+	err := rows.Err()
+	if err != nil {
+		p.handleErr("ret:", err)
 	}
+	return err
 }
 
 // sqlQuery NOTE:
 //   - one of args maybe is a slice
-func sqlQuery(db *sql.DB, ctx context.Context, query string, args, rets []any, retSlice bool) {
+func (p *Class) sqlQuery(ctx context.Context, query string, args, rets []any, retSlice bool) error {
 	iArgSlice := -1
 	for i, arg := range args {
 		if isSlice(arg) {
@@ -418,22 +424,21 @@ func sqlQuery(db *sql.DB, ctx context.Context, query string, args, rets []any, r
 		if !retSlice {
 			log.Panicln("one of `query` arguments is a slice, but `ret` arguments are not")
 		}
-		sqlMultiQuery(db, ctx, query, iArgSlice, args, rets)
-		return
+		return p.sqlMultiQuery(ctx, query, iArgSlice, args, rets)
 	}
 
-	rows, err := db.QueryContext(ctx, query, args...)
+	rows, err := p.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		log.Panicln("query:", err)
+		p.handleErr("query:", err)
+		return err
 	}
 	defer rows.Close()
 
 	if retSlice {
 		vRets, oneRet := makeSliceRets(rets)
-		sqlRetRows(rows, vRets, oneRet, false)
-		return
+		return p.sqlRetRows(rows, vRets, oneRet, false)
 	}
-	sqlRetRow(rows, rets)
+	return p.sqlRetRow(rows, rets)
 }
 
 func makeSliceRets(rets []any) (vRets []reflect.Value, oneRet []any) {
@@ -449,17 +454,18 @@ func makeSliceRets(rets []any) (vRets []reflect.Value, oneRet []any) {
 	return
 }
 
-func sqlQueryOne(db *sql.DB, ctx context.Context, query string, args, oneRet []any, vRets []reflect.Value) {
-	rows, err := db.QueryContext(ctx, query, args...)
+func (p *Class) sqlQueryOne(ctx context.Context, query string, args, oneRet []any, vRets []reflect.Value) error {
+	rows, err := p.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		log.Panicln("query:", err)
+		p.handleErr("query:", err)
+		return err
 	}
 	defer rows.Close()
 
-	sqlRetRows(rows, vRets, oneRet, true)
+	return p.sqlRetRows(rows, vRets, oneRet, true)
 }
 
-func sqlMultiQuery(db *sql.DB, ctx context.Context, query string, iArgSlice int, args, rets []any) {
+func (p *Class) sqlMultiQuery(ctx context.Context, query string, iArgSlice int, args, rets []any) error {
 	argSlice := args[iArgSlice]
 	defer func() {
 		args[iArgSlice] = argSlice
@@ -469,14 +475,17 @@ func sqlMultiQuery(db *sql.DB, ctx context.Context, query string, iArgSlice int,
 	for i, n := 0, vArgSlice.Len(); i < n; i++ {
 		arg := vArgSlice.Index(i).Interface()
 		args[iArgSlice] = arg
-		sqlQueryOne(db, ctx, query, args, oneRet, vRets)
+		if err := p.sqlQueryOne(ctx, query, args, oneRet, vRets); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // For checking query result:
 //   - ret <expr1>, &<var1>, <expr2>, &<var2>, ...
 //   - ret <expr1>, &<varSlice1>, <expr2>, &<varSlice2>, ...
-func (p *Class) queryRetKvPair(kvPair ...any) {
+func (p *Class) queryRetKvPair(kvPair ...any) error {
 	nPair := len(kvPair)
 	if nPair < 2 || nPair&1 != 0 {
 		log.Panicln("usage: ret <expr1>, &<var1>, <expr2>, &<var2>, ...")
@@ -519,7 +528,7 @@ func (p *Class) queryRetKvPair(kvPair ...any) {
 		query = append(query, " LIMIT "...)
 		query = append(query, strconv.Itoa(q.limit)...)
 	}
-	sqlQuery(p.db, context.TODO(), string(query), q.args, rets, kind == valFlagSlice)
+	return p.sqlQuery(context.TODO(), string(query), q.args, rets, kind == valFlagSlice)
 }
 
 func (p *Class) exprTblname(cond string) string {
@@ -634,9 +643,13 @@ func (p *Class) Limit__1(src ast.Node, n int, cond string, args ...any) error {
 		return err
 	}
 	if ret >= n {
-		log.Panicf("limit %s: got %d, expected <%d\n", cond, ret, n)
+		if p.onErr == nil {
+			log.Panicf("limit %s: got %d, expected <%d\n", cond, ret, n)
+		}
+		err = ErrOutOfLimit
+		p.onErr(err)
 	}
-	return nil
+	return err
 }
 
 // Limit checks if query result rows is < n or not.
