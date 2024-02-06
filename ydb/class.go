@@ -27,6 +27,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/goplus/gop/ast"
+	"github.com/goplus/yap/reflectutil"
 	"github.com/goplus/yap/test"
 	"github.com/goplus/yap/test/logt"
 	"github.com/qiniu/x/ctype"
@@ -533,7 +534,7 @@ func (p *Class) sqlRetRows(rows *sql.Rows, vRets []reflect.Value, oneRet []any, 
 	for rows.Next() {
 		if needInit {
 			for _, ret := range oneRet {
-				reflect.ValueOf(ret).Elem().SetZero()
+				reflectutil.SetZero(reflect.ValueOf(ret).Elem())
 			}
 		} else {
 			needInit = true
