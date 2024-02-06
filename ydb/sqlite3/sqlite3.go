@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-package reflectutil
+package sqlite3
 
 import (
-	"reflect"
-	"testing"
+	"github.com/goplus/yap/ydb"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-func TestSetZero(t *testing.T) {
-	a := 2
-	v := reflect.ValueOf(&a).Elem()
-	SetZero(v)
-	if a != 0 {
-		t.Fatal("SetZero:", a)
-	}
+func init() {
+	ydb.Register("sqlite3", "file:test.db?cache=shared&mode=memory")
 }

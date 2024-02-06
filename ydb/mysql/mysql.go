@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-package reflectutil
+package mysql
 
 import (
-	"reflect"
-	"testing"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/goplus/yap/ydb"
 )
 
-func TestSetZero(t *testing.T) {
-	a := 2
-	v := reflect.ValueOf(&a).Elem()
-	SetZero(v)
-	if a != 0 {
-		t.Fatal("SetZero:", a)
-	}
+// Register registers a default data source for `mysql` engine.
+func Register(defaultDataSource string) {
+	ydb.Register("mysql", defaultDataSource)
 }
