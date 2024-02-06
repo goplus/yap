@@ -56,10 +56,14 @@ func newTable(name, ver string, schema dbType) *Table {
 	return p
 }
 
-func getVals(vals []any, v reflect.Value, cols []field) []any {
+func getVals(vals []any, v reflect.Value, cols []field, elem bool) []any {
 	this := uintptr(v.Addr().UnsafePointer())
 	for _, col := range cols {
-		val := reflect.NewAt(col.typ, unsafe.Pointer(this+col.offset)).Interface()
+		v := reflect.NewAt(col.typ, unsafe.Pointer(this+col.offset))
+		if elem {
+			v = v.Elem()
+		}
+		val := v.Interface()
 		vals = append(vals, val)
 	}
 	return vals

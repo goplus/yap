@@ -1,4 +1,4 @@
-gop 1.1
+gop 1.2
 
 project _yap.gox App github.com/goplus/yap
 

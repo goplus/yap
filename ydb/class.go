@@ -51,7 +51,7 @@ type Class struct {
 	api    *api
 	result []reflect.Value // result of an api call
 
-	ret   func(args ...any)
+	ret   func(args ...any) error
 	onErr func(err error)
 }
 
@@ -171,7 +171,7 @@ func (p *Class) insertStrucRows(vSlice reflect.Value) (sql.Result, error) {
 		if hasPtr {
 			vElem = vElem.Elem()
 		}
-		vals = getVals(vals, vElem, cols)
+		vals = getVals(vals, vElem, cols, true)
 	}
 	return p.insertRowsVals(names, vals, rows)
 }
@@ -182,7 +182,7 @@ func (p *Class) insertStrucRow(vArg reflect.Value) (sql.Result, error) {
 	}
 	n := vArg.NumField()
 	names, cols := getCols(make([]string, 0, n), make([]field, 0, n), n, vArg.Type(), 0)
-	vals := getVals(make([]any, 0, len(cols)), vArg, cols)
+	vals := getVals(make([]any, 0, len(cols)), vArg, cols, true)
 	return p.insertRow(names, vals)
 }
 
@@ -326,30 +326,169 @@ type query struct {
 	limit int    // 0 means no limit
 }
 
+func (q *query) makeSelectExpr(tbl string, exprs []string) string {
+	query := make([]byte, 0, 128)
+	query = append(query, "SELECT "...)
+	query = append(query, strings.Join(exprs, ",")...)
+	query = append(query, " FROM "...)
+	query = append(query, tbl...)
+	query = append(query, " WHERE "...)
+	query = append(query, q.cond...)
+	if q.limit > 0 {
+		query = append(query, " LIMIT "...)
+		query = append(query, strconv.Itoa(q.limit)...)
+	}
+	return string(query)
+}
+
 // For checking query result:
 //   - ret <expr1>, &<var1>, <expr2>, &<var2>, ...
 //   - ret <expr1>, &<varSlice1>, <expr2>, &<varSlice2>, ...
 //   - ret &<structVar>
 //   - ret &<structSlice>
-func (p *Class) queryRet(args ...any) {
+func (p *Class) queryRet(args ...any) (err error) {
 	nArg := len(args)
 	if nArg == 1 {
-		p.queryRetPtr(args[0])
+		err = p.queryRetPtr(args[0])
 	} else {
-		p.queryRetKvPair(args...)
+		err = p.queryRetKvPair(args...)
 	}
 	p.query = nil
 	p.ret = nil
+	return
 }
 
 // For checking query result:
 //   - ret &<structVar>
-//   - ret &<structSlice>
-func (p *Class) queryRetPtr(arg any) {
+//   - ret &<structOrPtrSlice>
+func (p *Class) queryRetPtr(ret any) error {
+	vRet := reflect.ValueOf(ret)
+	if vRet.Kind() != reflect.Pointer {
+		log.Panicln("usage: ret &<structVar>")
+	}
+
+	switch vRet = vRet.Elem(); vRet.Kind() {
+	case reflect.Slice:
+		return p.queryStrucRows(vRet)
+	default:
+		return p.queryStrucRow(vRet)
+	}
+}
+
+// For checking query result:
+//   - ret &<structVar>
+func (p *Class) queryStrucRow(vRet reflect.Value) error {
+	if vRet.Kind() != reflect.Struct {
+		log.Panicln("usage: ret &<structVar>")
+	}
+
+	n := vRet.NumField()
+	names, cols := getCols(make([]string, 0, n), make([]field, 0, n), n, vRet.Type(), 0)
+	rets := getVals(make([]any, 0, len(cols)), vRet, cols, false)
+
+	q := p.query
+	query := q.makeSelectExpr(p.tbl, names)
+	return p.sqlQueryVals(context.TODO(), query, q.args, rets)
+}
+
+func (p *Class) queryStrucOne(
+	ctx context.Context, query string, args []any,
+	vSlice reflect.Value, elem dbType, cols []field, hasPtr bool) error {
+	vRet := reflect.New(elem).Elem()
+	rets := getVals(make([]any, 0, len(cols)), vRet, cols, false)
+	err := p.sqlQueryVals(ctx, query, args, rets)
+	if err != nil {
+		return err
+	}
+	if hasPtr {
+		vRet = vRet.Addr()
+	}
+	vSlice.Set(reflect.Append(vSlice, vRet))
+	return nil
+}
+
+func (p *Class) queryStrucMulti(
+	ctx context.Context, query string, args []any, iArgSlice int,
+	vSlice reflect.Value, elem dbType, cols []field, hasPtr bool) error {
+	argSlice := args[iArgSlice]
+	defer func() {
+		args[iArgSlice] = argSlice
+	}()
+	vArgSlice := reflect.ValueOf(argSlice)
+	for i, n := 0, vArgSlice.Len(); i < n; i++ {
+		arg := vArgSlice.Index(i).Interface()
+		args[iArgSlice] = arg
+		if err := p.queryStrucOne(ctx, query, args, vSlice, elem, cols, hasPtr); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// For checking query result:
+//   - ret &<structOrPtrSlice>
+func (p *Class) queryStrucRows(vSlice reflect.Value) error {
+	hasPtr := false
+	elem := vSlice.Type().Elem()
+	kind := elem.Kind()
+	if kind == reflect.Pointer {
+		elem, hasPtr = elem.Elem(), true
+		kind = elem.Kind()
+	}
+	if kind != reflect.Struct {
+		log.Panicln("usage: ret &<structOrPtrSlice>")
+	}
+
+	n := elem.NumField()
+	names, cols := getCols(make([]string, 0, n), make([]field, 0, n), n, elem, 0)
+
+	q := p.query
+	query := q.makeSelectExpr(p.tbl, names)
+
+	args := q.args
+	iArgSlice := checkArgSlice(args)
+	if iArgSlice >= 0 {
+		return p.queryStrucMulti(context.TODO(), query, args, iArgSlice, vSlice, elem, cols, hasPtr)
+	}
+	return p.queryStrucOne(context.TODO(), query, args, vSlice, elem, cols, hasPtr)
+}
+
+// sqlQueryVals NOTE:
+//   - one of args maybe is a slice
+func (p *Class) sqlQueryVals(ctx context.Context, query string, args, rets []any) error {
+	iArgSlice := checkArgSlice(args)
+	if iArgSlice >= 0 {
+		log.Panicln("one of `query` arguments is a slice, but `ret` arguments are not")
+	}
+
+	rows, err := p.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		p.handleErr("query:", err)
+		return err
+	}
+	defer rows.Close()
+
+	return p.sqlRetRow(rows, rets)
 }
 
 func isSlice(v any) bool {
 	return reflect.ValueOf(v).Kind() == reflect.Slice
+}
+
+func checkArgSlice(args []any) int {
+	iArgSlice := -1
+	for i, arg := range args {
+		if isSlice(arg) {
+			if iArgSlice >= 0 {
+				log.Panicf(
+					"query: multiple arguments (%dth, %dth) are slices (only one can be)\n",
+					iArgSlice+1, i+1,
+				)
+			}
+			iArgSlice = i
+		}
+	}
+	return iArgSlice
 }
 
 func retKind(ret any) int {
@@ -405,25 +544,11 @@ func (p *Class) sqlRetRows(rows *sql.Rows, vRets []reflect.Value, oneRet []any, 
 	return err
 }
 
-// sqlQuery NOTE:
+// sqlQueryRows NOTE:
 //   - one of args maybe is a slice
-func (p *Class) sqlQuery(ctx context.Context, query string, args, rets []any, retSlice bool) error {
-	iArgSlice := -1
-	for i, arg := range args {
-		if isSlice(arg) {
-			if iArgSlice >= 0 {
-				log.Panicf(
-					"query: multiple arguments (%dth, %dth) are slices (only one can be)\n",
-					iArgSlice+1, i+1,
-				)
-			}
-			iArgSlice = i
-		}
-	}
+func (p *Class) sqlQueryRows(ctx context.Context, query string, args, rets []any) error {
+	iArgSlice := checkArgSlice(args)
 	if iArgSlice >= 0 {
-		if !retSlice {
-			log.Panicln("one of `query` arguments is a slice, but `ret` arguments are not")
-		}
 		return p.sqlMultiQuery(ctx, query, iArgSlice, args, rets)
 	}
 
@@ -434,11 +559,8 @@ func (p *Class) sqlQuery(ctx context.Context, query string, args, rets []any, re
 	}
 	defer rows.Close()
 
-	if retSlice {
-		vRets, oneRet := makeSliceRets(rets)
-		return p.sqlRetRows(rows, vRets, oneRet, false)
-	}
-	return p.sqlRetRow(rows, rets)
+	vRets, oneRet := makeSliceRets(rets)
+	return p.sqlRetRows(rows, vRets, oneRet, false)
 }
 
 func makeSliceRets(rets []any) (vRets []reflect.Value, oneRet []any) {
@@ -517,18 +639,11 @@ func (p *Class) queryRetKvPair(kvPair ...any) error {
 	ret <expr1>, &<varSlice1>, <expr2>, &<varSlice2>, ...`)
 	}
 
-	query := make([]byte, 0, 128)
-	query = append(query, "SELECT "...)
-	query = append(query, strings.Join(exprs, ",")...)
-	query = append(query, " FROM "...)
-	query = append(query, tbl...)
-	query = append(query, " WHERE "...)
-	query = append(query, q.cond...)
-	if q.limit > 0 {
-		query = append(query, " LIMIT "...)
-		query = append(query, strconv.Itoa(q.limit)...)
+	query := q.makeSelectExpr(tbl, exprs)
+	if kind == valFlagNormal {
+		return p.sqlQueryVals(context.TODO(), query, q.args, rets)
 	}
-	return p.sqlQuery(context.TODO(), string(query), q.args, rets, kind == valFlagSlice)
+	return p.sqlQueryRows(context.TODO(), query, q.args, rets)
 }
 
 func (p *Class) exprTblname(cond string) string {
@@ -689,8 +804,9 @@ func (p *Class) Call__1(args ...any) {
 	p.Call__0(nil, args...)
 }
 
-func (p *Class) callRet(args ...any) {
+func (p *Class) callRet(args ...any) error {
 	p.ret = nil
+	return nil
 }
 
 // -----------------------------------------------------------------------------
