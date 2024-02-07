@@ -1,10 +1,15 @@
 package main
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
 	"errors"
 	"github.com/goplus/yap/ydb"
 	_ "github.com/goplus/yap/ydb/mysql"
 	_ "github.com/goplus/yap/ydb/sqlite3"
+	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -44,15 +49,18 @@ func main() {
 }
 
 var ErrNoEmailAndTel = errors.New("no email and telephone")
-//line ydb/demo/foo/foo.gop:9:1
+var rnd = rand.New(rand.NewSource(time.Now().UnixMicro()))
+//line ydb/demo/foo/foo.gop:19:1
 func Rand() string {
-//line ydb/demo/foo/foo.gop:10:1
-	return ""
+//line ydb/demo/foo/foo.gop:20:1
+	return strconv.FormatInt(rnd.Int63(), 36)
 }
-//line ydb/demo/foo/foo.gop:13:1
-func Hmac(pwd string, salt string) string {
-//line ydb/demo/foo/foo.gop:14:1
-	return ""
+//line ydb/demo/foo/foo.gop:23:1
+func Hs256(pwd string, salt string) string {
+//line ydb/demo/foo/foo.gop:24:1
+	b := hmac.New(sha256.New, []byte(salt)).Sum([]byte(pwd))
+//line ydb/demo/foo/foo.gop:25:1
+	return base64.RawURLEncoding.EncodeToString(b)
 }
 //line ydb/demo/foo/foo_ydb.gox:36
 func (this *foo) Main() {
@@ -85,7 +93,7 @@ func (this *foo) Main() {
 //line ydb/demo/foo/foo_ydb.gox:58:1
 			salt := Rand()
 //line ydb/demo/foo/foo_ydb.gox:59:1
-			spwd := Hmac(pwd, salt)
+			spwd := Hs256(pwd, salt)
 //line ydb/demo/foo/foo_ydb.gox:60:1
 			this.Insert__1(&User{Id: id, Spwd: spwd, Salt: salt, Nickname: nickname, Email: email, Tel: tel, Ctime: ctime})
 //line ydb/demo/foo/foo_ydb.gox:62:1
@@ -112,7 +120,7 @@ func (this *foo) Main() {
 //line ydb/demo/foo/foo_ydb.gox:74:1
 			this.Ret__1("salt", &salt, "spwd", &spwd)
 //line ydb/demo/foo/foo_ydb.gox:75:1
-			return Hmac(pwd, salt) == spwd
+			return Hs256(pwd, salt) == spwd
 		})
 //line ydb/demo/foo/foo_ydb.gox:77:1
 		this.Call__1("", "")

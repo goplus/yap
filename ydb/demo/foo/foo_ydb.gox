@@ -56,7 +56,7 @@ class "Users", => {
 		limit 3, "tel=?", tel
 
 		salt := rand
-		spwd := hmac(pwd, salt)
+		spwd := hs256(pwd, salt)
 		insert &User{Id: id, Spwd: spwd, Salt: salt, Nickname: nickname, Email: email, Tel: tel, Ctime: ctime}
 		// ErrDuplicated
 		return nil
@@ -72,7 +72,7 @@ class "Users", => {
 		var spwd, salt string
 		query "id=?", id
 		ret "salt", &salt, "spwd", &spwd
-		return hmac(pwd, salt) == spwd
+		return hs256(pwd, salt) == spwd
 	}
 	call "", ""
 	ret false
