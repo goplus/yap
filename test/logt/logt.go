@@ -18,7 +18,6 @@ package logt
 
 import (
 	"log"
-	"runtime"
 	"time"
 )
 
@@ -56,7 +55,7 @@ func (p *T) Failed() bool {
 // those other goroutines.
 func (p *T) FailNow() {
 	p.fail = true
-	runtime.Goexit()
+	panic("todo")
 }
 
 // Log formats its arguments using default formatting, analogous to Println,
@@ -90,14 +89,12 @@ func (p *T) Errorf(format string, args ...any) {
 
 // Fatal is equivalent to Log followed by FailNow.
 func (p *T) Fatal(args ...any) {
-	log.Println(args...)
-	p.FailNow()
+	log.Panicln(args...)
 }
 
 // Fatalf is equivalent to Logf followed by FailNow.
 func (p *T) Fatalf(format string, args ...any) {
-	log.Printf(format, args...)
-	p.FailNow()
+	log.Panicf(format, args...)
 }
 
 // Skip is equivalent to Log followed by SkipNow.
@@ -122,7 +119,6 @@ func (p *T) Skipf(format string, args ...any) {
 // those other goroutines.
 func (p *T) SkipNow() {
 	p.skipped = true
-	runtime.Goexit()
 }
 
 // Skipped reports whether the test was skipped.

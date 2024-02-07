@@ -24,6 +24,8 @@ import (
 	"strings"
 	"time"
 	"unsafe"
+
+	"github.com/goplus/yap/stringutil"
 )
 
 type dbType = reflect.Type
@@ -223,41 +225,42 @@ func (p *Table) create(ctx context.Context, sql *Sql) {
 	}
 
 	for _, uniq := range p.uniqs {
-		name := indexName(uniq, "uniq_")
-		_, err = execWithStrArgs(db, ctx, "CREATE UNIQUE INDEX ? ON ? (", ")", name, p.name, uniq)
+		name := indexName(uniq, "uniq_", p.name)
+		err = createIndex(db, ctx, "CREATE UNIQUE INDEX ", name, p.name, uniq)
 		if err != nil {
 			log.Panicln("create unique index:", err)
 		}
 	}
 	for _, idx := range p.idxs {
-		name := indexName(idx, "idx_")
-		_, err = execWithStrArgs(db, ctx, "CREATE INDEX ? ON ? (", ")", name, p.name, idx)
+		name := indexName(idx, "idx_", p.name)
+		err = createIndex(db, ctx, "CREATE INDEX ", name, p.name, idx)
 		if err != nil {
 			log.Panicln("create index:", err)
 		}
 	}
 }
 
-func indexName(name []string, prefix string) string {
-	return prefix + strings.Join(name, "_")
+// prefix_tbl_name1_name2_...
+func indexName(cols []string, prefix, tbl string) string {
+	n := len(prefix) + 1 + len(tbl)
+	for _, col := range cols {
+		n += 1 + len(col)
+	}
+	b := make([]byte, 0, n)
+	b = append(b, prefix...)
+	b = append(b, '_')
+	b = append(b, tbl...)
+	for _, col := range cols {
+		b = append(b, '_')
+		b = append(b, col...)
+	}
+	return stringutil.String(b)
 }
 
-func execWithStrArgs(db *sql.DB, ctx context.Context, queryPrefix, querySuffix string, v1, v2 string, args []string) (sql.Result, error) {
-	switch len(args) {
-	case 1:
-		return db.ExecContext(ctx, queryPrefix+"?"+querySuffix, v1, v2, args[0])
-	case 2:
-		return db.ExecContext(ctx, queryPrefix+"?,?"+querySuffix, v1, v2, args[0], args[1])
-	default:
-		fldQuery := strings.Repeat("?,", len(args))
-		query := queryPrefix + fldQuery[:len(fldQuery)-1] + querySuffix
-		vArgs := make([]any, 2+len(args))
-		vArgs[0], vArgs[1] = v1, v2
-		for i, arg := range args {
-			vArgs[2+i] = arg
-		}
-		return db.ExecContext(ctx, query, vArgs...)
-	}
+func createIndex(db *sql.DB, ctx context.Context, cmd string, name, tbl string, cols []string) error {
+	query := stringutil.Concat(cmd, name, " ON ", tbl, "(", strings.Join(cols, ","), ")")
+	_, err := db.ExecContext(ctx, query)
+	return err
 }
 
 // -----------------------------------------------------------------------------

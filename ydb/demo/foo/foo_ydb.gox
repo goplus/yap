@@ -33,7 +33,7 @@ type Tag struct {
 	Article string
 }
 
-engine "mysql"
+engine "sqlite3"
 
 table User, "user v0.1.0"
 
