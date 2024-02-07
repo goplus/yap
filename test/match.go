@@ -401,7 +401,10 @@ retry:
 			return
 		}
 	}
-	t.Fatalf("unmatched type%s - got: %T, expected: %T\n", nameCtx(name), got, expected)
+	t.Fatalf(
+		"unmatched%s - got: %v (%T), expected: %v (%T)\n",
+		nameCtx(name), got, got, expected, expected,
+	)
 }
 
 // -----------------------------------------------------------------------------

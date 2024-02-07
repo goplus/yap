@@ -20,6 +20,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"reflect"
 	"strconv"
@@ -47,6 +48,7 @@ type Class struct {
 	tobj *Table
 	sql  *Sql
 	db   *sql.DB
+	wrap func(string, error) error
 	apis map[string]*api
 
 	query *query // query
@@ -68,6 +70,7 @@ func newClass(name string, sql *Sql) *Class {
 		name: name,
 		sql:  sql,
 		db:   sql.db,
+		wrap: sql.driver.wrapErr,
 		apis: make(map[string]*api),
 	}
 }
@@ -98,6 +101,7 @@ func (p *Class) OnErr(onErr func(error), src ...ast.Node) {
 }
 
 func (p *Class) handleErr(prompt string, err error) {
+	err = p.wrap(prompt, err)
 	if p.onErr == nil {
 		log.Panicln(prompt, err)
 	}
@@ -118,9 +122,12 @@ func (p *Class) Ret__0(src ast.Node, args ...any) {
 	if p.ret == nil {
 		log.Panicln("please call `ret` after a `query` or `call` statement")
 	}
-	if src == nil && len(args) == 0 {
-		p.ret(nil)
-		return
+	if src == nil {
+		if len(args) == 0 {
+			p.ret(nil)
+			return
+		}
+		args = append(make([]any, 1, len(args)+1), args...)
 	}
 	p.ret(args...)
 }
@@ -324,7 +331,7 @@ func (p *Class) Count__0(src ast.Node, cond string, args ...any) (n int, err err
 	}
 	row := p.db.QueryRowContext(context.TODO(), "SELECT COUNT(*) FROM "+p.tbl+" WHERE "+cond, args...)
 	if err = row.Scan(&n); err != nil {
-		p.handleErr("count:", err)
+		p.handleErr("query:", err)
 	}
 	return
 }
@@ -802,22 +809,61 @@ func (p *Class) Api(name string, spec any, src ...*ast.FuncLit) {
 	p.apis[name] = api
 }
 
+var (
+	tyError = reflect.TypeOf((*error)(nil)).Elem()
+)
+
+func setRetErr(result []reflect.Value, errRet error) {
+	if n := len(result); n > 0 {
+		if result[n-1].Type() == tyError {
+			result[n-1] = reflect.ValueOf(errRet)
+		}
+	}
+}
+
+func (p *Class) doCall(args ...any) {
+	vArgs := make([]reflect.Value, len(args))
+	for i, arg := range args {
+		vArgs[i] = reflect.ValueOf(arg)
+	}
+
+	var old = p.onErr
+	var errRet error
+	p.onErr = func(err error) {
+		errRet = err
+		panic(err)
+	}
+	defer func() {
+		p.onErr = old
+		if e := recover(); e != nil {
+			if errRet == nil {
+				errRet = fmt.Errorf("%v", e)
+			}
+			setRetErr(p.result, errRet)
+		}
+		p.ret = p.callRet
+	}()
+	p.result = reflect.ValueOf(p.api.spec).Call(vArgs)
+}
+
 // Call calls an api with specified args.
 func (p *Class) Call__0(src ast.Node, args ...any) {
 	if p.api == nil {
 		log.Panicln("please call `call` after an api definition")
 	}
-	vArgs := make([]reflect.Value, len(args))
-	for i, arg := range args {
-		vArgs[i] = reflect.ValueOf(arg)
+	if src == nil {
+		if len(args) == 0 {
+			p.doCall(nil)
+			return
+		}
+		args = append(make([]any, 1, len(args)+1), args...)
 	}
-	p.result = reflect.ValueOf(p.api.spec).Call(vArgs)
-	p.ret = p.callRet
+	p.doCall(args...)
 }
 
 // Call calls an api with specified args.
 func (p *Class) Call__1(args ...any) {
-	p.Call__0(nil, args...)
+	p.doCall(args...)
 }
 
 func (p *Class) callRet(args ...any) error {
