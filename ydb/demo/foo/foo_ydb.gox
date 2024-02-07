@@ -6,21 +6,21 @@ import (
 )
 
 type User struct {
-	Id       string `id TEXT(32) UNIQUE`
+	Id       string `id CHAR(32) UNIQUE`
 	Spwd     string
 	Salt     string
 	Nickname string
-	Email    string    `INDEX`
-	Tel      string    `INDEX`
+	Email    string    `CHAR(64) INDEX`
+	Tel      string    `CHAR(16) INDEX`
 	Born     time.Time `INDEX`
-	Ctime    time.Time `DATATIME(6) INDEX`
+	Ctime    time.Time `DATETIME(6) INDEX`
 }
 
 type ArticleEntry struct {
-	Id     string `UNIQUE`
-	Author string `INDEX`
+	Id     string `CHAR(32) UNIQUE`
+	Author string `CHAR(24) INDEX`
 	Title  string
-	Ctime  time.Time `DATATIME INDEX`
+	Ctime  time.Time `DATETIME INDEX`
 }
 
 type Article struct {
@@ -29,11 +29,11 @@ type Article struct {
 }
 
 type Tag struct {
-	Name    string `UNIQUE(article)`
-	Article string
+	Name    string `CHAR(24) UNIQUE(article)`
+	Article string `CHAR(32)`
 }
 
-engine "sqlite3"
+engine "mysql"
 
 table User, "user v0.1.0"
 
@@ -58,7 +58,6 @@ class "Users", => {
 		salt := rand
 		spwd := hs256(pwd, salt)
 		insert &User{Id: id, Spwd: spwd, Salt: salt, Nickname: nickname, Email: email, Tel: tel, Ctime: ctime}
-		// ErrDuplicated
 		return nil
 	}
 	call "user", "pwd", "nickname", "", "", time.now

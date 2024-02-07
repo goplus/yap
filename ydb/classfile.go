@@ -36,12 +36,13 @@ type dbTable = Table
 type dbClass = Class
 
 type Sql struct {
-	driver  *engine
+	driver  *Engine
 	tables  map[string]*Table
 	classes map[string]*Class
 	db      *sql.DB
 	*dbTable
 	*dbClass
+	autodrop bool
 }
 
 func (p *Sql) initSql() {
@@ -50,15 +51,22 @@ func (p *Sql) initSql() {
 }
 
 // Engine initializes database by specified engine name.
-func (p *Sql) Engine__0(name string, src ...ast.Node) {
+func (p *Sql) Engine__0(name string, src ...ast.Expr) {
 	driver, ok := engines[name]
 	if !ok {
 		log.Panicf("engine `%s` not found: please call ydb.Register first\n", name)
 	}
-	defaultDataSource := driver.dataSource
+	defaultDataSource := driver.TestSource
 	dataSource, ok := defaultDataSource.(string)
 	if !ok {
 		dataSource = defaultDataSource.(func() string)()
+	}
+	const (
+		autodropParam = "autodrop"
+	)
+	if strings.HasSuffix(dataSource, autodropParam) {
+		dataSource = dataSource[:len(dataSource)-len(autodropParam)-1]
+		p.autodrop = true
 	}
 	db, err := sql.Open(name, dataSource)
 	if err != nil {
@@ -70,7 +78,7 @@ func (p *Sql) Engine__0(name string, src ...ast.Node) {
 
 // Engine returns engine name of the database.
 func (p *Sql) Engine__1() string {
-	return p.driver.name
+	return p.driver.Name
 }
 
 func (p *Sql) defineTable(nameVer string, zeroSchema any) {
@@ -103,19 +111,19 @@ func dbName(fldName string) string {
 }
 
 // Table creates a new table by specified Schema.
-func Gopt_Sql_Gopx_Table[Schema any](sql interface{ defineTable(string, any) }, nameVer string, src ...ast.Node) {
+func Gopt_Sql_Gopx_Table[Schema any](sql interface{ defineTable(string, any) }, nameVer string, src ...ast.Expr) {
 	sql.defineTable(nameVer, (*Schema)(nil))
 }
 
 // From migrates from old table because it's an incompatible change
-func (p *Sql) From(old string, migrate func(), src ...ast.Node) {
+func (p *Sql) From(old string, migrate func(), src ...ast.Expr) {
 	if p.dbTable == nil {
 		log.Panicln("please call `from` after a `table` statement")
 	}
 }
 
 // Class creates a new class by a spec.
-func (p *Sql) Class(name string, spec func(), src ...ast.Node) {
+func (p *Sql) Class(name string, spec func(), src ...ast.Expr) {
 	cls := newClass(name, p)
 	p.dbClass = cls
 	p.classes[name] = cls
@@ -126,20 +134,19 @@ func (p *Sql) Class(name string, spec func(), src ...ast.Node) {
 
 // -----------------------------------------------------------------------------
 
-type engine struct {
-	name       string
-	dataSource any
-	wrapErr    func(prompt string, err error) error
+type Engine struct {
+	Name       string
+	TestSource any // can be a `string` or a `func() string` object.
+	WrapErr    func(prompt string, err error) error
 }
 
 var (
-	engines = make(map[string]*engine) // engineName => engine
+	engines = make(map[string]*Engine) // engineName => engine
 )
 
-// Register registers a engine and its default data source.
-// defaultDataSource can be a `string` or a `func() string` object.
-func Register(name string, defaultDataSource any, wrapErr func(string, error) error) {
-	engines[name] = &engine{name, defaultDataSource, wrapErr}
+// Register registers an engine.
+func Register(e *Engine) {
+	engines[e.Name] = e
 }
 
 // -----------------------------------------------------------------------------

@@ -70,7 +70,7 @@ func newClass(name string, sql *Sql) *Class {
 		name: name,
 		sql:  sql,
 		db:   sql.db,
-		wrap: sql.driver.wrapErr,
+		wrap: sql.driver.WrapErr,
 		apis: make(map[string]*api),
 	}
 }
@@ -86,7 +86,7 @@ func (p *Class) gen(ctx context.Context) {
 }
 
 // Use sets the default table used in following sql operations.
-func (p *Class) Use(table string, src ...ast.Node) {
+func (p *Class) Use(table string, src ...ast.Expr) {
 	tblobj, ok := p.sql.tables[table]
 	if !ok {
 		log.Panicln("table not found:", table)
@@ -96,7 +96,7 @@ func (p *Class) Use(table string, src ...ast.Node) {
 }
 
 // OnErr sets error processing of a sql execution.
-func (p *Class) OnErr(onErr func(error), src ...ast.Node) {
+func (p *Class) OnErr(onErr func(error), src ...ast.Expr) {
 	p.onErr = onErr
 }
 
@@ -118,7 +118,7 @@ func (p *Class) handleErr(prompt string, err error) {
 //
 // For checking call result:
 //   - ret <expr1>, <expr2>, ...
-func (p *Class) Ret__0(src ast.Node, args ...any) {
+func (p *Class) Ret__0(src ast.Expr, args ...any) {
 	if p.ret == nil {
 		log.Panicln("please call `ret` after a `query` or `call` statement")
 	}
@@ -144,7 +144,7 @@ func (p *Class) Ret__1(args ...any) {
 //   - insert <colName1>, <valSlice1>, <colName2>, <valSlice2>, ...
 //   - insert <structValOrPtr>
 //   - insert <structOrPtrSlice>
-func (p *Class) Insert__0(src ast.Node, args ...any) (sql.Result, error) {
+func (p *Class) Insert__0(src ast.Expr, args ...any) (sql.Result, error) {
 	if p.tbl == "" {
 		log.Panicln("please call `use <tableName>` to specified current table")
 	}
@@ -275,7 +275,8 @@ func (p *Class) insertRowsVals(names []string, vals []any, rows int) (sql.Result
 	query := insertQuery(p.tbl, names)
 	query = append(query, valParams(n, rows)...)
 
-	result, err := p.db.ExecContext(context.TODO(), string(query), vals...)
+	q := string(query)
+	result, err := p.db.ExecContext(context.TODO(), q, vals...)
 	return p.insertRet(result, err)
 }
 
@@ -285,7 +286,9 @@ func (p *Class) insertRow(names []string, vals []any) (sql.Result, error) {
 	}
 	query := insertQuery(p.tbl, names)
 	query = append(query, valParam(len(vals))...)
-	result, err := p.db.ExecContext(context.TODO(), string(query), vals...)
+
+	q := string(query)
+	result, err := p.db.ExecContext(context.TODO(), q, vals...)
 	return p.insertRet(result, err)
 }
 
@@ -325,7 +328,7 @@ func (p *Class) Insert__1(kvPair ...any) (sql.Result, error) {
 }
 
 // Count returns rows of a query result.
-func (p *Class) Count__0(src ast.Node, cond string, args ...any) (n int, err error) {
+func (p *Class) Count__0(src ast.Expr, cond string, args ...any) (n int, err error) {
 	if p.tbl == "" {
 		log.Panicln("please call `use <tableName>` to specified a table name")
 	}
@@ -754,7 +757,7 @@ func addTblname(tbls []string, tbl string) []string {
 
 // Query creates a new query.
 //   - query <cond>, <arg1>, <arg2>, ...
-func (p *Class) Query__0(src ast.Node, cond string, args ...any) {
+func (p *Class) Query__0(src ast.Expr, cond string, args ...any) {
 	p.query = &query{
 		cond: cond, args: args,
 	}
@@ -767,7 +770,7 @@ func (p *Class) Query__1(cond string, args ...any) {
 }
 
 // Limit sets query result rows limit.
-func (p *Class) Limit__0(n int, src ...ast.Node) {
+func (p *Class) Limit__0(n int, src ...ast.Expr) {
 	if p.query == nil {
 		log.Panicln("please call `limit` after a query statement")
 	}
@@ -775,7 +778,7 @@ func (p *Class) Limit__0(n int, src ...ast.Node) {
 }
 
 // Limit checks if query result rows is < n or not.
-func (p *Class) Limit__1(src ast.Node, n int, cond string, args ...any) error {
+func (p *Class) Limit__1(src ast.Expr, n int, cond string, args ...any) error {
 	ret, err := p.Count__0(src, cond, args...)
 	if err != nil {
 		return err
@@ -803,7 +806,7 @@ type api struct {
 }
 
 // Api creates a new api by a spec.
-func (p *Class) Api(name string, spec any, src ...*ast.FuncLit) {
+func (p *Class) Api(name string, spec any, src ...ast.Expr) {
 	api := &api{name: name, spec: spec}
 	p.api = api
 	p.apis[name] = api
@@ -857,7 +860,7 @@ func (p *Class) doCall(args ...any) {
 }
 
 // Call calls an api with specified args.
-func (p *Class) Call__0(src ast.Node, args ...any) {
+func (p *Class) Call__0(src ast.Expr, args ...any) {
 	if p.api == nil {
 		log.Panicln("please call `call` after an api definition")
 	}

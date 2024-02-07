@@ -31,5 +31,9 @@ func wrapErr(prompt string, err error) error {
 }
 
 func init() {
-	ydb.Register("sqlite3", "file:test.db?cache=shared&mode=memory", wrapErr)
+	ydb.Register(&ydb.Engine{
+		Name:       "sqlite3",
+		TestSource: "file:test.db?cache=shared&mode=memory",
+		WrapErr:    wrapErr,
+	})
 }

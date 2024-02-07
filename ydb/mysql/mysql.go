@@ -20,24 +20,42 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 	"github.com/goplus/yap/ydb"
 )
 
-// Register registers a default data source for `mysql` engine.
-func Register(defaultDataSource string) {
-	ydb.Register("mysql", defaultDataSource, wrapErr)
+// Register registers a user-defined testDataSource for `mysql` engine.
+// eg. testDataSource = `root@/test?autodrop`
+func Register(testDataSource string) {
+	ydb.Register(&ydb.Engine{
+		Name:       "mysql",
+		TestSource: testDataSource,
+		WrapErr:    wrapErr,
+	})
 }
 
 func init() {
-	ydb.Register("mysql", defaultDataSource, wrapErr)
+	ydb.Register(&ydb.Engine{
+		Name:       "mysql",
+		TestSource: testDataSource,
+		WrapErr:    wrapErr,
+	})
 }
 
+const (
+	ER_DUP_ENTRY = 1062
+)
+
 func wrapErr(prompt string, err error) error {
+	if prompt == "insert:" {
+		if e, ok := err.(*mysql.MySQLError); ok && e.Number == ER_DUP_ENTRY {
+			return ydb.ErrDuplicated
+		}
+	}
 	return err
 }
 
-func defaultDataSource() string {
+func testDataSource() string {
 	dataSource := os.Getenv("YDB_MYSQL_TEST")
 	if dataSource == "" {
 		log.Panicln("env `YDB_MYSQL_TEST` not found, please set it before running")
