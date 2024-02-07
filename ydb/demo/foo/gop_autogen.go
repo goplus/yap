@@ -20,24 +20,24 @@ type User struct {
 	Spwd     string
 	Salt     string
 	Nickname string
-	Email    string    `INDEX`
-	Tel      string    `INDEX`
+	Email    string    `CHAR(64) INDEX`
+	Tel      string    `CHAR(16) INDEX`
 	Born     time.Time `INDEX`
 	Ctime    time.Time `DATETIME(6) INDEX`
 }
 type ArticleEntry struct {
-	Id     string `UNIQUE`
-	Author string `INDEX`
+	Id     string `CHAR(32) UNIQUE`
+	Author string `CHAR(24) INDEX`
 	Title  string
-	Ctime  time.Time `DATATIME INDEX`
+	Ctime  time.Time `DATETIME INDEX`
 }
 type Article struct {
 	ArticleEntry
 	Body []byte `LONGBLOB`
 }
 type Tag struct {
-	Name    string `UNIQUE(article)`
-	Article string
+	Name    string `CHAR(24) UNIQUE(article)`
+	Article string `CHAR(32)`
 }
 type foo struct {
 	ydb.Sql
