@@ -20,7 +20,7 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 	"github.com/goplus/yap/ydb"
 )
 
@@ -42,7 +42,16 @@ func init() {
 	})
 }
 
+const (
+	ER_DUP_ENTRY = 1062
+)
+
 func wrapErr(prompt string, err error) error {
+	if prompt == "insert:" {
+		if e, ok := err.(*mysql.MySQLError); ok && e.Number == ER_DUP_ENTRY {
+			return ydb.ErrDuplicated
+		}
+	}
 	return err
 }
 
