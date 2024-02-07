@@ -36,7 +36,7 @@ type dbTable = Table
 type dbClass = Class
 
 type Sql struct {
-	driver  *engine
+	driver  *Engine
 	tables  map[string]*Table
 	classes map[string]*Class
 	db      *sql.DB
@@ -56,7 +56,7 @@ func (p *Sql) Engine__0(name string, src ...ast.Node) {
 	if !ok {
 		log.Panicf("engine `%s` not found: please call ydb.Register first\n", name)
 	}
-	defaultDataSource := driver.dataSource
+	defaultDataSource := driver.TestSource
 	dataSource, ok := defaultDataSource.(string)
 	if !ok {
 		dataSource = defaultDataSource.(func() string)()
@@ -78,7 +78,7 @@ func (p *Sql) Engine__0(name string, src ...ast.Node) {
 
 // Engine returns engine name of the database.
 func (p *Sql) Engine__1() string {
-	return p.driver.name
+	return p.driver.Name
 }
 
 func (p *Sql) defineTable(nameVer string, zeroSchema any) {
@@ -134,20 +134,19 @@ func (p *Sql) Class(name string, spec func(), src ...ast.Node) {
 
 // -----------------------------------------------------------------------------
 
-type engine struct {
-	name       string
-	dataSource any
-	wrapErr    func(prompt string, err error) error
+type Engine struct {
+	Name       string
+	TestSource any // can be a `string` or a `func() string` object.
+	WrapErr    func(prompt string, err error) error
 }
 
 var (
-	engines = make(map[string]*engine) // engineName => engine
+	engines = make(map[string]*Engine) // engineName => engine
 )
 
-// Register registers a engine and its default data source.
-// defaultDataSource can be a `string` or a `func() string` object.
-func Register(name string, defaultDataSource any, wrapErr func(string, error) error) {
-	engines[name] = &engine{name, defaultDataSource, wrapErr}
+// Register registers an engine.
+func Register(e *Engine) {
+	engines[e.Name] = e
 }
 
 // -----------------------------------------------------------------------------

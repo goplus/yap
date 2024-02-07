@@ -70,7 +70,7 @@ func newClass(name string, sql *Sql) *Class {
 		name: name,
 		sql:  sql,
 		db:   sql.db,
-		wrap: sql.driver.wrapErr,
+		wrap: sql.driver.WrapErr,
 		apis: make(map[string]*api),
 	}
 }

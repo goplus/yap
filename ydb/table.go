@@ -229,35 +229,27 @@ func (p *Table) create(ctx context.Context, sql *Sql) {
 	q := string(query)
 	_, err := db.ExecContext(ctx, q)
 	if err != nil {
-		log.Println(q)
-		log.Panicf("create table (%s): %v\n", p.name, err)
+		log.Panicf("%s\ncreate table (%s): %v\n", q, p.name, err)
 	}
 
 	for _, uniq := range p.uniqs {
 		name := indexName(uniq, "uniq_", p.name)
-		err = createIndex(db, ctx, "CREATE UNIQUE INDEX ", name, p.name, uniq)
-		if err != nil {
-			log.Panicln("create unique index:", err)
-		}
+		createIndex(db, ctx, "CREATE UNIQUE INDEX ", name, p.name, uniq)
 	}
 	for _, idx := range p.idxs {
 		name := indexName(idx, "idx_", p.name)
-		err = createIndex(db, ctx, "CREATE INDEX ", name, p.name, idx)
-		if err != nil {
-			log.Panicln("create index:", err)
-		}
+		createIndex(db, ctx, "CREATE INDEX ", name, p.name, idx)
 	}
 }
 
 // prefix_tbl_name1_name2_...
 func indexName(cols []string, prefix, tbl string) string {
-	n := len(prefix) + 1 + len(tbl)
+	n := len(prefix) + len(tbl)
 	for _, col := range cols {
 		n += 1 + len(col)
 	}
 	b := make([]byte, 0, n)
 	b = append(b, prefix...)
-	b = append(b, '_')
 	b = append(b, tbl...)
 	for _, col := range cols {
 		b = append(b, '_')
@@ -266,10 +258,11 @@ func indexName(cols []string, prefix, tbl string) string {
 	return stringutil.String(b)
 }
 
-func createIndex(db *sql.DB, ctx context.Context, cmd string, name, tbl string, cols []string) error {
+func createIndex(db *sql.DB, ctx context.Context, cmd string, name, tbl string, cols []string) {
 	query := stringutil.Concat(cmd, name, " ON ", tbl, "(", strings.Join(cols, ","), ")")
-	_, err := db.ExecContext(ctx, query)
-	return err
+	if _, err := db.ExecContext(ctx, query); err != nil {
+		log.Panicf("%s\ncreate index `%s`: %v\n", query, name, err)
+	}
 }
 
 // -----------------------------------------------------------------------------
