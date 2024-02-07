@@ -18,9 +18,18 @@ package sqlite3
 
 import (
 	"github.com/goplus/yap/ydb"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/mattn/go-sqlite3"
 )
 
+func wrapErr(prompt string, err error) error {
+	if prompt == "insert:" {
+		if e, ok := err.(sqlite3.Error); ok && e.Code == sqlite3.ErrConstraint {
+			return ydb.ErrDuplicated
+		}
+	}
+	return err
+}
+
 func init() {
-	ydb.Register("sqlite3", "file:test.db?cache=shared&mode=memory")
+	ydb.Register("sqlite3", "file:test.db?cache=shared&mode=memory", wrapErr)
 }

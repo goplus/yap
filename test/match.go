@@ -394,8 +394,17 @@ retry:
 	case map[string]float64:
 		got = toMapAny(gv)
 		goto retry
+
+	// other types:
+	default:
+		if got == expected {
+			return
+		}
 	}
-	t.Fatalf("unmatched type%s - got: %T, expected: %T\n", nameCtx(name), got, expected)
+	t.Fatalf(
+		"unmatched%s - got: %v (%T), expected: %v (%T)\n",
+		nameCtx(name), got, got, expected, expected,
+	)
 }
 
 // -----------------------------------------------------------------------------

@@ -26,15 +26,21 @@ import (
 
 // Register registers a default data source for `mysql` engine.
 func Register(defaultDataSource string) {
-	ydb.Register("mysql", defaultDataSource)
+	ydb.Register("mysql", defaultDataSource, wrapErr)
 }
 
 func init() {
-	ydb.Register("mysql", func() string {
-		dataSource := os.Getenv("YDB_MYSQL_TEST")
-		if dataSource == "" {
-			log.Panicln("env `YDB_MYSQL_TEST` not found, please set it before running")
-		}
-		return dataSource
-	})
+	ydb.Register("mysql", defaultDataSource, wrapErr)
+}
+
+func wrapErr(prompt string, err error) error {
+	return err
+}
+
+func defaultDataSource() string {
+	dataSource := os.Getenv("YDB_MYSQL_TEST")
+	if dataSource == "" {
+		log.Panicln("env `YDB_MYSQL_TEST` not found, please set it before running")
+	}
+	return dataSource
 }
