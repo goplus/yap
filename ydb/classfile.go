@@ -51,14 +51,20 @@ func (p *Sql) initSql() {
 
 // Engine initializes database by specified engine name.
 func (p *Sql) Engine__0(name string, src ...ast.Node) {
-	if defaultDataSource, ok := engineDataSource[name]; ok {
-		db, err := sql.Open(name, defaultDataSource)
-		if err != nil {
-			log.Panicln("sql.Open:", err)
-		}
-		p.db = db
-		p.driver = name
+	defaultDataSource, ok := engineDataSource[name]
+	if !ok {
+		log.Panicf("engine `%s` not found: please call ydb.Register first\n", name)
 	}
+	dataSource, ok := defaultDataSource.(string)
+	if !ok {
+		dataSource = defaultDataSource.(func() string)()
+	}
+	db, err := sql.Open(name, dataSource)
+	if err != nil {
+		log.Panicln("sql.Open:", err)
+	}
+	p.db = db
+	p.driver = name
 }
 
 // Engine returns engine name of the database.
@@ -120,11 +126,12 @@ func (p *Sql) Class(name string, spec func(), src ...ast.Node) {
 // -----------------------------------------------------------------------------
 
 var (
-	engineDataSource map[string]string // engineName => defaultDataSource
+	engineDataSource = make(map[string]any) // engineName => defaultDataSource
 )
 
 // Register registers a engine and its default data source.
-func Register(name, defaultDataSource string) {
+// defaultDataSource can be a `string` or a `func() string` object.
+func Register(name string, defaultDataSource any) {
 	engineDataSource[name] = defaultDataSource
 }
 

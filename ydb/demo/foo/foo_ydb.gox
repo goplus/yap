@@ -1,5 +1,8 @@
 import (
 	"time"
+
+	_ "github.com/goplus/yap/ydb/mysql"
+	_ "github.com/goplus/yap/ydb/sqlite3"
 )
 
 type User struct {
