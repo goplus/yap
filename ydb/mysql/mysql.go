@@ -17,6 +17,9 @@
 package mysql
 
 import (
+	"log"
+	"os"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/goplus/yap/ydb"
 )
@@ -24,4 +27,14 @@ import (
 // Register registers a default data source for `mysql` engine.
 func Register(defaultDataSource string) {
 	ydb.Register("mysql", defaultDataSource)
+}
+
+func init() {
+	ydb.Register("mysql", func() string {
+		dataSource := os.Getenv("YDB_MYSQL_TEST")
+		if dataSource == "" {
+			log.Panicln("env `YDB_MYSQL_TEST` not found, please set it before running")
+		}
+		return dataSource
+	})
 }

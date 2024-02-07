@@ -1,6 +1,7 @@
 import (
 	"time"
 
+	_ "github.com/goplus/yap/ydb/mysql"
 	_ "github.com/goplus/yap/ydb/sqlite3"
 )
 
@@ -32,7 +33,7 @@ type Tag struct {
 	Article string
 }
 
-engine "sqlite3"
+engine "mysql"
 
 table User, "user v0.1.0"
 
