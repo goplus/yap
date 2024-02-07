@@ -30,13 +30,26 @@ import (
 
 type dbType = reflect.Type
 
+type dbIndex struct {
+	index  []*column
+	col    *column
+	params string
+}
+
+func (p *dbIndex) get(tbl *Table) []*column {
+	if p.index == nil {
+		p.index = tbl.makeIndex(p.col, p.params)
+	}
+	return p.index
+}
+
 type Table struct {
 	name   string
 	ver    string
 	schema dbType
 	cols   []*column
-	uniqs  [][]string
-	idxs   [][]string
+	uniqs  []*dbIndex
+	idxs   []*dbIndex
 }
 
 type column struct {
@@ -124,9 +137,9 @@ func (p *Table) defineCols(n int, t dbType, base uintptr) {
 						}
 						switch cmd {
 						case `UNIQUE`:
-							p.uniqs = append(p.uniqs, makeIndex(col.name, params))
+							p.uniqs = append(p.uniqs, &dbIndex{nil, col, params})
 						case `INDEX`:
-							p.idxs = append(p.idxs, makeIndex(col.name, params))
+							p.idxs = append(p.idxs, &dbIndex{nil, col, params})
 						default:
 							if col.typ != "" {
 								log.Panicf("invalid tag `%s`: multiple column types?\n", tag)
@@ -177,25 +190,35 @@ func columnType(fldType dbType) string {
 	panic("unknown column type: " + fldType.String())
 }
 
-func makeIndex(name string, params string) []string {
+func (p *Table) makeIndex(col *column, params string) []*column {
 	if params == "" {
-		return []string{name}
+		return []*column{col}
 	}
 	pos := strings.IndexByte(params, ',')
 	if pos < 0 {
-		return []string{name, params}
+		return []*column{col, p.getCol(params)}
 	}
-	ret := make([]string, 1, 4)
-	ret[0] = name
+	ret := make([]*column, 1, 4)
+	ret[0] = col
 	for {
-		ret = append(ret, params[:pos])
+		ret = append(ret, p.getCol(params[:pos]))
 		params = params[pos+1:]
 		pos = strings.IndexByte(params, ',')
 		if pos < 0 {
 			break
 		}
 	}
-	return append(ret, params)
+	return append(ret, p.getCol(params))
+}
+
+func (p *Table) getCol(name string) *column {
+	for _, col := range p.cols {
+		if col.name == name {
+			return col
+		}
+	}
+	log.Panicf("table `%s` doesn't have column `%s`\n", p.name, name)
+	return nil
 }
 
 // -----------------------------------------------------------------------------
@@ -233,33 +256,41 @@ func (p *Table) create(ctx context.Context, sql *Sql) {
 	}
 
 	for _, uniq := range p.uniqs {
-		name := indexName(uniq, "uniq_", p.name)
-		createIndex(db, ctx, "CREATE UNIQUE INDEX ", name, p.name, uniq)
+		cols := uniq.get(p)
+		name := indexName(cols, "uniq_", p.name)
+		createIndex(sql, db, ctx, "CREATE UNIQUE INDEX ", name, p.name, cols)
 	}
 	for _, idx := range p.idxs {
-		name := indexName(idx, "idx_", p.name)
-		createIndex(db, ctx, "CREATE INDEX ", name, p.name, idx)
+		cols := idx.get(p)
+		name := indexName(cols, "idx_", p.name)
+		createIndex(sql, db, ctx, "CREATE INDEX ", name, p.name, cols)
 	}
 }
 
 // prefix_tbl_name1_name2_...
-func indexName(cols []string, prefix, tbl string) string {
+func indexName(cols []*column, prefix, tbl string) string {
 	n := len(prefix) + len(tbl)
 	for _, col := range cols {
-		n += 1 + len(col)
+		n += 1 + len(col.name)
 	}
 	b := make([]byte, 0, n)
 	b = append(b, prefix...)
 	b = append(b, tbl...)
 	for _, col := range cols {
 		b = append(b, '_')
-		b = append(b, col...)
+		b = append(b, col.name...)
 	}
 	return stringutil.String(b)
 }
 
-func createIndex(db *sql.DB, ctx context.Context, cmd string, name, tbl string, cols []string) {
-	query := stringutil.Concat(cmd, name, " ON ", tbl, "(", strings.Join(cols, ","), ")")
+func createIndex(sql *Sql, db *sql.DB, ctx context.Context, cmd string, name, tbl string, cols []*column) {
+	parts := make([]string, 0, 5+2*len(cols))
+	parts = append(parts, cmd, name, " ON ", tbl, "(")
+	for _, col := range cols {
+		parts = append(parts, col.name, ",")
+	}
+	parts[len(parts)-1] = ")"
+	query := stringutil.Concat(parts...)
 	if _, err := db.ExecContext(ctx, query); err != nil {
 		log.Panicf("%s\ncreate index `%s`: %v\n", query, name, err)
 	}

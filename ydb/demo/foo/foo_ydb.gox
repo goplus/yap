@@ -6,7 +6,7 @@ import (
 )
 
 type User struct {
-	Id       string `id TEXT(32) UNIQUE`
+	Id       string `id CHAR(32) UNIQUE`
 	Spwd     string
 	Salt     string
 	Nickname string
@@ -58,7 +58,6 @@ class "Users", => {
 		salt := rand
 		spwd := hs256(pwd, salt)
 		insert &User{Id: id, Spwd: spwd, Salt: salt, Nickname: nickname, Email: email, Tel: tel, Ctime: ctime}
-		// ErrDuplicated
 		return nil
 	}
 	call "user", "pwd", "nickname", "", "", time.now
