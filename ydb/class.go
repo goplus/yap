@@ -275,7 +275,8 @@ func (p *Class) insertRowsVals(names []string, vals []any, rows int) (sql.Result
 	query := insertQuery(p.tbl, names)
 	query = append(query, valParams(n, rows)...)
 
-	result, err := p.db.ExecContext(context.TODO(), string(query), vals...)
+	q := string(query)
+	result, err := p.db.ExecContext(context.TODO(), q, vals...)
 	return p.insertRet(result, err)
 }
 
@@ -285,7 +286,9 @@ func (p *Class) insertRow(names []string, vals []any) (sql.Result, error) {
 	}
 	query := insertQuery(p.tbl, names)
 	query = append(query, valParam(len(vals))...)
-	result, err := p.db.ExecContext(context.TODO(), string(query), vals...)
+
+	q := string(query)
+	result, err := p.db.ExecContext(context.TODO(), q, vals...)
 	return p.insertRet(result, err)
 }
 
@@ -803,7 +806,7 @@ type api struct {
 }
 
 // Api creates a new api by a spec.
-func (p *Class) Api(name string, spec any, src ...*ast.FuncLit) {
+func (p *Class) Api(name string, spec any, src ...ast.Expr) {
 	api := &api{name: name, spec: spec}
 	p.api = api
 	p.apis[name] = api

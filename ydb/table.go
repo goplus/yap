@@ -77,6 +77,10 @@ func getVals(vals []any, v reflect.Value, cols []field, elem bool) []any {
 		v := reflect.NewAt(col.typ, unsafe.Pointer(this+col.offset))
 		if elem {
 			v = v.Elem()
+			if col.typ == tyTime && v.IsZero() { // TODO: all data type can use NULL?
+				vals = append(vals, nil)
+				continue
+			}
 		}
 		val := v.Interface()
 		vals = append(vals, val)
