@@ -1,15 +1,26 @@
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
 	"errors"
+	mrand "math/rand"
+	"strconv"
+	"time"
 )
 
 var (
 	ErrNoEmailAndTel = errors.New("no email and telephone")
 )
 
+var (
+	rnd = mrand.new(mrand.newSource(time.now.unixMicro))
+)
+
 func Rand() string {
-	return ""
+	return strconv.formatInt(rnd.Int63(), 36)
 }
 
-func Hmac(pwd, salt string) string {
-	return ""
+func Hs256(pwd, salt string) string {
+	b := hmac.new(sha256.New, []byte(salt)).sum([]byte(pwd))
+	return base64.RawURLEncoding.encodeToString(b)
 }

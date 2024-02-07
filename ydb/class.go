@@ -826,6 +826,7 @@ func (p *Class) doCall(args ...any) {
 	for i, arg := range args {
 		vArgs[i] = reflect.ValueOf(arg)
 	}
+	vFn := reflect.ValueOf(p.api.spec)
 
 	var old = p.onErr
 	var errRet error
@@ -836,6 +837,14 @@ func (p *Class) doCall(args ...any) {
 	defer func() {
 		p.onErr = old
 		if e := recover(); e != nil {
+			if p.result == nil { // set p.result to zero if panic
+				fnt := vFn.Type()
+				n := fnt.NumOut()
+				p.result = make([]reflect.Value, n)
+				for i := 0; i < n; i++ {
+					p.result[i] = reflect.Zero(fnt.Out(i))
+				}
+			}
 			if errRet == nil {
 				errRet = fmt.Errorf("%v", e)
 			}
@@ -843,7 +852,8 @@ func (p *Class) doCall(args ...any) {
 		}
 		p.ret = p.callRet
 	}()
-	p.result = reflect.ValueOf(p.api.spec).Call(vArgs)
+	p.result = nil
+	p.result = vFn.Call(vArgs)
 }
 
 // Call calls an api with specified args.
