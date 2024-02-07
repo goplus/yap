@@ -42,6 +42,7 @@ type Sql struct {
 	db      *sql.DB
 	*dbTable
 	*dbClass
+	autodrop bool
 }
 
 func (p *Sql) initSql() {
@@ -59,6 +60,13 @@ func (p *Sql) Engine__0(name string, src ...ast.Node) {
 	dataSource, ok := defaultDataSource.(string)
 	if !ok {
 		dataSource = defaultDataSource.(func() string)()
+	}
+	const (
+		autodropParam = "autodrop"
+	)
+	if strings.HasSuffix(dataSource, autodropParam) {
+		dataSource = dataSource[:len(dataSource)-len(autodropParam)-1]
+		p.autodrop = true
 	}
 	db, err := sql.Open(name, dataSource)
 	if err != nil {

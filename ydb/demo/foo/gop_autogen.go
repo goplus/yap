@@ -23,7 +23,7 @@ type User struct {
 	Email    string    `INDEX`
 	Tel      string    `INDEX`
 	Born     time.Time `INDEX`
-	Ctime    time.Time `DATATIME(6) INDEX`
+	Ctime    time.Time `DATETIME(6) INDEX`
 }
 type ArticleEntry struct {
 	Id     string `UNIQUE`
@@ -65,7 +65,7 @@ func Hs256(pwd string, salt string) string {
 //line ydb/demo/foo/foo_ydb.gox:36
 func (this *foo) Main() {
 //line ydb/demo/foo/foo_ydb.gox:36:1
-	this.Engine__0("sqlite3")
+	this.Engine__0("mysql")
 //line ydb/demo/foo/foo_ydb.gox:38:1
 	ydb.Gopt_Sql_Gopx_Table[User](this, "user v0.1.0")
 //line ydb/demo/foo/foo_ydb.gox:40:1

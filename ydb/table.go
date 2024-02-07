@@ -206,7 +206,15 @@ func (p *Table) create(ctx context.Context, sql *Sql) {
 		log.Panicln("empty table:", p.name, p.ver)
 	}
 
+	db := sql.db
 	query := make([]byte, 0, 64)
+	if sql.autodrop {
+		query = append(query, "DROP TABLE "...)
+		query = append(query, p.name...)
+		db.ExecContext(ctx, string(query))
+		query = query[:0]
+	}
+
 	query = append(query, "CREATE TABLE "...)
 	query = append(query, p.name...)
 	query = append(query, ' ', '(')
@@ -218,9 +226,10 @@ func (p *Table) create(ctx context.Context, sql *Sql) {
 	}
 	query[len(query)-1] = ')'
 
-	db := sql.db
-	_, err := db.ExecContext(ctx, string(query))
+	q := string(query)
+	_, err := db.ExecContext(ctx, q)
 	if err != nil {
+		log.Println(q)
 		log.Panicf("create table (%s): %v\n", p.name, err)
 	}
 

@@ -13,7 +13,7 @@ type User struct {
 	Email    string    `INDEX`
 	Tel      string    `INDEX`
 	Born     time.Time `INDEX`
-	Ctime    time.Time `DATATIME(6) INDEX`
+	Ctime    time.Time `DATETIME(6) INDEX`
 }
 
 type ArticleEntry struct {
@@ -33,7 +33,7 @@ type Tag struct {
 	Article string
 }
 
-engine "sqlite3"
+engine "mysql"
 
 table User, "user v0.1.0"
 
