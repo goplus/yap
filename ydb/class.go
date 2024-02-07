@@ -113,17 +113,21 @@ func (p *Class) handleErr(prompt string, err error) {
 //   - ret &<structSlice>
 //
 // For checking call result:
-//   - TODO
+//   - ret <expr1>, <expr2>, ...
 func (p *Class) Ret__0(src ast.Node, args ...any) {
 	if p.ret == nil {
 		log.Panicln("please call `ret` after a `query` or `call` statement")
+	}
+	if src == nil && len(args) == 0 {
+		p.ret(nil)
+		return
 	}
 	p.ret(args...)
 }
 
 // Ret checks a query or call result.
 func (p *Class) Ret__1(args ...any) {
-	p.Ret__0(nil, args...)
+	p.ret(args...)
 }
 
 // -----------------------------------------------------------------------------
