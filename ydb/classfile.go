@@ -51,7 +51,7 @@ func (p *Sql) initSql() {
 }
 
 // Engine initializes database by specified engine name.
-func (p *Sql) Engine__0(name string, src ...ast.Node) {
+func (p *Sql) Engine__0(name string, src ...ast.Expr) {
 	driver, ok := engines[name]
 	if !ok {
 		log.Panicf("engine `%s` not found: please call ydb.Register first\n", name)
@@ -111,19 +111,19 @@ func dbName(fldName string) string {
 }
 
 // Table creates a new table by specified Schema.
-func Gopt_Sql_Gopx_Table[Schema any](sql interface{ defineTable(string, any) }, nameVer string, src ...ast.Node) {
+func Gopt_Sql_Gopx_Table[Schema any](sql interface{ defineTable(string, any) }, nameVer string, src ...ast.Expr) {
 	sql.defineTable(nameVer, (*Schema)(nil))
 }
 
 // From migrates from old table because it's an incompatible change
-func (p *Sql) From(old string, migrate func(), src ...ast.Node) {
+func (p *Sql) From(old string, migrate func(), src ...ast.Expr) {
 	if p.dbTable == nil {
 		log.Panicln("please call `from` after a `table` statement")
 	}
 }
 
 // Class creates a new class by a spec.
-func (p *Sql) Class(name string, spec func(), src ...ast.Node) {
+func (p *Sql) Class(name string, spec func(), src ...ast.Expr) {
 	cls := newClass(name, p)
 	p.dbClass = cls
 	p.classes[name] = cls
