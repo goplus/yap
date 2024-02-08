@@ -26,8 +26,8 @@ type Article struct {
 	Body []byte `LONGBLOB`
 }
 type Tag struct {
-	Name    string `CHAR(24) UNIQUE(article)`
-	Article string `CHAR(32)`
+	Name string `CHAR(24) UNIQUE(doc)`
+	Doc  string `CHAR(32)`
 }
 type User struct {
 	Id       string `id CHAR(32) UNIQUE`
@@ -66,27 +66,37 @@ func (this *article) Main() {
 //line ydb/demo/foo/article_ydb.gox:31:1
 		this.Use("article")
 //line ydb/demo/foo/article_ydb.gox:33:1
-		this.Api("listByTag", func(tag string) (result []ArticleEntry) {
+		this.Api("add", func(doc *Article) error {
 //line ydb/demo/foo/article_ydb.gox:34:1
-			var ids []string
+			this.Insert__1(doc)
 //line ydb/demo/foo/article_ydb.gox:35:1
-			this.Query__1("tag.name=?", tag)
-//line ydb/demo/foo/article_ydb.gox:36:1
-			this.Ret__1("tag.article", &ids)
+			return nil
+		})
 //line ydb/demo/foo/article_ydb.gox:38:1
+		this.Api("tags", func(docId string, tags ...string) {
+		})
+//line ydb/demo/foo/article_ydb.gox:41:1
+		this.Api("listByTag", func(tag string) (result []ArticleEntry) {
+//line ydb/demo/foo/article_ydb.gox:42:1
+			var ids []string
+//line ydb/demo/foo/article_ydb.gox:43:1
+			this.Query__1("tag.name=?", tag)
+//line ydb/demo/foo/article_ydb.gox:44:1
+			this.Ret__1("tag.article", &ids)
+//line ydb/demo/foo/article_ydb.gox:46:1
 			this.Query__1("id=?", ids)
-//line ydb/demo/foo/article_ydb.gox:39:1
+//line ydb/demo/foo/article_ydb.gox:47:1
 			this.Ret__1(&result)
-//line ydb/demo/foo/article_ydb.gox:40:1
+//line ydb/demo/foo/article_ydb.gox:48:1
 			return
 		})
-//line ydb/demo/foo/article_ydb.gox:43:1
+//line ydb/demo/foo/article_ydb.gox:51:1
 		this.Api("listByAuthor", func(author string) (result []ArticleEntry) {
-//line ydb/demo/foo/article_ydb.gox:44:1
+//line ydb/demo/foo/article_ydb.gox:52:1
 			this.Query__1("author=?", author)
-//line ydb/demo/foo/article_ydb.gox:45:1
+//line ydb/demo/foo/article_ydb.gox:53:1
 			this.Ret__1(&result)
-//line ydb/demo/foo/article_ydb.gox:46:1
+//line ydb/demo/foo/article_ydb.gox:54:1
 			return
 		})
 	})

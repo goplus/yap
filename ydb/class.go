@@ -45,7 +45,6 @@ var (
 type Class struct {
 	name string
 	tbl  string
-	tobj *Table
 	sql  *Sql
 	db   *sql.DB
 	wrap func(string, error) error
@@ -87,12 +86,11 @@ func (p *Class) gen(ctx context.Context) {
 
 // Use sets the default table used in following sql operations.
 func (p *Class) Use(table string, src ...ast.Expr) {
-	tblobj, ok := p.sql.tables[table]
+	_, ok := p.sql.tables[table]
 	if !ok {
 		log.Panicln("table not found:", table)
 	}
 	p.tbl = table
-	p.tobj = tblobj
 }
 
 // OnErr sets error processing of a sql execution.

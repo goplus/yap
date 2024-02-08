@@ -13,8 +13,8 @@ type Article struct {
 }
 
 type Tag struct {
-	Name    string `CHAR(24) UNIQUE(article)`
-	Article string `CHAR(32)`
+	Name string `CHAR(24) UNIQUE(doc)`
+	Doc  string `CHAR(32)`
 }
 
 engine "mysql"
@@ -29,6 +29,14 @@ table Tag, "v0.1.0"
 
 class "Articles", => {
 	use "article"
+
+	api "add", func(doc *Article) error {
+		insert doc
+		return nil
+	}
+
+	api "tags", func(docId string, tags ...string) {
+	}
 
 	api "listByTag", func(tag string) (result []ArticleEntry) {
 		var ids []string
