@@ -41,7 +41,7 @@ class "Articles", => {
 	api "listByTag", func(tag string) (result []ArticleEntry) {
 		var ids []string
 		query "tag.name=?", tag
-		ret "tag.article", &ids
+		ret "tag.doc", &ids
 
 		query "id=?", ids
 		ret &result
