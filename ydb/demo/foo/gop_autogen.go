@@ -82,7 +82,7 @@ func (this *article) Main() {
 //line ydb/demo/foo/article_ydb.gox:43:1
 			this.Query__1("tag.name=?", tag)
 //line ydb/demo/foo/article_ydb.gox:44:1
-			this.Ret__1("tag.article", &ids)
+			this.Ret__1("tag.doc", &ids)
 //line ydb/demo/foo/article_ydb.gox:46:1
 			this.Query__1("id=?", ids)
 //line ydb/demo/foo/article_ydb.gox:47:1
