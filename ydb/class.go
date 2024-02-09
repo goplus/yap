@@ -52,7 +52,6 @@ type Class struct {
 
 	query *query // query
 
-	api    *api
 	result []reflect.Value // result of an api call
 
 	ret   func(args ...any) error
@@ -798,16 +797,33 @@ func (p *Class) Limit__2(n int, cond string, args ...any) error {
 
 // -----------------------------------------------------------------------------
 
+// Delete deltes rows by cond.
+func (p *Class) Delete__0(src ast.Expr, cond string, args ...any) error {
+	panic("todo")
+}
+
+// Delete deltes rows by cond.
+func (p *Class) Delete__1(cond string, args ...any) error {
+	return p.Delete__0(nil, cond, args...)
+}
+
+// -----------------------------------------------------------------------------
+
+type classApi struct {
+	cls *Class
+	api *api
+}
+
 type api struct {
 	name string
 	spec any
 }
 
 // Api creates a new api by a spec.
-func (p *Class) Api(name string, spec any, src ...ast.Expr) {
+func (p *Class) Api(name string, spec any, src ...ast.Expr) func(args ...any) {
 	api := &api{name: name, spec: spec}
-	p.api = api
 	p.apis[name] = api
+	return classApi{p, api}.call
 }
 
 var (
@@ -822,13 +838,14 @@ func setRetErr(result []reflect.Value, errRet error) {
 	}
 }
 
-func (p *Class) doCall(args ...any) {
+func (ca classApi) call(args ...any) {
 	vArgs := make([]reflect.Value, len(args))
 	for i, arg := range args {
 		vArgs[i] = reflect.ValueOf(arg)
 	}
-	vFn := reflect.ValueOf(p.api.spec)
+	vFn := reflect.ValueOf(ca.api.spec)
 
+	var p = ca.cls
 	var old = p.onErr
 	var errRet error
 	p.onErr = func(err error) {
@@ -857,26 +874,6 @@ func (p *Class) doCall(args ...any) {
 	p.result = vFn.Call(vArgs)
 }
 
-// Call calls an api with specified args.
-func (p *Class) Call__0(src ast.Expr, args ...any) {
-	if p.api == nil {
-		log.Panicln("please call `call` after an api definition")
-	}
-	if src == nil {
-		if len(args) == 0 {
-			p.doCall(nil)
-			return
-		}
-		args = append(make([]any, 1, len(args)+1), args...)
-	}
-	p.doCall(args...)
-}
-
-// Call calls an api with specified args.
-func (p *Class) Call__1(args ...any) {
-	p.doCall(args...)
-}
-
 func (p *Class) callRet(args ...any) error {
 	t := p.t()
 	result := p.result
@@ -892,6 +889,11 @@ func (p *Class) callRet(args ...any) error {
 	}
 	p.ret = nil
 	return nil
+}
+
+// Out returns the ith reuslt.
+func (p *Class) Out(i int) any {
+	return p.result[i].Interface()
 }
 
 // -----------------------------------------------------------------------------

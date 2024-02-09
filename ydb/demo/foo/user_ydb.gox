@@ -23,7 +23,7 @@ table User, "user v0.1.0"
 class "Users", => {
 	use "user"
 
-	api "register", func(id, pwd, nickname, email, tel string, ctime time.Time) error {
+	register := api("register", func(id, pwd, nickname, email, tel string, ctime time.Time) error {
 		if email == "" && tel == "" {
 			return ErrNoEmailAndTel
 		}
@@ -34,22 +34,22 @@ class "Users", => {
 		spwd := hs256(pwd, salt)
 		insert &User{Id: id, Spwd: spwd, Salt: salt, Nickname: nickname, Email: email, Tel: tel, Ctime: ctime}
 		return nil
-	}
-	call "user", "pwd", "nickname", "", "", time.now
+	})
+	register "user", "pwd", "nickname", "", "", time.now
 	ret ErrNoEmailAndTel
-	call "user", "pwd", "nickname", "user@foo.com", "", time.now
+	register "user", "pwd", "nickname", "user@foo.com", "", time.now
 	ret nil
-	call "user", "pwd", "nickname", "user@foo.com", "13500000000", time.now
+	register "user", "pwd", "nickname", "user@foo.com", "13500000000", time.now
 	ret ErrDuplicated
 
-	api "login", func(id, pwd string) bool {
+	login := api("login", func(id, pwd string) bool {
 		var spwd, salt string
 		query "id=?", id
 		ret "salt", &salt, "spwd", &spwd
 		return hs256(pwd, salt) == spwd
-	}
-	call "", ""
+	})
+	login "", ""
 	ret false
-	call "user", "pwd"
+	login "user", "pwd"
 	ret true
 }
