@@ -24,3 +24,7 @@ func Hs256(pwd, salt string) string {
 	b := hmac.new(sha256.New, []byte(salt)).sum([]byte(pwd))
 	return base64.RawURLEncoding.encodeToString(b)
 }
+
+func Diff(new, old []string) (add, del []string) {
+	return
+}
