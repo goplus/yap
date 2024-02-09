@@ -94,6 +94,7 @@ class "Articles", => {
 		ret "tag.name", &tags
 		return
 	})
+	_ = tags
 
 	setTags doc1.Id, "tag1", "tag2"
 	ret nil

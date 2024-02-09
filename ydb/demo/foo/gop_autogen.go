@@ -161,37 +161,39 @@ func (this *article) Main() {
 //line ydb/demo/foo/article_ydb.gox:95:1
 			return
 		})
-//line ydb/demo/foo/article_ydb.gox:98:1
-		setTags(doc1.Id, "tag1", "tag2")
+//line ydb/demo/foo/article_ydb.gox:97:1
+		_ = tags
 //line ydb/demo/foo/article_ydb.gox:99:1
+		setTags(doc1.Id, "tag1", "tag2")
+//line ydb/demo/foo/article_ydb.gox:100:1
 		this.Ret__0(nil)
-//line ydb/demo/foo/article_ydb.gox:104:1
-		listByTag := this.Api("listByTag", func(tag string) (result []ArticleEntry) {
 //line ydb/demo/foo/article_ydb.gox:105:1
-			var ids []string
+		listByTag := this.Api("listByTag", func(tag string) (result []ArticleEntry) {
 //line ydb/demo/foo/article_ydb.gox:106:1
-			this.Query__1("tag.name=?", tag)
+			var ids []string
 //line ydb/demo/foo/article_ydb.gox:107:1
+			this.Query__1("tag.name=?", tag)
+//line ydb/demo/foo/article_ydb.gox:108:1
 			this.Ret__1("tag.doc", &ids)
-//line ydb/demo/foo/article_ydb.gox:109:1
-			this.Query__1("id=?", ids)
 //line ydb/demo/foo/article_ydb.gox:110:1
-			this.Ret__1(&result)
+			this.Query__1("id=?", ids)
 //line ydb/demo/foo/article_ydb.gox:111:1
-			return
-		})
-//line ydb/demo/foo/article_ydb.gox:113:1
-		_ = listByTag
-//line ydb/demo/foo/article_ydb.gox:115:1
-		listByAuthor := this.Api("listByAuthor", func(author string) (result []ArticleEntry) {
-//line ydb/demo/foo/article_ydb.gox:116:1
-			this.Query__1("author=?", author)
-//line ydb/demo/foo/article_ydb.gox:117:1
 			this.Ret__1(&result)
-//line ydb/demo/foo/article_ydb.gox:118:1
+//line ydb/demo/foo/article_ydb.gox:112:1
 			return
 		})
-//line ydb/demo/foo/article_ydb.gox:120:1
+//line ydb/demo/foo/article_ydb.gox:114:1
+		_ = listByTag
+//line ydb/demo/foo/article_ydb.gox:116:1
+		listByAuthor := this.Api("listByAuthor", func(author string) (result []ArticleEntry) {
+//line ydb/demo/foo/article_ydb.gox:117:1
+			this.Query__1("author=?", author)
+//line ydb/demo/foo/article_ydb.gox:118:1
+			this.Ret__1(&result)
+//line ydb/demo/foo/article_ydb.gox:119:1
+			return
+		})
+//line ydb/demo/foo/article_ydb.gox:121:1
 		_ = listByAuthor
 	})
 }
