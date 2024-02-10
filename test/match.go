@@ -53,157 +53,6 @@ type Case struct {
 	CaseT
 }
 
-func Gopt_Case_Equal__0[T basetype](t CaseT, a, b T) bool {
-	return a == b
-}
-
-func Gopt_Case_Equal__1(t CaseT, a, b map[string]any) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	t.Helper()
-	for key, got := range a {
-		if expected, ok := b[key]; !ok || !Gopt_Case_Equal__4(t, got, expected) {
-			return false
-		}
-	}
-	return true
-}
-
-func Gopt_Case_Equal__2(t CaseT, a, b []any) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	t.Helper()
-	for i, got := range a {
-		if !Gopt_Case_Equal__4(t, got, b[i]) {
-			return false
-		}
-	}
-	return true
-}
-
-func Gopt_Case_Equal__3[T baseelem](t CaseT, a, b []T) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	t.Helper()
-	for i, got := range a {
-		if !Gopt_Case_Equal__0(t, got, b[i]) {
-			return false
-		}
-	}
-	return true
-}
-
-func Gopt_Case_Equal__4(t CaseT, got, expected any) bool {
-	t.Helper()
-	switch gv := got.(type) {
-	case string:
-		switch ev := expected.(type) {
-		case string:
-			return gv == ev
-		case *Var__0[string]:
-			return gv == ev.Val()
-		}
-	case int:
-		switch ev := expected.(type) {
-		case int:
-			return gv == ev
-		case *Var__0[int]:
-			return gv == ev.Val()
-		}
-	case bool:
-		switch ev := expected.(type) {
-		case bool:
-			return gv == ev
-		case *Var__0[bool]:
-			return gv == ev.Val()
-		}
-	case float64:
-		switch ev := expected.(type) {
-		case float64:
-			return gv == ev
-		case *Var__0[float64]:
-			return gv == ev.Val()
-		}
-	case map[string]any:
-		switch ev := expected.(type) {
-		case map[string]any:
-			return Gopt_Case_Equal__1(t, gv, ev)
-		case *Var__1[map[string]any]:
-			return Gopt_Case_Equal__1(t, gv, ev.Val())
-		}
-	case []any:
-		switch ev := expected.(type) {
-		case []any:
-			return Gopt_Case_Equal__2(t, gv, ev)
-		case *Var__2[[]any]:
-			return Gopt_Case_Equal__2(t, gv, ev.Val())
-		}
-	case []string:
-		switch ev := expected.(type) {
-		case []string:
-			return Gopt_Case_Equal__3(t, gv, ev)
-		case *Var__3[[]string]:
-			return Gopt_Case_Equal__3(t, gv, ev.Val())
-		}
-	case *Var__0[string]:
-		switch ev := expected.(type) {
-		case string:
-			return gv.Equal(t, ev)
-		case *Var__0[string]:
-			return gv.Equal(t, ev.Val())
-		}
-	case *Var__0[int]:
-		switch ev := expected.(type) {
-		case int:
-			return gv.Equal(t, ev)
-		case *Var__0[int]:
-			return gv.Equal(t, ev.Val())
-		}
-	case *Var__0[bool]:
-		switch ev := expected.(type) {
-		case bool:
-			return gv.Equal(t, ev)
-		case *Var__0[bool]:
-			return gv.Equal(t, ev.Val())
-		}
-	case *Var__0[float64]:
-		switch ev := expected.(type) {
-		case float64:
-			return gv.Equal(t, ev)
-		case *Var__0[float64]:
-			return gv.Equal(t, ev.Val())
-		}
-	case *Var__1[map[string]any]:
-		switch ev := expected.(type) {
-		case map[string]any:
-			return gv.Equal(t, ev)
-		case *Var__1[map[string]any]:
-			return gv.Equal(t, ev.Val())
-		}
-	case *Var__2[[]any]:
-		switch ev := expected.(type) {
-		case []any:
-			return gv.Equal(t, ev)
-		case *Var__2[[]any]:
-			return gv.Equal(t, ev.Val())
-		}
-	case *Var__3[[]string]:
-		switch ev := expected.(type) {
-		case []string:
-			return gv.Equal(t, ev)
-		case *Var__3[[]string]:
-			return gv.Equal(t, ev.Val())
-		}
-	}
-	t.Fatalf("unsupported type to compare: %T == %T\n", got, expected)
-	return false
-}
-
-// -----------------------------------------------------------------------------
-
 func nameCtx(name []string) string {
 	if name != nil {
 		return " (" + strings.Join(name, ".") + ")"
@@ -496,12 +345,6 @@ func (p *Var__1[T]) UnmarshalJSON(data []byte) error {
 	return json.Unmarshal(data, &p.val)
 }
 
-func (p *Var__1[T]) Equal(t CaseT, v T) bool {
-	p.check()
-	t.Helper()
-	return Gopt_Case_Equal__1(t, p.val, v)
-}
-
 func (p *Var__1[T]) Match(t CaseT, v T, name ...string) {
 	if p.val == nil {
 		p.val = v
@@ -543,12 +386,6 @@ func (p *Var__2[T]) UnmarshalJSON(data []byte) error {
 	return json.Unmarshal(data, &p.val)
 }
 
-func (p *Var__2[T]) Equal(t CaseT, v T) bool {
-	p.check()
-	t.Helper()
-	return Gopt_Case_Equal__2(t, p.val, v)
-}
-
 func (p *Var__2[T]) Match(t CaseT, v T, name ...string) {
 	if p.val == nil {
 		p.val, p.valid = v, true
@@ -588,12 +425,6 @@ func (p *Var__3[T]) MarshalJSON() ([]byte, error) {
 func (p *Var__3[T]) UnmarshalJSON(data []byte) error {
 	p.valid = true
 	return json.Unmarshal(data, &p.val)
-}
-
-func (p *Var__3[T]) Equal(t CaseT, v T) bool {
-	p.check()
-	t.Helper()
-	return Gopt_Case_Equal__3(t, p.val, v)
 }
 
 func (p *Var__3[T]) Match(t CaseT, v T, name ...string) {
