@@ -57,7 +57,7 @@ type Class struct {
 	ret   func(args ...any) error
 	onErr func(err error)
 
-	test.CaseT
+	test.Case
 }
 
 func newClass(name string, sql *Sql) *Class {
