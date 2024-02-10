@@ -3,7 +3,8 @@ testServer "foo.com", new(foo)
 run "test get /p/$id", => {
 	id := "123"
 	get "http://foo.com/p/${id}"
-	ret 200
+	ret
+	match resp.code, 200
 	json {
 		"id": id,
 	}

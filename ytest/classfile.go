@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	GopPackage = true
+	GopPackage = "github.com/goplus/yap/test"
 )
 
 // -----------------------------------------------------------------------------

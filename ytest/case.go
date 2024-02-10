@@ -30,7 +30,7 @@ type CaseT = test.CaseT
 type Case struct {
 	*Request
 	*App
-	CaseT
+	test.Case
 
 	DefaultHeader http.Header
 }

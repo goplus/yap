@@ -23,6 +23,10 @@ import (
 	"strings"
 )
 
+const (
+	GopPackage = true
+)
+
 type basetype interface {
 	string | int | bool | float64
 }
@@ -44,6 +48,10 @@ func toMapAny[T basetype](val map[string]T) map[string]any {
 }
 
 // -----------------------------------------------------------------------------
+
+type Case struct {
+	CaseT
+}
 
 func Gopt_Case_Equal__0[T basetype](t CaseT, a, b T) bool {
 	return a == b

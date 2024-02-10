@@ -75,8 +75,8 @@ class "Articles", => {
 	get doc2.Id
 	ret doc2, nil
 
-	// get "unknown"
-	// match out(1), ErrNoRows
+	get "unknown"
+	match out(1), ErrNoRows
 
 	setTags := api("setTags", func(docId string, tags ...string) error {
 		var oldtags []string

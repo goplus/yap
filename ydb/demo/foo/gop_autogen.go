@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"github.com/goplus/yap/test"
 	"github.com/goplus/yap/ydb"
 	_ "github.com/goplus/yap/ydb/mysql"
 	_ "github.com/goplus/yap/ydb/sqlite3"
@@ -50,7 +51,7 @@ type user struct {
 
 func main() {
 //line ydb/demo/foo/user_ydb.gox:23:1
-	ydb.Gopt_AppGen_Main(new(ydb.AppGen), new(user), new(article))
+	ydb.Gopt_AppGen_Main(new(ydb.AppGen), new(article), new(user))
 }
 //line ydb/demo/foo/article_ydb.gox:20
 func (this *article) Main() {
@@ -135,6 +136,10 @@ func (this *article) Main() {
 		get(doc2.Id)
 //line ydb/demo/foo/article_ydb.gox:76:1
 		this.Ret__1(doc2, nil)
+//line ydb/demo/foo/article_ydb.gox:78:1
+		get("unknown")
+//line ydb/demo/foo/article_ydb.gox:79:1
+		test.Gopt_Case_Match__4(this, this.Out(1), ydb.ErrNoRows)
 //line ydb/demo/foo/article_ydb.gox:81:1
 		setTags := this.Api("setTags", func(docId string, tags ...string) error {
 //line ydb/demo/foo/article_ydb.gox:82:1
