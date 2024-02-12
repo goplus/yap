@@ -71,9 +71,3 @@ func UnsafeAddr(v reflect.Value) uintptr {
 	(*value)(unsafe.Pointer(&v)).flag |= flagAddr
 	return v.UnsafeAddr()
 }
-
-func init() {
-	if unsafe.Sizeof(value{}) != unsafe.Sizeof(reflect.Value{}) {
-		panic("unexpected sizeof reflect.Value")
-	}
-}

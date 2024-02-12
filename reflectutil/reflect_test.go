@@ -19,6 +19,7 @@ package reflectutil
 import (
 	"reflect"
 	"testing"
+	"unsafe"
 )
 
 func TestSetZero(t *testing.T) {
@@ -27,5 +28,15 @@ func TestSetZero(t *testing.T) {
 	SetZero(v)
 	if a != 0 {
 		t.Fatal("SetZero:", a)
+	}
+}
+
+func TestUnsafeAddr(t *testing.T) {
+	if unsafe.Sizeof(value{}) != unsafe.Sizeof(reflect.Value{}) {
+		panic("unexpected sizeof reflect.Value")
+	}
+	v := reflect.ValueOf(0)
+	if UnsafeAddr(v) == 0 {
+		t.Fatal("UnsafeAddr")
 	}
 }
