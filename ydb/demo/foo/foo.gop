@@ -4,8 +4,11 @@ import (
 	"encoding/base64"
 	"errors"
 	mrand "math/rand"
+	"sort"
 	"strconv"
 	"time"
+
+	"github.com/goplus/yap/stringutil"
 )
 
 var (
@@ -26,5 +29,7 @@ func Hs256(pwd, salt string) string {
 }
 
 func Diff(new, old []string) (add, del []string) {
-	return
+	sort.Strings(new)
+	sort.Strings(old)
+	return stringutil.diff(new, old)
 }

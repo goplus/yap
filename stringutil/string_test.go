@@ -17,6 +17,8 @@
 package stringutil
 
 import (
+	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -24,4 +26,28 @@ func TestConcat(t *testing.T) {
 	if ret := Concat("1", "23", "!"); ret != "123!" {
 		t.Fatal("Concat:", ret)
 	}
+}
+
+func TestDiff(t *testing.T) {
+	type testCase struct {
+		new, old []string
+		add, del []string
+	}
+	cases := []testCase{
+		{[]string{"1", "3", "2", "4"}, []string{"2"}, []string{"1", "3", "4"}, nil},
+		{[]string{"1", "3", "2", "4"}, []string{"5", "2"}, []string{"1", "3", "4"}, []string{"5"}},
+		{[]string{"1", "3", "2", "4"}, []string{"0", "5", "2"}, []string{"1", "3", "4"}, []string{"0", "5"}},
+	}
+	for _, c := range cases {
+		add, del := uDiff(c.new, c.old)
+		if !reflect.DeepEqual(add, c.add) || !reflect.DeepEqual(del, c.del) {
+			t.Fatal("diff:", c, "=>", add, del)
+		}
+	}
+}
+
+func uDiff(new, old []string) (add, del []string) {
+	sort.Strings(new)
+	sort.Strings(old)
+	return Diff(new, old)
 }
