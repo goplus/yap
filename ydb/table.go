@@ -25,6 +25,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/goplus/yap/reflectutil"
 	"github.com/goplus/yap/stringutil"
 )
 
@@ -72,7 +73,7 @@ func newTable(name, ver string, schema dbType) *Table {
 }
 
 func getVals(vals []any, v reflect.Value, cols []field, elem bool) []any {
-	this := uintptr(v.Addr().UnsafePointer())
+	this := reflectutil.UnsafeAddr(v)
 	for _, col := range cols {
 		v := reflect.NewAt(col.typ, unsafe.Pointer(this+col.offset))
 		if elem {

@@ -14,29 +14,11 @@
  * limitations under the License.
  */
 
-package reflectutil
+package test
 
 import (
-	"reflect"
 	"testing"
-	"unsafe"
 )
 
-func TestSetZero(t *testing.T) {
-	a := 2
-	v := reflect.ValueOf(&a).Elem()
-	SetZero(v)
-	if a != 0 {
-		t.Fatal("SetZero:", a)
-	}
-}
-
-func TestUnsafeAddr(t *testing.T) {
-	if unsafe.Sizeof(value{}) != unsafe.Sizeof(reflect.Value{}) {
-		panic("unexpected sizeof reflect.Value")
-	}
-	v := reflect.ValueOf(0)
-	if UnsafeAddr(v) == 0 {
-		t.Fatal("UnsafeAddr")
-	}
+func TestBasic(t *testing.T) {
 }

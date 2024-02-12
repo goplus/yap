@@ -56,7 +56,7 @@ func main() {
 //line ydb/demo/foo/article_ydb.gox:20
 func (this *article) Main() {
 //line ydb/demo/foo/article_ydb.gox:20:1
-	this.Engine__0("mysql")
+	this.Engine__0("sqlite3")
 //line ydb/demo/foo/article_ydb.gox:22:1
 	ydb.Gopt_Sql_Gopx_Table[Article](this, "v0.1.0")
 //line ydb/demo/foo/article_ydb.gox:23:1
@@ -69,14 +69,14 @@ func (this *article) Main() {
 //line ydb/demo/foo/article_ydb.gox:31:1
 		this.Use("article")
 //line ydb/demo/foo/article_ydb.gox:33:1
-		add := this.Api("add", func(doc *Article) error {
+		add := this.Api("add", func(doc Article) error {
 //line ydb/demo/foo/article_ydb.gox:34:1
 			this.Insert__1(doc)
 //line ydb/demo/foo/article_ydb.gox:35:1
 			return nil
 		})
 //line ydb/demo/foo/article_ydb.gox:38:1
-		doc1 := &Article{}
+		doc1 := Article{}
 //line ydb/demo/foo/article_ydb.gox:39:1
 		doc1.Id, doc1.Author, doc1.Title = "123", "abc", "title1"
 //line ydb/demo/foo/article_ydb.gox:40:1
@@ -88,7 +88,7 @@ func (this *article) Main() {
 //line ydb/demo/foo/article_ydb.gox:44:1
 		this.Ret__1(ydb.ErrDuplicated)
 //line ydb/demo/foo/article_ydb.gox:46:1
-		doc2 := &Article{}
+		doc2 := Article{}
 //line ydb/demo/foo/article_ydb.gox:47:1
 		doc2.Id, doc2.Author, doc2.Title = "124", "efg", "title2"
 //line ydb/demo/foo/article_ydb.gox:48:1
@@ -96,7 +96,7 @@ func (this *article) Main() {
 //line ydb/demo/foo/article_ydb.gox:49:1
 		this.Ret__0(nil)
 //line ydb/demo/foo/article_ydb.gox:51:1
-		doc3 := &Article{}
+		doc3 := Article{}
 //line ydb/demo/foo/article_ydb.gox:52:1
 		doc3.Id, doc3.Author, doc3.Title = "125", "efg", "title3"
 //line ydb/demo/foo/article_ydb.gox:53:1
@@ -104,7 +104,7 @@ func (this *article) Main() {
 //line ydb/demo/foo/article_ydb.gox:54:1
 		this.Ret__0(nil)
 //line ydb/demo/foo/article_ydb.gox:56:1
-		doc4 := &Article{}
+		doc4 := Article{}
 //line ydb/demo/foo/article_ydb.gox:57:1
 		doc4.Id, doc4.Author, doc4.Title = "225", "abc", "title4"
 //line ydb/demo/foo/article_ydb.gox:58:1
@@ -112,7 +112,7 @@ func (this *article) Main() {
 //line ydb/demo/foo/article_ydb.gox:59:1
 		this.Ret__0(nil)
 //line ydb/demo/foo/article_ydb.gox:61:1
-		doc5 := &Article{}
+		doc5 := Article{}
 //line ydb/demo/foo/article_ydb.gox:62:1
 		doc5.Id, doc5.Author, doc5.Title = "555", "abc", "title5"
 //line ydb/demo/foo/article_ydb.gox:63:1
@@ -139,7 +139,7 @@ func (this *article) Main() {
 //line ydb/demo/foo/article_ydb.gox:78:1
 		get("unknown")
 //line ydb/demo/foo/article_ydb.gox:79:1
-		test.Gopt_Case_Match__4(this, this.Out(1), ydb.ErrNoRows)
+		test.Gopt_Case_MatchAny(this, this.Out(1), ydb.ErrNoRows)
 //line ydb/demo/foo/article_ydb.gox:81:1
 		setTags := this.Api("setTags", func(docId string, tags ...string) error {
 //line ydb/demo/foo/article_ydb.gox:82:1
@@ -172,6 +172,10 @@ func (this *article) Main() {
 		setTags(doc1.Id, "tag1", "tag2")
 //line ydb/demo/foo/article_ydb.gox:100:1
 		this.Ret__0(nil)
+//line ydb/demo/foo/article_ydb.gox:102:1
+		tags(doc1.Id)
+//line ydb/demo/foo/article_ydb.gox:103:1
+		this.Ret__1(test.Set__0("tag1", "tag2"), nil)
 //line ydb/demo/foo/article_ydb.gox:105:1
 		listByTag := this.Api("listByTag", func(tag string) (result []ArticleEntry) {
 //line ydb/demo/foo/article_ydb.gox:106:1

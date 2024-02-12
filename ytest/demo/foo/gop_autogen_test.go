@@ -27,7 +27,7 @@ func (this *case_bar) Main() {
 //line ytest/demo/foo/bar_ytest.gox:6:1
 		this.Send()
 //line ytest/demo/foo/bar_ytest.gox:7:1
-		test.Gopt_Case_Match__0(this, this.Resp().Code(), 200)
+		test.Gopt_Case_MatchTBase(this, this.Resp().Code(), 200)
 //line ytest/demo/foo/bar_ytest.gox:8:1
 		this.Json(map[string]string{"id": id})
 	})

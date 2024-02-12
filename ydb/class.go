@@ -839,6 +839,10 @@ func setRetErr(result []reflect.Value, errRet error) {
 }
 
 func (ca classApi) call(args ...any) {
+	if debugCall {
+		log.Println("==>", ca.api.name, args)
+	}
+
 	vArgs := make([]reflect.Value, len(args))
 	for i, arg := range args {
 		vArgs[i] = reflect.ValueOf(arg)
@@ -885,7 +889,7 @@ func (p *Class) callRet(args ...any) error {
 	}
 	for i, arg := range args {
 		ret := result[i].Interface()
-		test.Gopt_Case_Match__4(t, arg, ret)
+		test.Gopt_Case_MatchAny(t, arg, ret)
 	}
 	p.ret = nil
 	return nil

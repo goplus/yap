@@ -17,7 +17,7 @@ type Tag struct {
 	Doc  string `CHAR(32)`
 }
 
-engine "mysql"
+engine "sqlite3"
 
 table Article, "v0.1.0"
 from "oldart v0.9.1", => {
@@ -30,12 +30,12 @@ table Tag, "v0.1.0"
 class "Articles", => {
 	use "article"
 
-	add := api("add", func(doc *Article) error {
+	add := api("add", func(doc Article) error {
 		insert doc
 		return nil
 	})
 
-	doc1 := &Article{}
+	doc1 := Article{}
 	doc1.Id, doc1.Author, doc1.Title = "123", "abc", "title1"
 	add doc1
 	ret nil
@@ -43,22 +43,22 @@ class "Articles", => {
 	add doc1
 	ret ErrDuplicated
 
-	doc2 := &Article{}
+	doc2 := Article{}
 	doc2.Id, doc2.Author, doc2.Title = "124", "efg", "title2"
 	add doc2
 	ret nil
 
-	doc3 := &Article{}
+	doc3 := Article{}
 	doc3.Id, doc3.Author, doc3.Title = "125", "efg", "title3"
 	add doc3
 	ret nil
 
-	doc4 := &Article{}
+	doc4 := Article{}
 	doc4.Id, doc4.Author, doc4.Title = "225", "abc", "title4"
 	add doc4
 	ret nil
 
-	doc5 := &Article{}
+	doc5 := Article{}
 	doc5.Id, doc5.Author, doc5.Title = "555", "abc", "title5"
 	add doc5
 	ret nil
@@ -99,8 +99,8 @@ class "Articles", => {
 	setTags doc1.Id, "tag1", "tag2"
 	ret nil
 
-	// tags doc1.Id
-	// equalSet out(0), ["tag1", "tag2"]
+	tags doc1.Id
+	ret set("tag1", "tag2"), nil
 
 	listByTag := api("listByTag", func(tag string) (result []ArticleEntry) {
 		var ids []string
