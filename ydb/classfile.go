@@ -32,7 +32,7 @@ const (
 )
 
 var (
-	debugCall bool
+	debugExec bool
 )
 
 // -----------------------------------------------------------------------------
@@ -163,7 +163,7 @@ func (p *AppGen) initApp() {
 }
 
 func Gopt_AppGen_Main(app interface{ initApp() }, workers ...interface{ initSql() }) {
-	flag.BoolVar(&debugCall, "v", false, "verbose infromation")
+	flag.BoolVar(&debugExec, "v", false, "verbose infromation")
 	flag.Parse()
 	app.initApp()
 	if me, ok := app.(interface{ MainEntry() }); ok {

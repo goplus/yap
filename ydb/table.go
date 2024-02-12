@@ -19,6 +19,7 @@ package ydb
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"log"
 	"reflect"
 	"strings"
@@ -29,7 +30,68 @@ import (
 	"github.com/goplus/yap/stringutil"
 )
 
+// -----------------------------------------------------------------------------
+
+type nullTime time.Time
+
+func (n *nullTime) Scan(value any) (err error) {
+	var ret sql.NullTime
+	err = ret.Scan(value)
+	*(*time.Time)(n) = ret.Time
+	return
+}
+
+func (n nullTime) Value() (driver.Value, error) {
+	if (*time.Time)(&n).IsZero() {
+		return nil, nil
+	}
+	return *(*time.Time)(&n), nil
+}
+
+// -----------------------------------------------------------------------------
+
 type dbType = reflect.Type
+type ioType = reflect.Type
+
+var (
+	tyString   = reflect.TypeOf("")
+	tyInt      = reflect.TypeOf(0)
+	tyBool     = reflect.TypeOf(false)
+	tyBlob     = reflect.TypeOf([]byte(nil))
+	tyTime     = reflect.TypeOf(time.Time{})
+	tyNullTime = reflect.TypeOf(nullTime{})
+	tyFloat64  = reflect.TypeOf(float64(0))
+	tyFloat32  = reflect.TypeOf(float32(0))
+)
+
+func columnType(fldType dbType) string {
+	switch fldType {
+	case tyString:
+		return "TEXT"
+	case tyInt:
+		return "INT"
+	case tyBool:
+		return "BOOL"
+	case tyBlob:
+		return "BLOB"
+	case tyTime:
+		return "DATETIME"
+	case tyFloat64:
+		return "DOUBLE"
+	case tyFloat32:
+		return "FLOAT"
+	}
+	panic("unknown column type: " + fldType.String())
+}
+
+func colIOType(fldType dbType) ioType {
+	if fldType == tyTime {
+		return tyNullTime
+	}
+	return fldType
+}
+
+// -----------------------------------------------------------------------------
 
 type dbIndex struct {
 	index  []*column
@@ -60,7 +122,7 @@ type column struct {
 }
 
 type field struct {
-	typ    dbType  // field type
+	typ    ioType  // field io type
 	offset uintptr // offset within struct, in bytes
 }
 
@@ -78,10 +140,6 @@ func getVals(vals []any, v reflect.Value, cols []field, elem bool) []any {
 		v := reflect.NewAt(col.typ, unsafe.Pointer(this+col.offset))
 		if elem {
 			v = v.Elem()
-			if col.typ == tyTime && v.IsZero() { // TODO: all data type can use NULL?
-				vals = append(vals, nil)
-				continue
-			}
 		}
 		val := v.Interface()
 		vals = append(vals, val)
@@ -111,7 +169,7 @@ func getCols(names []string, cols []field, n int, t dbType, base uintptr) ([]str
 				name = dbName(fld.Name)
 			}
 			names = append(names, name)
-			cols = append(cols, field{fld.Type, base + fld.Offset})
+			cols = append(cols, field{colIOType(fld.Type), base + fld.Offset})
 		}
 	}
 	return names, cols
@@ -126,7 +184,7 @@ func (p *Table) defineCols(n int, t dbType, base uintptr) {
 			continue
 		}
 		if fld.IsExported() {
-			col := &column{fld: field{fld.Type, base + fld.Offset}}
+			col := &column{fld: field{colIOType(fld.Type), base + fld.Offset}}
 			if tag := string(fld.Tag); tag != "" {
 				if parts := strings.Fields(tag); len(parts) > 0 {
 					if c := parts[0][0]; c >= 'a' && c <= 'z' { // suppose a column name is lower case
@@ -163,36 +221,6 @@ func (p *Table) defineCols(n int, t dbType, base uintptr) {
 			p.cols = append(p.cols, col)
 		}
 	}
-}
-
-var (
-	tyString  = reflect.TypeOf("")
-	tyInt     = reflect.TypeOf(0)
-	tyBool    = reflect.TypeOf(false)
-	tyBlob    = reflect.TypeOf([]byte(nil))
-	tyTime    = reflect.TypeOf(time.Time{})
-	tyFloat64 = reflect.TypeOf(float64(0))
-	tyFloat32 = reflect.TypeOf(float32(0))
-)
-
-func columnType(fldType dbType) string {
-	switch fldType {
-	case tyString:
-		return "TEXT"
-	case tyInt:
-		return "INT"
-	case tyBool:
-		return "BOOL"
-	case tyBlob:
-		return "BLOB"
-	case tyTime:
-		return "DATETIME"
-	case tyFloat64:
-		return "DOUBLE"
-	case tyFloat32:
-		return "FLOAT"
-	}
-	panic("unknown column type: " + fldType.String())
 }
 
 func (p *Table) makeIndex(col *column, params string) []*column {

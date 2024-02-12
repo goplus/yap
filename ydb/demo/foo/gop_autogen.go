@@ -56,7 +56,7 @@ func main() {
 //line ydb/demo/foo/article_ydb.gox:20
 func (this *article) Main() {
 //line ydb/demo/foo/article_ydb.gox:20:1
-	this.Engine__0("sqlite3")
+	this.Engine__0("mysql")
 //line ydb/demo/foo/article_ydb.gox:22:1
 	ydb.Gopt_Sql_Gopx_Table[Article](this, "v0.1.0")
 //line ydb/demo/foo/article_ydb.gox:23:1
@@ -157,52 +157,46 @@ func (this *article) Main() {
 //line ydb/demo/foo/article_ydb.gox:89:1
 			return nil
 		})
-//line ydb/demo/foo/article_ydb.gox:92:1
-		tags := this.Api("tags", func(docId string) (tags []string, err error) {
+//line ydb/demo/foo/article_ydb.gox:91:1
+		_ = setTags
 //line ydb/demo/foo/article_ydb.gox:93:1
-			this.Query__1("tag.doc=?", docId)
+		tags := this.Api("tags", func(docId string) (tags []string, err error) {
 //line ydb/demo/foo/article_ydb.gox:94:1
-			this.Ret__1("tag.name", &tags)
+			this.Query__1("tag.doc=?", docId)
 //line ydb/demo/foo/article_ydb.gox:95:1
+			this.Ret__1("tag.name", &tags)
+//line ydb/demo/foo/article_ydb.gox:96:1
 			return
 		})
-//line ydb/demo/foo/article_ydb.gox:97:1
+//line ydb/demo/foo/article_ydb.gox:98:1
 		_ = tags
-//line ydb/demo/foo/article_ydb.gox:99:1
-		setTags(doc1.Id, "tag1", "tag2")
-//line ydb/demo/foo/article_ydb.gox:100:1
-		this.Ret__0(nil)
-//line ydb/demo/foo/article_ydb.gox:102:1
-		tags(doc1.Id)
-//line ydb/demo/foo/article_ydb.gox:103:1
-		this.Ret__1(test.Set__0("tag1", "tag2"), nil)
-//line ydb/demo/foo/article_ydb.gox:105:1
-		listByTag := this.Api("listByTag", func(tag string) (result []ArticleEntry) {
 //line ydb/demo/foo/article_ydb.gox:106:1
-			var ids []string
+		listByTag := this.Api("listByTag", func(tag string) (result []ArticleEntry) {
 //line ydb/demo/foo/article_ydb.gox:107:1
-			this.Query__1("tag.name=?", tag)
+			var ids []string
 //line ydb/demo/foo/article_ydb.gox:108:1
+			this.Query__1("tag.name=?", tag)
+//line ydb/demo/foo/article_ydb.gox:109:1
 			this.Ret__1("tag.doc", &ids)
-//line ydb/demo/foo/article_ydb.gox:110:1
-			this.Query__1("id=?", ids)
 //line ydb/demo/foo/article_ydb.gox:111:1
-			this.Ret__1(&result)
+			this.Query__1("id=?", ids)
 //line ydb/demo/foo/article_ydb.gox:112:1
-			return
-		})
-//line ydb/demo/foo/article_ydb.gox:114:1
-		_ = listByTag
-//line ydb/demo/foo/article_ydb.gox:116:1
-		listByAuthor := this.Api("listByAuthor", func(author string) (result []ArticleEntry) {
-//line ydb/demo/foo/article_ydb.gox:117:1
-			this.Query__1("author=?", author)
-//line ydb/demo/foo/article_ydb.gox:118:1
 			this.Ret__1(&result)
-//line ydb/demo/foo/article_ydb.gox:119:1
+//line ydb/demo/foo/article_ydb.gox:113:1
 			return
 		})
-//line ydb/demo/foo/article_ydb.gox:121:1
+//line ydb/demo/foo/article_ydb.gox:115:1
+		_ = listByTag
+//line ydb/demo/foo/article_ydb.gox:117:1
+		listByAuthor := this.Api("listByAuthor", func(author string) (result []ArticleEntry) {
+//line ydb/demo/foo/article_ydb.gox:118:1
+			this.Query__1("author=?", author)
+//line ydb/demo/foo/article_ydb.gox:119:1
+			this.Ret__1(&result)
+//line ydb/demo/foo/article_ydb.gox:120:1
+			return
+		})
+//line ydb/demo/foo/article_ydb.gox:122:1
 		_ = listByAuthor
 	})
 }
