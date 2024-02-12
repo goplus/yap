@@ -136,7 +136,7 @@ func (p *Class) Ret__1(args ...any) {
 
 // -----------------------------------------------------------------------------
 
-// Insert inserts a new row.
+// Insert inserts new rows.
 //   - insert <colName1>, <val1>, <colName2>, <val2>, ...
 //   - insert <colName1>, <valSlice1>, <colName2>, <valSlice2>, ...
 //   - insert <structValOrPtr>
@@ -273,6 +273,9 @@ func (p *Class) insertRowsVals(names []string, vals []any, rows int) (sql.Result
 	query = append(query, valParams(n, rows)...)
 
 	q := string(query)
+	if debugExec {
+		log.Println("==>", q, vals)
+	}
 	result, err := p.db.ExecContext(context.TODO(), q, vals...)
 	return p.insertRet(result, err)
 }
@@ -285,6 +288,9 @@ func (p *Class) insertRow(names []string, vals []any) (sql.Result, error) {
 	query = append(query, valParam(len(vals))...)
 
 	q := string(query)
+	if debugExec {
+		log.Println("==>", q, vals)
+	}
 	result, err := p.db.ExecContext(context.TODO(), q, vals...)
 	return p.insertRet(result, err)
 }
@@ -319,7 +325,11 @@ func valParam(n int) string {
 	return valparam
 }
 
-// Insert inserts a new row.
+// Insert inserts new rows.
+//   - insert <colName1>, <val1>, <colName2>, <val2>, ...
+//   - insert <colName1>, <valSlice1>, <colName2>, <valSlice2>, ...
+//   - insert <structValOrPtr>
+//   - insert <structOrPtrSlice>
 func (p *Class) Insert__1(kvPair ...any) (sql.Result, error) {
 	return p.Insert__0(nil, kvPair...)
 }
@@ -484,6 +494,9 @@ func (p *Class) sqlQueryVals(ctx context.Context, query string, args, rets []any
 		log.Panicln("one of `query` arguments is a slice, but `ret` arguments are not")
 	}
 
+	if debugExec {
+		log.Println("==>", query, args)
+	}
 	rows, err := p.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		p.handleErr("query:", err)
@@ -575,6 +588,9 @@ func (p *Class) sqlQueryRows(ctx context.Context, query string, args, rets []any
 		return p.sqlMultiQuery(ctx, query, iArgSlice, args, rets)
 	}
 
+	if debugExec {
+		log.Println("==>", query, args)
+	}
 	rows, err := p.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		p.handleErr("query:", err)
@@ -600,6 +616,9 @@ func makeSliceRets(rets []any) (vRets []reflect.Value, oneRet []any) {
 }
 
 func (p *Class) sqlQueryOne(ctx context.Context, query string, args, oneRet []any, vRets []reflect.Value) error {
+	if debugExec {
+		log.Println("==>", query, args)
+	}
 	rows, err := p.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		p.handleErr("query:", err)
@@ -839,7 +858,7 @@ func setRetErr(result []reflect.Value, errRet error) {
 }
 
 func (ca classApi) call(args ...any) {
-	if debugCall {
+	if debugExec {
 		log.Println("==>", ca.api.name, args)
 	}
 

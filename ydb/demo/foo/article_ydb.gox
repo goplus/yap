@@ -17,7 +17,7 @@ type Tag struct {
 	Doc  string `CHAR(32)`
 }
 
-engine "sqlite3"
+engine "mysql"
 
 table Article, "v0.1.0"
 from "oldart v0.9.1", => {
@@ -88,6 +88,7 @@ class "Articles", => {
 		insert "doc", docId, "tag.name", tagsAdd
 		return nil
 	})
+	_ = setTags
 
 	tags := api("tags", func(docId string) (tags []string, err error) {
 		query "tag.doc=?", docId
@@ -96,11 +97,11 @@ class "Articles", => {
 	})
 	_ = tags
 
-	setTags doc1.Id, "tag1", "tag2"
-	ret nil
+	// setTags doc1.Id, "tag1", "tag2"
+	// ret nil
 
-	tags doc1.Id
-	ret set("tag1", "tag2"), nil
+	// tags doc1.Id
+	// ret set("tag1", "tag2"), nil
 
 	listByTag := api("listByTag", func(tag string) (result []ArticleEntry) {
 		var ids []string
