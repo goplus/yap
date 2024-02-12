@@ -19,6 +19,7 @@ package ydb
 import (
 	"context"
 	"database/sql"
+	"flag"
 	"log"
 	"reflect"
 	"strings"
@@ -28,6 +29,10 @@ import (
 
 const (
 	GopPackage = "github.com/goplus/yap/test"
+)
+
+var (
+	debugCall bool
 )
 
 // -----------------------------------------------------------------------------
@@ -158,6 +163,8 @@ func (p *AppGen) initApp() {
 }
 
 func Gopt_AppGen_Main(app interface{ initApp() }, workers ...interface{ initSql() }) {
+	flag.BoolVar(&debugCall, "v", false, "verbose infromation")
+	flag.Parse()
 	app.initApp()
 	if me, ok := app.(interface{ MainEntry() }); ok {
 		me.MainEntry()

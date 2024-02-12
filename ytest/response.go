@@ -54,7 +54,7 @@ func (p *Response) matchCode(t CaseT, code any) {
 	t.Helper()
 	switch v := code.(type) {
 	case int:
-		test.Gopt_Case_Match__0(t, p.code, v)
+		test.Gopt_Case_MatchTBase(t, p.code, v)
 	case *test.Var__0[int]:
 		v.Match(t, p.code)
 	default:
@@ -71,13 +71,13 @@ func (p *Response) matchHeader(t CaseT, key string, value any) {
 	t.Helper()
 	switch v := value.(type) {
 	case string:
-		test.Gopt_Case_Match__0(t, v, p.header.Get(key))
+		test.Gopt_Case_MatchTBase(t, v, p.header.Get(key))
 	case []string:
-		test.Gopt_Case_Match__3(t, v, p.header[key])
+		test.Gopt_Case_MatchBaseSlice(t, v, p.header[key])
 	case *test.Var__0[string]:
 		v.Match(t, p.header.Get(key))
 	case *test.Var__3[[]string]:
-		v.Match(t, p.header[key])
+		v.Match__0(t, p.header[key])
 	default:
 		t.Fatalf("match header failed! unexpected value type: %T\n", value)
 	}
@@ -120,5 +120,5 @@ func (p *Response) matchBody(t CaseT, bodyType string, body any) {
 	if mime != bodyType {
 		t.Fatalf("resp.MatchBody: unmatched mime type - got: %s, expected: %s\n", mime, bodyType)
 	}
-	test.Gopt_Case_Match__4(t, body, p.Body())
+	test.Gopt_Case_MatchAny(t, body, p.Body())
 }
