@@ -23,11 +23,9 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/goplus/gop/ast"
 	"github.com/goplus/yap/reflectutil"
-	"github.com/qiniu/x/ctype"
 )
 
 // -----------------------------------------------------------------------------
@@ -203,26 +201,6 @@ func (p *Class) sqlQueryVals(ctx context.Context, query string, args, rets []any
 	return p.sqlRetRow(rows, rets)
 }
 
-func isSlice(v any) bool {
-	return reflect.ValueOf(v).Kind() == reflect.Slice
-}
-
-func checkArgSlice(args []any) int {
-	iArgSlice := -1
-	for i, arg := range args {
-		if isSlice(arg) {
-			if iArgSlice >= 0 {
-				log.Panicf(
-					"query: multiple arguments (%dth, %dth) are slices (only one can be)\n",
-					iArgSlice+1, i+1,
-				)
-			}
-			iArgSlice = i
-		}
-	}
-	return iArgSlice
-}
-
 func retKind(ret any) int {
 	v := reflect.ValueOf(ret)
 	if v.Kind() != reflect.Pointer {
@@ -382,89 +360,6 @@ func (p *Class) queryRetKvPair(kvPair ...any) error {
 		return p.sqlQueryVals(context.TODO(), query, q.args, rets)
 	}
 	return p.sqlQueryRows(context.TODO(), query, q.args, rets)
-}
-
-func (p *Class) exprTblname(cond string) string {
-	tbls := exprTblnames(cond)
-	tbl := ""
-	switch len(tbls) {
-	case 0:
-	case 1:
-		tbl = tbls[0]
-	default:
-		log.Panicln("query currently doesn't support multiple tables")
-	}
-	if tbl == "" {
-		tbl = p.tbl
-	}
-	return tbl
-}
-
-func exprTblnames(expr string) (tbls []string) {
-	for expr != "" {
-		pos := ctype.ScanCSymbol(expr)
-		if pos != 0 {
-			name := ""
-			if pos > 0 {
-				switch expr[pos] {
-				case '.':
-					name = expr[:pos]
-					expr = ctype.SkipCSymbol(expr[pos+1:])
-				case '(': // function call, eg. SUM(...)
-					expr = expr[pos+1:]
-					continue
-				default:
-					expr = expr[pos:]
-				}
-			} else {
-				expr = ""
-			}
-			switch name {
-			case "AND", "OR":
-			default:
-				tbls = addTblname(tbls, name)
-			}
-			continue
-		}
-		pos = ctype.ScanTypeEx(ctype.FLOAT_FIRST_CHAT, ctype.CSYMBOL_NEXT_CHAR, expr)
-		if pos == 0 {
-			c, size := utf8.DecodeRuneInString(expr)
-			switch c {
-			case '\'':
-				expr = skipStringConst(expr[1:], '\'')
-			default:
-				expr = expr[size:]
-			}
-		} else if pos < 0 {
-			break
-		} else {
-			expr = expr[pos:]
-		}
-	}
-	return
-}
-
-func skipStringConst(next string, quot rune) string {
-	skip := false
-	for i, c := range next {
-		if skip {
-			skip = false
-		} else if c == '\\' {
-			skip = true
-		} else if c == quot {
-			return next[i+1:]
-		}
-	}
-	return ""
-}
-
-func addTblname(tbls []string, tbl string) []string {
-	for _, v := range tbls {
-		if v == tbl {
-			return tbls
-		}
-	}
-	return append(tbls, tbl)
 }
 
 // -----------------------------------------------------------------------------

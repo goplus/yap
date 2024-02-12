@@ -7,11 +7,13 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"github.com/goplus/yap/stringutil"
 	"github.com/goplus/yap/test"
 	"github.com/goplus/yap/ydb"
 	_ "github.com/goplus/yap/ydb/mysql"
 	_ "github.com/goplus/yap/ydb/sqlite3"
 	"math/rand"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -203,22 +205,26 @@ func (this *article) Main() {
 
 var ErrNoEmailAndTel = errors.New("no email and telephone")
 var rnd = rand.New(rand.NewSource(time.Now().UnixMicro()))
-//line ydb/demo/foo/foo.gop:19:1
+//line ydb/demo/foo/foo.gop:22:1
 func Rand() string {
-//line ydb/demo/foo/foo.gop:20:1
+//line ydb/demo/foo/foo.gop:23:1
 	return strconv.FormatInt(rnd.Int63(), 36)
 }
-//line ydb/demo/foo/foo.gop:23:1
+//line ydb/demo/foo/foo.gop:26:1
 func Hs256(pwd string, salt string) string {
-//line ydb/demo/foo/foo.gop:24:1
+//line ydb/demo/foo/foo.gop:27:1
 	b := hmac.New(sha256.New, []byte(salt)).Sum([]byte(pwd))
-//line ydb/demo/foo/foo.gop:25:1
+//line ydb/demo/foo/foo.gop:28:1
 	return base64.RawURLEncoding.EncodeToString(b)
 }
-//line ydb/demo/foo/foo.gop:28:1
+//line ydb/demo/foo/foo.gop:31:1
 func Diff(new []string, old []string) (add []string, del []string) {
-//line ydb/demo/foo/foo.gop:29:1
-	return
+//line ydb/demo/foo/foo.gop:32:1
+	sort.Strings(new)
+//line ydb/demo/foo/foo.gop:33:1
+	sort.Strings(old)
+//line ydb/demo/foo/foo.gop:34:1
+	return stringutil.Diff(new, old)
 }
 //line ydb/demo/foo/user_ydb.gox:19
 func (this *user) Main() {
