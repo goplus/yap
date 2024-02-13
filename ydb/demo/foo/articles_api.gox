@@ -1,0 +1,137 @@
+import (
+	"time"
+
+	_ "github.com/goplus/yap/ydb/mysql"
+	_ "github.com/goplus/yap/ydb/sqlite3"
+)
+
+type ArticleEntry struct {
+	Id     string `CHAR(32) UNIQUE`
+	Author string `CHAR(24) INDEX`
+	Title  string
+	Ctime  time.Time `DATETIME INDEX`
+}
+
+type Article struct {
+	ArticleEntry
+	Body []byte `LONGBLOB`
+}
+
+type Tag struct {
+	Name string `CHAR(24) UNIQUE(doc)`
+	Doc  string `CHAR(32)`
+}
+
+func API_Add(doc Article) error {
+	insert doc
+	return nil
+}
+
+func API_Get(docId string) (doc Article, err error) {
+	query "id=?", docId
+	ret &doc
+	return
+}
+
+func API_SetTags(docId string, tags ...string) error {
+	var oldtags []string
+	query "tag.doc=?", docId
+	ret "tag.name", &oldtags
+
+	tagsAdd, tagsDel := diff(tags, oldtags)
+	info "oldtags:", oldtags, "tags:", tags, "add:", tagsAdd, "del:", tagsDel
+
+	delete "tag.name=?", tagsDel
+	insert "tag.doc", docId, "tag.name", tagsAdd
+	return nil
+}
+
+func API_Tags(docId string) (tags []string, err error) {
+	query "tag.doc=?", docId
+	ret "tag.name", &tags
+	return
+}
+
+func API_ListByTag(tag string) (result []ArticleEntry) {
+	var ids []string
+	query "tag.name=?", tag
+	ret "tag.doc", &ids
+
+	query "id=?", ids
+	ret &result
+	return
+}
+
+func API_ListByAuthor(author string) (result []ArticleEntry) {
+	query "author=?", author
+	ret &result
+	return
+}
+
+engine "mysql"
+
+table Article, "v0.1.0"
+table Tag, "v0.1.0"
+
+doc1 := Article{}
+doc1.Id, doc1.Author, doc1.Title = "123", "abc", "title1"
+add doc1
+ret nil
+
+add doc1
+ret ErrDuplicated
+
+doc2 := Article{}
+doc2.Id, doc2.Author, doc2.Title = "124", "efg", "title2"
+add doc2
+ret nil
+
+doc3 := Article{}
+doc3.Id, doc3.Author, doc3.Title = "125", "efg", "title3"
+add doc3
+ret nil
+
+doc4 := Article{}
+doc4.Id, doc4.Author, doc4.Title = "225", "abc", "title4"
+add doc4
+ret nil
+
+doc5 := Article{}
+doc5.Id, doc5.Author, doc5.Title = "555", "abc", "title5"
+add doc5
+ret nil
+
+get doc1.Id
+ret doc1, nil
+
+get doc2.Id
+ret doc2, nil
+
+get "unknown"
+match out(1), ErrNoRows
+
+setTags doc1.Id, "tag1", "tag2"
+ret nil
+
+tags doc1.Id
+ret set("tag2", "tag1"), nil
+
+setTags doc1.Id, "tag1", "tag3"
+ret nil
+
+tags doc1.Id
+ret set("tag1", "tag3"), nil
+
+setTags doc2.Id, "tag1", "tag5"
+setTags doc3.Id, "tag1", "tag3"
+setTags doc4.Id, "tag2", "tag3"
+setTags doc5.Id, "tag5", "tag3"
+
+listByTag "tag1"
+ret set(doc3.ArticleEntry, doc1.ArticleEntry, doc2.ArticleEntry)
+
+listByTag "tag3"
+ret set(doc3.ArticleEntry, doc4.ArticleEntry, doc1.ArticleEntry, doc5.ArticleEntry)
+
+listByAuthor "eft"
+ret set(doc2.ArticleEntry, doc3.ArticleEntry)

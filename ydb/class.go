@@ -17,7 +17,6 @@
 package ydb
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"log"
@@ -73,9 +72,6 @@ func (p *Class) t() test.CaseT {
 		p.CaseT = logt.New()
 	}
 	return p.CaseT
-}
-
-func (p *Class) gen(ctx context.Context) {
 }
 
 // Use sets the default table used in following sql operations.

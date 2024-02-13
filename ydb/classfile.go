@@ -133,7 +133,6 @@ func (p *Sql) Class(name string, spec func(), src ...ast.Expr) {
 	p.dbClass = cls
 	p.classes[name] = cls
 	spec()
-	cls.gen(context.TODO())
 	p.dbClass = nil
 }
 

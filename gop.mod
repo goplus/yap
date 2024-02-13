@@ -16,6 +16,8 @@ import github.com/goplus/yap/ytest/auth/jwt
 
 project _ydb.gox AppGen github.com/goplus/yap/ydb github.com/goplus/yap/test
 
-class _ydb.gox Sql github.com/goplus/yap/ydb
+class _ydb.gox Sql
+
+class _api.gox API
 
 import github.com/goplus/yap/ydb/mysql

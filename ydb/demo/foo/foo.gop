@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	ErrNoEmailAndTel = errors.New("no email and telephone")
+	ErrNoEmailAndTel = errors.new("no email and telephone")
 )
 
 var (
@@ -21,7 +21,7 @@ var (
 )
 
 func Rand() string {
-	return strconv.formatInt(rnd.Int63(), 36)
+	return strconv.formatInt(rnd.int63(), 36)
 }
 
 func Hs256(pwd, salt string) string {
@@ -30,8 +30,8 @@ func Hs256(pwd, salt string) string {
 }
 
 func Diff(new, old []string) (add, del []string) {
-	sort.Strings(new)
-	sort.Strings(old)
+	sort.strings(new)
+	sort.strings(old)
 	return stringutil.diff(new, old)
 }
 
