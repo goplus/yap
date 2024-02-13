@@ -264,13 +264,10 @@ retry:
 		}
 	case TyAnySet:
 		switch gv := got.(type) {
-		case []any:
-			Gopt_Case_MatchAnySet(t, ev, gv, name...)
-			return
 		case *Var__2[[]any]:
 			Gopt_Case_MatchAnySet(t, ev, gv.Val(), name...)
 			return
-		case any:
+		default:
 			Gopt_Case_MatchAnySet(t, ev, gv, name...)
 			return
 		}
