@@ -96,13 +96,18 @@ class "Articles", => {
 		ret "tag.name", &tags
 		return
 	})
-	_ = tags
 
 	setTags doc1.Id, "tag1", "tag2"
 	ret nil
 
-	// tags doc1.Id
-	// ret set("tag1", "tag2"), nil
+	tags doc1.Id
+	ret set("tag2", "tag1"), nil
+
+	setTags doc1.Id, "tag1", "tag3"
+	ret nil
+
+	tags doc1.Id
+	ret set("tag1", "tag3"), nil
 
 	listByTag := api("listByTag", func(tag string) (result []ArticleEntry) {
 		var ids []string

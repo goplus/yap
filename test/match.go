@@ -124,7 +124,7 @@ func Gopt_Case_MatchBaseSlice[T baseelem](t CaseT, expected, got []T, name ...st
 	}
 }
 
-func Gopt_Case_MatchSet[T baseelem](t CaseT, expected []T, got TySet[T], name ...string) {
+func Gopt_Case_MatchSet[T baseelem](t CaseT, expected TySet[T], got []T, name ...string) {
 	if len(expected) != len(got) {
 		t.Fatalf("unmatched set%s length - expected: %d, got: %d\n", nameCtx(name), len(expected), len(got))
 	}
@@ -207,13 +207,20 @@ retry:
 		case []string:
 			Gopt_Case_MatchBaseSlice(t, ev, gv, name...)
 			return
-		case TySet[string]:
-			Gopt_Case_MatchSet(t, ev, gv, name...)
-			return
 		case *Var__3[[]string]:
 			Gopt_Case_MatchBaseSlice(t, ev, gv.Val(), name...)
 			return
 		}
+	case TySet[string]:
+		switch gv := got.(type) {
+		case []string:
+			Gopt_Case_MatchSet(t, ev, gv, name...)
+			return
+		case *Var__3[[]string]:
+			Gopt_Case_MatchSet(t, ev, gv.Val(), name...)
+			return
+		}
+		return
 	case *Var__0[string]:
 		switch gv := got.(type) {
 		case string:
@@ -271,13 +278,10 @@ retry:
 	case *Var__3[[]string]:
 		switch gv := got.(type) {
 		case []string:
-			ev.Match__0(t, gv, name...)
-			return
-		case TySet[string]:
-			ev.Match__1(t, gv, name...)
+			ev.Match(t, gv, name...)
 			return
 		case *Var__3[[]string]:
-			ev.Match__0(t, gv.Val(), name...)
+			ev.Match(t, gv.Val(), name...)
 			return
 		}
 
@@ -470,22 +474,13 @@ func (p *Var__3[T]) UnmarshalJSON(data []byte) error {
 	return json.Unmarshal(data, &p.val)
 }
 
-func (p *Var__3[T]) Match__0(t CaseT, v T, name ...string) {
+func (p *Var__3[T]) Match(t CaseT, v T, name ...string) {
 	if p.val == nil {
 		p.val, p.valid = v, true
 		return
 	}
 	t.Helper()
 	Gopt_Case_MatchBaseSlice(t, p.val, v, name...)
-}
-
-func (p *Var__3[T]) Match__1(t CaseT, v TySet[string], name ...string) {
-	if p.val == nil {
-		p.val, p.valid = T(v), true
-		return
-	}
-	t.Helper()
-	Gopt_Case_MatchSet(t, p.val, v, name...)
 }
 
 // -----------------------------------------------------------------------------

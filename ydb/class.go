@@ -194,6 +194,7 @@ func (ca classApi) call(args ...any) {
 			}
 			setRetErr(p.result, errRet)
 			if debugExec {
+				log.Println("PANIC:", e)
 				debug.PrintStack()
 			}
 		}
