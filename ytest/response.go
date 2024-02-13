@@ -74,10 +74,12 @@ func (p *Response) matchHeader(t CaseT, key string, value any) {
 		test.Gopt_Case_MatchTBase(t, v, p.header.Get(key))
 	case []string:
 		test.Gopt_Case_MatchBaseSlice(t, v, p.header[key])
+	case test.TySet[string]:
+		test.Gopt_Case_MatchSet(t, v, p.header[key])
 	case *test.Var__0[string]:
 		v.Match(t, p.header.Get(key))
 	case *test.Var__3[[]string]:
-		v.Match__0(t, p.header[key])
+		v.Match(t, p.header[key])
 	default:
 		t.Fatalf("match header failed! unexpected value type: %T\n", value)
 	}
