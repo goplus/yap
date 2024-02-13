@@ -115,7 +115,7 @@ func (p *Class) queryStrucRow(vRet reflect.Value) error {
 
 	q := p.query
 	query := q.makeSelectExpr(p.tbl, names)
-	return p.sqlQueryVals(context.TODO(), query, q.args, rets)
+	return p.queryVals(context.TODO(), query, q.args, rets)
 }
 
 func (p *Class) queryStrucOne(
@@ -123,7 +123,7 @@ func (p *Class) queryStrucOne(
 	vSlice reflect.Value, elem dbType, cols []field, hasPtr bool) error {
 	vRet := reflect.New(elem).Elem()
 	rets := getVals(make([]any, 0, len(cols)), vRet, cols, false)
-	err := p.sqlQueryVals(ctx, query, args, rets)
+	err := p.queryVals(ctx, query, args, rets)
 	if err != nil {
 		return err
 	}
@@ -180,9 +180,9 @@ func (p *Class) queryStrucRows(vSlice reflect.Value) error {
 	return p.queryStrucOne(context.TODO(), query, args, vSlice, elem, cols, hasPtr)
 }
 
-// sqlQueryVals NOTE:
+// queryVals NOTE:
 //   - one of args maybe is a slice
-func (p *Class) sqlQueryVals(ctx context.Context, query string, args, rets []any) error {
+func (p *Class) queryVals(ctx context.Context, query string, args, rets []any) error {
 	iArgSlice := checkArgSlice(args)
 	if iArgSlice >= 0 {
 		log.Panicln("one of `query` arguments is a slice, but `ret` arguments are not")
@@ -198,10 +198,10 @@ func (p *Class) sqlQueryVals(ctx context.Context, query string, args, rets []any
 	}
 	defer rows.Close()
 
-	return p.sqlRetRow(rows, rets)
+	return p.queryRetRow(rows, rets)
 }
 
-func (p *Class) sqlRetRow(rows *sql.Rows, rets []any) error {
+func (p *Class) queryRetRow(rows *sql.Rows, rets []any) error {
 	if !rows.Next() {
 		err := rows.Err()
 		if err == nil {
@@ -217,7 +217,7 @@ func (p *Class) sqlRetRow(rows *sql.Rows, rets []any) error {
 	return err
 }
 
-func (p *Class) sqlRetRows(rows *sql.Rows, vRets []reflect.Value, oneRet []any, needInit bool) error {
+func (p *Class) queryRetRows(rows *sql.Rows, vRets []reflect.Value, oneRet []any, needInit bool) error {
 	for rows.Next() {
 		if needInit {
 			for _, ret := range oneRet {
@@ -243,12 +243,12 @@ func (p *Class) sqlRetRows(rows *sql.Rows, vRets []reflect.Value, oneRet []any, 
 	return err
 }
 
-// sqlQueryRows NOTE:
+// queryRows NOTE:
 //   - one of args maybe is a slice
-func (p *Class) sqlQueryRows(ctx context.Context, query string, args, rets []any) error {
+func (p *Class) queryRows(ctx context.Context, query string, args, rets []any) error {
 	iArgSlice := checkArgSlice(args)
 	if iArgSlice >= 0 {
-		return p.sqlMultiQuery(ctx, query, iArgSlice, args, rets)
+		return p.queryMulti(ctx, query, iArgSlice, args, rets)
 	}
 
 	if debugExec {
@@ -262,7 +262,7 @@ func (p *Class) sqlQueryRows(ctx context.Context, query string, args, rets []any
 	defer rows.Close()
 
 	vRets, oneRet := makeSliceRets(rets)
-	return p.sqlRetRows(rows, vRets, oneRet, false)
+	return p.queryRetRows(rows, vRets, oneRet, false)
 }
 
 func makeSliceRets(rets []any) (vRets []reflect.Value, oneRet []any) {
@@ -278,7 +278,7 @@ func makeSliceRets(rets []any) (vRets []reflect.Value, oneRet []any) {
 	return
 }
 
-func (p *Class) sqlQueryOne(ctx context.Context, query string, args, oneRet []any, vRets []reflect.Value) error {
+func (p *Class) queryMultiOne(ctx context.Context, query string, args, oneRet []any, vRets []reflect.Value) error {
 	if debugExec {
 		log.Println("==>", query, args)
 	}
@@ -289,10 +289,10 @@ func (p *Class) sqlQueryOne(ctx context.Context, query string, args, oneRet []an
 	}
 	defer rows.Close()
 
-	return p.sqlRetRows(rows, vRets, oneRet, true)
+	return p.queryRetRows(rows, vRets, oneRet, true)
 }
 
-func (p *Class) sqlMultiQuery(ctx context.Context, query string, iArgSlice int, args, rets []any) error {
+func (p *Class) queryMulti(ctx context.Context, query string, iArgSlice int, args, rets []any) error {
 	argSlice := args[iArgSlice]
 	defer func() {
 		args[iArgSlice] = argSlice
@@ -302,7 +302,7 @@ func (p *Class) sqlMultiQuery(ctx context.Context, query string, iArgSlice int, 
 	for i, n := 0, vArgSlice.Len(); i < n; i++ {
 		arg := vArgSlice.Index(i).Interface()
 		args[iArgSlice] = arg
-		if err := p.sqlQueryOne(ctx, query, args, oneRet, vRets); err != nil {
+		if err := p.queryMultiOne(ctx, query, args, oneRet, vRets); err != nil {
 			return err
 		}
 	}
@@ -346,9 +346,9 @@ func (p *Class) queryRetKvPair(kvPair ...any) error {
 
 	query := q.makeSelectExpr(tbl, exprs)
 	if kind == valFlagNormal {
-		return p.sqlQueryVals(context.TODO(), query, q.args, rets)
+		return p.queryVals(context.TODO(), query, q.args, rets)
 	}
-	return p.sqlQueryRows(context.TODO(), query, q.args, rets)
+	return p.queryRows(context.TODO(), query, q.args, rets)
 }
 
 func retKind(ret any) int {
