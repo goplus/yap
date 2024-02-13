@@ -51,6 +51,7 @@ type baseslice interface {
 }
 
 type TySet[T baseelem] []T
+type TyAnySet []any
 
 func Set__0[T baseelem](vals ...T) TySet[T] {
 	return TySet[T](vals)
@@ -58,6 +59,10 @@ func Set__0[T baseelem](vals ...T) TySet[T] {
 
 func Set__1[T []string](v *Var__3[T]) TySet[string] {
 	return TySet[string](v.Val())
+}
+
+func Set__2(vals ...any) TyAnySet {
+	return TyAnySet(vals)
 }
 
 // -----------------------------------------------------------------------------
@@ -74,7 +79,7 @@ func nameCtx(name []string) string {
 }
 
 const (
-	Gopo_Gopt_Case_Match = "Gopt_Case_MatchTBase,Gopt_Case_MatchMap,Gopt_Case_MatchSlice,Gopt_Case_MatchBaseSlice,Gopt_Case_MatchSet,Gopt_Case_MatchAny"
+	Gopo_Gopt_Case_Match = "Gopt_Case_MatchTBase,Gopt_Case_MatchMap,Gopt_Case_MatchSlice,Gopt_Case_MatchBaseSlice,Gopt_Case_MatchSet,Gopt_Case_MatchAnySet,Gopt_Case_MatchAny"
 )
 
 func Gopt_Case_MatchTBase[T basetype](t CaseT, expected, got T, name ...string) {
@@ -135,7 +140,44 @@ func Gopt_Case_MatchSet[T baseelem](t CaseT, expected TySet[T], got []T, name ..
 	}
 }
 
+func Gopt_Case_MatchAnySet(t CaseT, expected TyAnySet, got any, name ...string) {
+	if gv, ok := got.([]any); ok {
+		matchAnySet(t, expected, gv)
+		return
+	}
+	vgot := reflect.ValueOf(got)
+	if vgot.Kind() != reflect.Slice {
+		t.Fatalf("unmatched set%s: expected: %v, got a non slice value: %v\n", nameCtx(name), expected, got)
+	}
+	for i, n := 0, vgot.Len(); i < n; i++ {
+		gv := vgot.Index(i).Interface()
+		if !hasAnyElem(gv, expected) {
+			t.Fatalf("unmatched set%s: expected: %v, value %v doesn't exist in it\n", nameCtx(name), expected, gv)
+		}
+	}
+}
+
+func matchAnySet(t CaseT, expected TyAnySet, got []any, name ...string) {
+	if len(expected) != len(got) {
+		t.Fatalf("unmatched set%s length - expected: %d, got: %d\n", nameCtx(name), len(expected), len(got))
+	}
+	for _, gv := range got {
+		if !hasAnyElem(gv, expected) {
+			t.Fatalf("unmatched set%s: expected: %v, value %v doesn't exist in it\n", nameCtx(name), expected, gv)
+		}
+	}
+}
+
 func hasElem[T baseelem](v T, expected []T) bool {
+	for _, ev := range expected {
+		if reflect.DeepEqual(v, ev) {
+			return true
+		}
+	}
+	return false
+}
+
+func hasAnyElem(v any, expected []any) bool {
 	for _, ev := range expected {
 		if v == ev {
 			return true
@@ -220,7 +262,15 @@ retry:
 			Gopt_Case_MatchSet(t, ev, gv.Val(), name...)
 			return
 		}
-		return
+	case TyAnySet:
+		switch gv := got.(type) {
+		case *Var__2[[]any]:
+			Gopt_Case_MatchAnySet(t, ev, gv.Val(), name...)
+			return
+		default:
+			Gopt_Case_MatchAnySet(t, ev, gv, name...)
+			return
+		}
 	case *Var__0[string]:
 		switch gv := got.(type) {
 		case string:
