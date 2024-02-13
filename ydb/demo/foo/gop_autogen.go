@@ -12,6 +12,7 @@ import (
 	"github.com/goplus/yap/ydb"
 	_ "github.com/goplus/yap/ydb/mysql"
 	_ "github.com/goplus/yap/ydb/sqlite3"
+	"log"
 	"math/rand"
 	"sort"
 	"strconv"
@@ -153,78 +154,88 @@ func (this *article) Main() {
 //line ydb/demo/foo/article_ydb.gox:86:1
 			tagsAdd, tagsDel := Diff(tags, oldtags)
 //line ydb/demo/foo/article_ydb.gox:87:1
-			this.Delete__1("tag.name=?", tagsDel)
-//line ydb/demo/foo/article_ydb.gox:88:1
-			this.Insert__1("doc", docId, "tag.name", tagsAdd)
+			Info("oldtags:", oldtags, "tags:", tags, "add:", tagsAdd, "del:", tagsDel)
 //line ydb/demo/foo/article_ydb.gox:89:1
+			this.Delete__1("tag.name=?", tagsDel)
+//line ydb/demo/foo/article_ydb.gox:90:1
+			this.Insert__1("tag.doc", docId, "tag.name", tagsAdd)
+//line ydb/demo/foo/article_ydb.gox:91:1
 			return nil
 		})
-//line ydb/demo/foo/article_ydb.gox:91:1
-		_ = setTags
-//line ydb/demo/foo/article_ydb.gox:93:1
-		tags := this.Api("tags", func(docId string) (tags []string, err error) {
 //line ydb/demo/foo/article_ydb.gox:94:1
-			this.Query__1("tag.doc=?", docId)
+		tags := this.Api("tags", func(docId string) (tags []string, err error) {
 //line ydb/demo/foo/article_ydb.gox:95:1
-			this.Ret__1("tag.name", &tags)
+			this.Query__1("tag.doc=?", docId)
 //line ydb/demo/foo/article_ydb.gox:96:1
+			this.Ret__1("tag.name", &tags)
+//line ydb/demo/foo/article_ydb.gox:97:1
 			return
 		})
-//line ydb/demo/foo/article_ydb.gox:98:1
+//line ydb/demo/foo/article_ydb.gox:99:1
 		_ = tags
-//line ydb/demo/foo/article_ydb.gox:106:1
-		listByTag := this.Api("listByTag", func(tag string) (result []ArticleEntry) {
+//line ydb/demo/foo/article_ydb.gox:101:1
+		setTags(doc1.Id, "tag1", "tag2")
+//line ydb/demo/foo/article_ydb.gox:102:1
+		this.Ret__0(nil)
 //line ydb/demo/foo/article_ydb.gox:107:1
-			var ids []string
+		listByTag := this.Api("listByTag", func(tag string) (result []ArticleEntry) {
 //line ydb/demo/foo/article_ydb.gox:108:1
-			this.Query__1("tag.name=?", tag)
+			var ids []string
 //line ydb/demo/foo/article_ydb.gox:109:1
+			this.Query__1("tag.name=?", tag)
+//line ydb/demo/foo/article_ydb.gox:110:1
 			this.Ret__1("tag.doc", &ids)
-//line ydb/demo/foo/article_ydb.gox:111:1
-			this.Query__1("id=?", ids)
 //line ydb/demo/foo/article_ydb.gox:112:1
-			this.Ret__1(&result)
+			this.Query__1("id=?", ids)
 //line ydb/demo/foo/article_ydb.gox:113:1
-			return
-		})
-//line ydb/demo/foo/article_ydb.gox:115:1
-		_ = listByTag
-//line ydb/demo/foo/article_ydb.gox:117:1
-		listByAuthor := this.Api("listByAuthor", func(author string) (result []ArticleEntry) {
-//line ydb/demo/foo/article_ydb.gox:118:1
-			this.Query__1("author=?", author)
-//line ydb/demo/foo/article_ydb.gox:119:1
 			this.Ret__1(&result)
-//line ydb/demo/foo/article_ydb.gox:120:1
+//line ydb/demo/foo/article_ydb.gox:114:1
 			return
 		})
-//line ydb/demo/foo/article_ydb.gox:122:1
+//line ydb/demo/foo/article_ydb.gox:116:1
+		_ = listByTag
+//line ydb/demo/foo/article_ydb.gox:118:1
+		listByAuthor := this.Api("listByAuthor", func(author string) (result []ArticleEntry) {
+//line ydb/demo/foo/article_ydb.gox:119:1
+			this.Query__1("author=?", author)
+//line ydb/demo/foo/article_ydb.gox:120:1
+			this.Ret__1(&result)
+//line ydb/demo/foo/article_ydb.gox:121:1
+			return
+		})
+//line ydb/demo/foo/article_ydb.gox:123:1
 		_ = listByAuthor
 	})
 }
 
 var ErrNoEmailAndTel = errors.New("no email and telephone")
 var rnd = rand.New(rand.NewSource(time.Now().UnixMicro()))
-//line ydb/demo/foo/foo.gop:22:1
-func Rand() string {
 //line ydb/demo/foo/foo.gop:23:1
+func Rand() string {
+//line ydb/demo/foo/foo.gop:24:1
 	return strconv.FormatInt(rnd.Int63(), 36)
 }
-//line ydb/demo/foo/foo.gop:26:1
-func Hs256(pwd string, salt string) string {
 //line ydb/demo/foo/foo.gop:27:1
-	b := hmac.New(sha256.New, []byte(salt)).Sum([]byte(pwd))
+func Hs256(pwd string, salt string) string {
 //line ydb/demo/foo/foo.gop:28:1
+	b := hmac.New(sha256.New, []byte(salt)).Sum([]byte(pwd))
+//line ydb/demo/foo/foo.gop:29:1
 	return base64.RawURLEncoding.EncodeToString(b)
 }
-//line ydb/demo/foo/foo.gop:31:1
-func Diff(new []string, old []string) (add []string, del []string) {
 //line ydb/demo/foo/foo.gop:32:1
-	sort.Strings(new)
+func Diff(new []string, old []string) (add []string, del []string) {
 //line ydb/demo/foo/foo.gop:33:1
-	sort.Strings(old)
+	sort.Strings(new)
 //line ydb/demo/foo/foo.gop:34:1
+	sort.Strings(old)
+//line ydb/demo/foo/foo.gop:35:1
 	return stringutil.Diff(new, old)
+}
+//line ydb/demo/foo/foo.gop:38:1
+func Info(args ...interface {
+}) {
+//line ydb/demo/foo/foo.gop:39:1
+	log.Println(args...)
 }
 //line ydb/demo/foo/user_ydb.gox:19
 func (this *user) Main() {

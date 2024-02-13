@@ -94,7 +94,7 @@ func (p *Class) insertStrucRows(vSlice reflect.Value) (sql.Result, error) {
 		}
 		vals = getVals(vals, vElem, cols, true)
 	}
-	return p.insertRowsVals(names, vals, rows)
+	return p.insertRowsVals(p.tbl, names, vals, rows)
 }
 
 func (p *Class) insertStrucRow(vArg reflect.Value) (sql.Result, error) {
@@ -104,7 +104,7 @@ func (p *Class) insertStrucRow(vArg reflect.Value) (sql.Result, error) {
 	n := vArg.NumField()
 	names, cols := getCols(make([]string, 0, n), make([]field, 0, n), n, vArg.Type(), 0)
 	vals := getVals(make([]any, 0, len(cols)), vArg, cols, true)
-	return p.insertRow(names, vals)
+	return p.insertRow(p.tbl, names, vals)
 }
 
 const (
@@ -124,39 +124,61 @@ func (p *Class) insertKvPair(kvPair ...any) (sql.Result, error) {
 	n := nPair >> 1
 	names := make([]string, n)
 	vals := make([]any, n)
-	rows := -1
+	rows := -1      // slice length
+	iArgSlice := -1 // -1: no slice, or index of first slice arg
 	kind := 0
-	for i := 0; i < nPair; i += 2 {
-		val := kvPair[i+1]
-		names[i>>1] = kvPair[i].(string)
-		vals[i>>1] = val
+	for iPair := 0; iPair < nPair; iPair += 2 {
+		i := iPair >> 1
+		names[i] = kvPair[iPair].(string)
+		val := kvPair[iPair+1]
 		switch v := reflect.ValueOf(val); v.Kind() {
 		case reflect.Slice:
-			vals = append(vals, v)
-			if kind == 0 {
-				rows = v.Len()
-				kind = valFlagSlice
-			} else if vlen := v.Len(); rows != vlen {
+			vlen := v.Len()
+			if iArgSlice == -1 {
+				iArgSlice = i
+				rows = vlen
+			} else if rows != vlen {
 				log.Panicf("insert: unexpected slice length. got %d, expected %d\n", vlen, rows)
+			} else {
+				kind |= valFlagSlice
 			}
+			vals[i] = v
 		default:
-			vals = append(vals, val)
 			kind |= valFlagNormal
+			vals[i] = val
 		}
 	}
-	switch kind {
-	case valFlagNormal:
-		return p.insertRow(names, vals)
-	case valFlagSlice:
-		return p.insertSliceRows(names, vals, rows)
-	default:
-		log.Panicln("can't insert mix slice and normal value")
+	if kind == valFlagInvalid {
+		log.Panicln("insert: can't mix multiple slice arguments and normal value")
 	}
-	return nil, nil
+	tbl := p.tblFromNames(names)
+	if kind == valFlagSlice {
+		return p.insertSlice(tbl, names, vals, rows)
+	}
+	if iArgSlice == -1 {
+		return p.insertRow(tbl, names, vals)
+	}
+	return p.insertMulti(tbl, names, iArgSlice, vals)
 }
 
 // NOTE: len(args) == len(names)
-func (p *Class) insertSliceRows(names []string, args []any, rows int) (sql.Result, error) {
+func (p *Class) insertMulti(tbl string, names []string, iArgSlice int, args []any) (sql.Result, error) {
+	argSlice := args[iArgSlice]
+	defer func() {
+		args[iArgSlice] = argSlice
+	}()
+	vArgSlice := argSlice.(reflect.Value)
+	rows := vArgSlice.Len()
+	vals := make([]any, 0, len(names)*rows)
+	for i := 0; i < rows; i++ {
+		args[iArgSlice] = vArgSlice.Index(i).Interface()
+		vals = append(vals, args...)
+	}
+	return p.insertRowsVals(tbl, names, vals, rows)
+}
+
+// NOTE: len(args) == len(names)
+func (p *Class) insertSlice(tbl string, names []string, args []any, rows int) (sql.Result, error) {
 	vals := make([]any, 0, len(names)*rows)
 	for i := 0; i < rows; i++ {
 		for _, arg := range args {
@@ -164,13 +186,13 @@ func (p *Class) insertSliceRows(names []string, args []any, rows int) (sql.Resul
 			vals = append(vals, v.Index(i).Interface())
 		}
 	}
-	return p.insertRowsVals(names, vals, rows)
+	return p.insertRowsVals(tbl, names, vals, rows)
 }
 
 // NOTE: len(vals) == len(names) * rows
-func (p *Class) insertRowsVals(names []string, vals []any, rows int) (sql.Result, error) {
+func (p *Class) insertRowsVals(tbl string, names []string, vals []any, rows int) (sql.Result, error) {
 	n := len(names)
-	query := insertQuery(p.tbl, names)
+	query := makeInsertExpr(tbl, names)
 	query = append(query, valParams(n, rows)...)
 
 	q := string(query)
@@ -181,11 +203,11 @@ func (p *Class) insertRowsVals(names []string, vals []any, rows int) (sql.Result
 	return p.insertRet(result, err)
 }
 
-func (p *Class) insertRow(names []string, vals []any) (sql.Result, error) {
+func (p *Class) insertRow(tbl string, names []string, vals []any) (sql.Result, error) {
 	if len(names) == 0 {
 		log.Panicln("insert: nothing to insert")
 	}
-	query := insertQuery(p.tbl, names)
+	query := makeInsertExpr(tbl, names)
 	query = append(query, valParam(len(vals))...)
 
 	q := string(query)
@@ -203,7 +225,7 @@ func (p *Class) insertRet(result sql.Result, err error) (sql.Result, error) {
 	return result, err
 }
 
-func insertQuery(tbl string, names []string) []byte {
+func makeInsertExpr(tbl string, names []string) []byte {
 	query := make([]byte, 0, 128)
 	query = append(query, "INSERT INTO "...)
 	query = append(query, tbl...)

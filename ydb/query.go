@@ -201,17 +201,6 @@ func (p *Class) sqlQueryVals(ctx context.Context, query string, args, rets []any
 	return p.sqlRetRow(rows, rets)
 }
 
-func retKind(ret any) int {
-	v := reflect.ValueOf(ret)
-	if v.Kind() != reflect.Pointer {
-		log.Panicln("usage: ret <expr1>, &<var1>, <expr2>, &<var2>, ...")
-	}
-	if v.Elem().Kind() == reflect.Slice {
-		return valFlagSlice
-	}
-	return valFlagNormal
-}
-
 func (p *Class) sqlRetRow(rows *sql.Rows, rets []any) error {
 	if !rows.Next() {
 		err := rows.Err()
@@ -360,6 +349,17 @@ func (p *Class) queryRetKvPair(kvPair ...any) error {
 		return p.sqlQueryVals(context.TODO(), query, q.args, rets)
 	}
 	return p.sqlQueryRows(context.TODO(), query, q.args, rets)
+}
+
+func retKind(ret any) int {
+	v := reflect.ValueOf(ret)
+	if v.Kind() != reflect.Pointer {
+		log.Panicln("usage: ret <expr1>, &<var1>, <expr2>, &<var2>, ...")
+	}
+	if v.Elem().Kind() == reflect.Slice {
+		return valFlagSlice
+	}
+	return valFlagNormal
 }
 
 // -----------------------------------------------------------------------------

@@ -17,12 +17,23 @@
 package ydb
 
 import (
+	"fmt"
 	"log"
 	"reflect"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/qiniu/x/ctype"
 )
+
+// -----------------------------------------------------------------------------
+
+func recoverErr(e any) error {
+	if v, ok := e.(error); ok {
+		return v
+	}
+	return fmt.Errorf("%v", e)
+}
 
 // -----------------------------------------------------------------------------
 
@@ -44,6 +55,29 @@ func checkArgSlice(args []any) int {
 		}
 	}
 	return iArgSlice
+}
+
+// -----------------------------------------------------------------------------
+
+func (p *Class) tblFromNames(names []string) (tbl string) {
+	var v string
+	tbl, names[0] = tblFromName(names[0])
+	for i := 1; i < len(names); i++ {
+		if v, names[i] = tblFromName(names[i]); v != tbl {
+			log.Panicln("insert: multiple tables")
+		}
+	}
+	if tbl == "" {
+		tbl = p.tbl
+	}
+	return
+}
+
+func tblFromName(name string) (string, string) {
+	if pos := strings.IndexByte(name, '.'); pos > 0 {
+		return name[:pos], name[pos+1:]
+	}
+	return "", name
 }
 
 // -----------------------------------------------------------------------------

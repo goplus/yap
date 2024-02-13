@@ -3,6 +3,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"log"
 	mrand "math/rand"
 	"sort"
 	"strconv"
@@ -32,4 +33,8 @@ func Diff(new, old []string) (add, del []string) {
 	sort.Strings(new)
 	sort.Strings(old)
 	return stringutil.diff(new, old)
+}
+
+func Info(args ...any) {
+	log.println(args...)
 }

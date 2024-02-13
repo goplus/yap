@@ -84,11 +84,12 @@ class "Articles", => {
 		ret "tag.name", &oldtags
 
 		tagsAdd, tagsDel := diff(tags, oldtags)
+		info "oldtags:", oldtags, "tags:", tags, "add:", tagsAdd, "del:", tagsDel
+
 		delete "tag.name=?", tagsDel
-		insert "doc", docId, "tag.name", tagsAdd
+		insert "tag.doc", docId, "tag.name", tagsAdd
 		return nil
 	})
-	_ = setTags
 
 	tags := api("tags", func(docId string) (tags []string, err error) {
 		query "tag.doc=?", docId
@@ -97,8 +98,8 @@ class "Articles", => {
 	})
 	_ = tags
 
-	// setTags doc1.Id, "tag1", "tag2"
-	// ret nil
+	setTags doc1.Id, "tag1", "tag2"
+	ret nil
 
 	// tags doc1.Id
 	// ret set("tag1", "tag2"), nil
