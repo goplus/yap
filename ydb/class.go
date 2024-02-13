@@ -20,9 +20,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"log"
 	"reflect"
+	"runtime/debug"
 
 	"github.com/goplus/gop/ast"
 	"github.com/goplus/yap/test"
@@ -190,9 +190,12 @@ func (ca classApi) call(args ...any) {
 				}
 			}
 			if errRet == nil {
-				errRet = fmt.Errorf("%v", e)
+				errRet = recoverErr(e)
 			}
 			setRetErr(p.result, errRet)
+			if debugExec {
+				debug.PrintStack()
+			}
 		}
 		p.ret = p.callRet
 	}()

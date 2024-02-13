@@ -90,6 +90,8 @@ func (p *Class) deleteMulti(ctx context.Context, query string, iArgSlice int, ar
 	return nAffected, nil
 }
 
+// -----------------------------------------------------------------------------
+
 type deleteResult int64
 
 func (n deleteResult) LastInsertId() (int64, error) {
