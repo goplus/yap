@@ -188,33 +188,49 @@ func (this *article) Main() {
 //line ydb/demo/foo/article_ydb.gox:110:1
 		this.Ret__1(test.Set__0("tag1", "tag3"), nil)
 //line ydb/demo/foo/article_ydb.gox:112:1
-		listByTag := this.Api("listByTag", func(tag string) (result []ArticleEntry) {
+		setTags(doc2.Id, "tag1", "tag5")
 //line ydb/demo/foo/article_ydb.gox:113:1
-			var ids []string
+		setTags(doc3.Id, "tag1", "tag3")
 //line ydb/demo/foo/article_ydb.gox:114:1
-			this.Query__1("tag.name=?", tag)
+		setTags(doc4.Id, "tag2", "tag3")
 //line ydb/demo/foo/article_ydb.gox:115:1
-			this.Ret__1("tag.doc", &ids)
+		setTags(doc5.Id, "tag5", "tag3")
 //line ydb/demo/foo/article_ydb.gox:117:1
-			this.Query__1("id=?", ids)
+		listByTag := this.Api("listByTag", func(tag string) (result []ArticleEntry) {
 //line ydb/demo/foo/article_ydb.gox:118:1
-			this.Ret__1(&result)
+			var ids []string
 //line ydb/demo/foo/article_ydb.gox:119:1
-			return
-		})
-//line ydb/demo/foo/article_ydb.gox:121:1
-		_ = listByTag
+			this.Query__1("tag.name=?", tag)
+//line ydb/demo/foo/article_ydb.gox:120:1
+			this.Ret__1("tag.doc", &ids)
+//line ydb/demo/foo/article_ydb.gox:122:1
+			this.Query__1("id=?", ids)
 //line ydb/demo/foo/article_ydb.gox:123:1
-		listByAuthor := this.Api("listByAuthor", func(author string) (result []ArticleEntry) {
-//line ydb/demo/foo/article_ydb.gox:124:1
-			this.Query__1("author=?", author)
-//line ydb/demo/foo/article_ydb.gox:125:1
 			this.Ret__1(&result)
-//line ydb/demo/foo/article_ydb.gox:126:1
+//line ydb/demo/foo/article_ydb.gox:124:1
 			return
 		})
+//line ydb/demo/foo/article_ydb.gox:127:1
+		listByTag("tag1")
 //line ydb/demo/foo/article_ydb.gox:128:1
-		_ = listByAuthor
+		this.Ret__1(test.Set__2(doc3.ArticleEntry, doc1.ArticleEntry, doc2.ArticleEntry))
+//line ydb/demo/foo/article_ydb.gox:130:1
+		listByTag("tag3")
+//line ydb/demo/foo/article_ydb.gox:131:1
+		this.Ret__1(test.Set__2(doc3.ArticleEntry, doc4.ArticleEntry, doc1.ArticleEntry, doc5.ArticleEntry))
+//line ydb/demo/foo/article_ydb.gox:133:1
+		listByAuthor := this.Api("listByAuthor", func(author string) (result []ArticleEntry) {
+//line ydb/demo/foo/article_ydb.gox:134:1
+			this.Query__1("author=?", author)
+//line ydb/demo/foo/article_ydb.gox:135:1
+			this.Ret__1(&result)
+//line ydb/demo/foo/article_ydb.gox:136:1
+			return
+		})
+//line ydb/demo/foo/article_ydb.gox:139:1
+		listByAuthor("eft")
+//line ydb/demo/foo/article_ydb.gox:140:1
+		this.Ret__1(test.Set__2(doc2.ArticleEntry, doc3.ArticleEntry))
 	})
 }
 

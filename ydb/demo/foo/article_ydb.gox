@@ -109,6 +109,11 @@ class "Articles", => {
 	tags doc1.Id
 	ret set("tag1", "tag3"), nil
 
+	setTags doc2.Id, "tag1", "tag5"
+	setTags doc3.Id, "tag1", "tag3"
+	setTags doc4.Id, "tag2", "tag3"
+	setTags doc5.Id, "tag5", "tag3"
+
 	listByTag := api("listByTag", func(tag string) (result []ArticleEntry) {
 		var ids []string
 		query "tag.name=?", tag
@@ -118,12 +123,19 @@ class "Articles", => {
 		ret &result
 		return
 	})
-	_ = listByTag
+
+	listByTag "tag1"
+	ret set(doc3.ArticleEntry, doc1.ArticleEntry, doc2.ArticleEntry)
+
+	listByTag "tag3"
+	ret set(doc3.ArticleEntry, doc4.ArticleEntry, doc1.ArticleEntry, doc5.ArticleEntry)
 
 	listByAuthor := api("listByAuthor", func(author string) (result []ArticleEntry) {
 		query "author=?", author
 		ret &result
 		return
 	})
-	_ = listByAuthor
+
+	listByAuthor "eft"
+	ret set(doc2.ArticleEntry, doc3.ArticleEntry)
 }
