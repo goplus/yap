@@ -25,6 +25,5 @@ func (this *hello) MainEntry() {
 	this.Run(":8080")
 }
 func main() {
-//line demo/classfile_hello/hello_yap.gox:11:1
 	yap.Gopt_App_Main(new(hello))
 }
