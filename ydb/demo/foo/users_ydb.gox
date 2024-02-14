@@ -1,4 +1,9 @@
-import "time"
+import (
+	"time"
+
+	_ "github.com/goplus/yap/ydb/mysql"
+	_ "github.com/goplus/yap/ydb/sqlite3"
+)
 
 type User struct {
 	Id       string `id CHAR(32) UNIQUE`
