@@ -21,15 +21,13 @@ import (
 	"database/sql"
 	"log"
 	"reflect"
-
-	"github.com/goplus/gop/ast"
 )
 
 // -----------------------------------------------------------------------------
 
 // Delete deltes rows by cond.
 //   - delete <cond>, <arg1>, <arg2>, ...
-func (p *Class) Delete__0(src ast.Expr, cond string, args ...any) (sql.Result, error) {
+func (p *Class) Delete(cond string, args ...any) (sql.Result, error) {
 	tbl := p.exprTblname(cond)
 	query := makeDeleteExpr(tbl, cond)
 	iArgSlice := checkArgSlice(args)
@@ -37,12 +35,6 @@ func (p *Class) Delete__0(src ast.Expr, cond string, args ...any) (sql.Result, e
 		return p.deleteMulti(context.TODO(), query, iArgSlice, args)
 	}
 	return p.deleteOne(context.TODO(), query, args)
-}
-
-// Delete deltes rows by cond.
-//   - delete <cond>, <arg1>, <arg2>, ...
-func (p *Class) Delete__1(cond string, args ...any) (sql.Result, error) {
-	return p.Delete__0(nil, cond, args...)
 }
 
 func makeDeleteExpr(tbl string, cond string) string {
