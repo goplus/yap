@@ -37,34 +37,22 @@ var (
 // -----------------------------------------------------------------------------
 
 type Class struct {
-	name string
-	tbl  string
-	sql  *Sql
-	db   *sql.DB
-	wrap func(string, error) error
-	apis map[string]*api
+	Sql
 
+	self  reflect.Value
+	tbl   string
 	query *query // query
 
 	result []reflect.Value // result of an api call
 
 	ret   func(args ...any) error
 	onErr func(err error)
-
 	test.Case
 }
 
-func newClass(name string, sql *Sql) *Class {
-	if sql.db == nil {
-		log.Panicln("please call `engine <sqlDriverName>` first")
-	}
-	return &Class{
-		name: name,
-		sql:  sql,
-		db:   sql.db,
-		wrap: sql.driver.WrapErr,
-		apis: make(map[string]*api),
-	}
+func (p *Class) initClass(self any) {
+	p.initSql()
+	p.self = reflect.ValueOf(self)
 }
 
 func (p *Class) t() test.CaseT {
@@ -76,7 +64,7 @@ func (p *Class) t() test.CaseT {
 
 // Use sets the default table used in following sql operations.
 func (p *Class) Use(table string, src ...ast.Expr) {
-	_, ok := p.sql.tables[table]
+	_, ok := p.tables[table]
 	if !ok {
 		log.Panicln("table not found:", table)
 	}
@@ -127,47 +115,30 @@ func (p *Class) Ret__1(args ...any) {
 
 // -----------------------------------------------------------------------------
 
-type classApi struct {
-	cls *Class
-	api *api
+func (p *Class) Gop_Exec(name string, args ...any) {
+	vFn := p.method(name)
+	p.call(name, vFn, args...)
 }
 
-type api struct {
-	name string
-	spec any
-}
-
-// Api creates a new api by a spec.
-func (p *Class) Api(name string, spec any, src ...ast.Expr) func(args ...any) {
-	api := &api{name: name, spec: spec}
-	p.apis[name] = api
-	return classApi{p, api}.call
-}
-
-var (
-	tyError = reflect.TypeOf((*error)(nil)).Elem()
-)
-
-func setRetErr(result []reflect.Value, errRet error) {
-	if n := len(result); n > 0 {
-		if result[n-1].Type() == tyError {
-			result[n-1] = reflect.ValueOf(errRet)
-		}
+func (p *Class) method(name string) reflect.Value {
+	c := name[0]
+	if c >= 'a' && c <= 'z' {
+		name = string(c-('a'-'A')) + name[1:]
 	}
+	name = "API_" + name
+	return p.self.MethodByName(name)
 }
 
-func (ca classApi) call(args ...any) {
+func (p *Class) call(name string, vFn reflect.Value, args ...any) {
 	if debugExec {
-		log.Println("==>", ca.api.name, args)
+		log.Println("==>", name, args)
 	}
 
 	vArgs := make([]reflect.Value, len(args))
 	for i, arg := range args {
 		vArgs[i] = reflect.ValueOf(arg)
 	}
-	vFn := reflect.ValueOf(ca.api.spec)
 
-	var p = ca.cls
 	var old = p.onErr
 	var errRet error
 	p.onErr = func(err error) {
@@ -215,6 +186,18 @@ func (p *Class) callRet(args ...any) error {
 	}
 	p.ret = nil
 	return nil
+}
+
+var (
+	tyError = reflect.TypeOf((*error)(nil)).Elem()
+)
+
+func setRetErr(result []reflect.Value, errRet error) {
+	if n := len(result); n > 0 {
+		if result[n-1].Type() == tyError {
+			result[n-1] = reflect.ValueOf(errRet)
+		}
+	}
 }
 
 // Out returns the ith reuslt.

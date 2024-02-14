@@ -73,6 +73,8 @@ engine "mysql"
 table Article, "v0.1.0"
 table Tag, "v0.1.0"
 
+use "article"
+
 doc1 := Article{}
 doc1.Id, doc1.Author, doc1.Title = "123", "abc", "title1"
 add doc1
