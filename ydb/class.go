@@ -23,7 +23,6 @@ import (
 	"reflect"
 	"runtime/debug"
 
-	"github.com/goplus/gop/ast"
 	"github.com/goplus/yap/test"
 	"github.com/goplus/yap/test/logt"
 )
@@ -65,7 +64,7 @@ func (p *Class) t() test.CaseT {
 }
 
 // Use sets the default table used in following sql operations.
-func (p *Class) Use(table string, src ...ast.Expr) {
+func (p *Class) Use(table string) {
 	_, ok := p.tables[table]
 	if !ok {
 		log.Panicln("table not found:", table)
@@ -74,7 +73,7 @@ func (p *Class) Use(table string, src ...ast.Expr) {
 }
 
 // OnErr sets error processing of a sql execution.
-func (p *Class) OnErr(onErr func(error), src ...ast.Expr) {
+func (p *Class) OnErr(onErr func(error)) {
 	p.onErr = onErr
 }
 
@@ -96,22 +95,10 @@ func (p *Class) handleErr(prompt string, err error) {
 //
 // For checking call result:
 //   - ret <expr1>, <expr2>, ...
-func (p *Class) Ret__0(src ast.Expr, args ...any) {
+func (p *Class) Ret(args ...any) {
 	if p.ret == nil {
 		log.Panicln("please call `ret` after a `query` or `call` statement")
 	}
-	if src == nil {
-		if len(args) == 0 {
-			p.ret(nil)
-			return
-		}
-		args = append(make([]any, 1, len(args)+1), args...)
-	}
-	p.ret(args...)
-}
-
-// Ret checks a query or call result.
-func (p *Class) Ret__1(args ...any) {
 	p.ret(args...)
 }
 

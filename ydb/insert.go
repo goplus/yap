@@ -22,8 +22,6 @@ import (
 	"log"
 	"reflect"
 	"strings"
-
-	"github.com/goplus/gop/ast"
 )
 
 // -----------------------------------------------------------------------------
@@ -33,7 +31,7 @@ import (
 //   - insert <colName1>, <valSlice1>, <colName2>, <valSlice2>, ...
 //   - insert <structValOrPtr>
 //   - insert <structOrPtrSlice>
-func (p *Class) Insert__0(src ast.Expr, args ...any) (sql.Result, error) {
+func (p *Class) Insert(args ...any) (sql.Result, error) {
 	if p.tbl == "" {
 		log.Panicln("please call `use <tableName>` to specified current table")
 	}
@@ -42,15 +40,6 @@ func (p *Class) Insert__0(src ast.Expr, args ...any) (sql.Result, error) {
 		return p.insertStruc(args[0])
 	}
 	return p.insertKvPair(args...)
-}
-
-// Insert inserts new rows.
-//   - insert <colName1>, <val1>, <colName2>, <val2>, ...
-//   - insert <colName1>, <valSlice1>, <colName2>, <valSlice2>, ...
-//   - insert <structValOrPtr>
-//   - insert <structOrPtrSlice>
-func (p *Class) Insert__1(kvPair ...any) (sql.Result, error) {
-	return p.Insert__0(nil, kvPair...)
 }
 
 // Insert inserts a new row.

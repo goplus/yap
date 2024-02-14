@@ -23,8 +23,6 @@ import (
 	"log"
 	"reflect"
 	"strings"
-
-	"github.com/goplus/gop/ast"
 )
 
 const (
@@ -54,7 +52,7 @@ func (p *Sql) initSql() {
 }
 
 // Engine initializes database by specified engine name.
-func (p *Sql) Engine__0(name string, src ...ast.Expr) {
+func (p *Sql) Engine__0(name string) {
 	driver, ok := engines[name]
 	if !ok {
 		log.Panicf("engine `%s` not found: please call ydb.Register first\n", name)
@@ -114,7 +112,7 @@ func dbName(fldName string) string {
 }
 
 // Table creates a new table by specified Schema.
-func Gopt_Sql_Gopx_Table[Schema any](sql interface{ defineTable(string, any) }, nameVer string, src ...ast.Expr) {
+func Gopt_Sql_Gopx_Table[Schema any](sql interface{ defineTable(string, any) }, nameVer string) {
 	sql.defineTable(nameVer, (*Schema)(nil))
 }
 

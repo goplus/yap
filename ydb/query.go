@@ -24,7 +24,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/goplus/gop/ast"
 	"github.com/goplus/yap/reflectutil"
 )
 
@@ -32,18 +31,12 @@ import (
 
 // Query creates a new query.
 //   - query <cond>, <arg1>, <arg2>, ...
-func (p *Class) Query__0(src ast.Expr, cond string, args ...any) {
+func (p *Class) Query(cond string, args ...any) {
 	p.query = &query{
 		cond: cond, args: args,
 	}
 	p.lastErr = nil
 	p.ret = p.queryRet
-}
-
-// Query creates a new query.
-//   - query <cond>, <arg1>, <arg2>, ...
-func (p *Class) Query__1(cond string, args ...any) {
-	p.Query__0(nil, cond, args...)
 }
 
 // NoRows checkes there are query result rows or not.
@@ -385,7 +378,7 @@ func retKind(ret any) int {
 // -----------------------------------------------------------------------------
 
 // Limit sets query result rows limit.
-func (p *Class) Limit__0(n int, src ...ast.Expr) {
+func (p *Class) Limit__0(n int) {
 	if p.query == nil {
 		log.Panicln("please call `limit` after a query statement")
 	}
@@ -393,8 +386,8 @@ func (p *Class) Limit__0(n int, src ...ast.Expr) {
 }
 
 // Limit checks if query result rows is < n or not.
-func (p *Class) Limit__1(src ast.Expr, n int, cond string, args ...any) error {
-	ret, err := p.Count__0(src, cond, args...)
+func (p *Class) Limit__1(n int, cond string, args ...any) error {
+	ret, err := p.Count(cond, args...)
 	if err != nil {
 		return err
 	}
@@ -408,15 +401,10 @@ func (p *Class) Limit__1(src ast.Expr, n int, cond string, args ...any) error {
 	return err
 }
 
-// Limit checks if query result rows is < n or not.
-func (p *Class) Limit__2(n int, cond string, args ...any) error {
-	return p.Limit__1(nil, n, cond, args...)
-}
-
 // -----------------------------------------------------------------------------
 
 // Count returns rows of a query result.
-func (p *Class) Count__0(src ast.Expr, cond string, args ...any) (n int, err error) {
+func (p *Class) Count(cond string, args ...any) (n int, err error) {
 	if p.tbl == "" {
 		log.Panicln("please call `use <tableName>` to specified a table name")
 	}
@@ -425,11 +413,6 @@ func (p *Class) Count__0(src ast.Expr, cond string, args ...any) (n int, err err
 		p.handleErr("query:", err)
 	}
 	return
-}
-
-// Count returns rows of a query result.
-func (p *Class) Count__1(cond string, args ...any) (n int, err error) {
-	return p.Count__0(nil, cond, args...)
 }
 
 // -----------------------------------------------------------------------------
