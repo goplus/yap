@@ -39,15 +39,17 @@ var (
 type Class struct {
 	Sql
 
-	self  reflect.Value
-	tbl   string
-	query *query // query
+	self reflect.Value
+	tbl  string
 
 	result []reflect.Value // result of an api call
 
-	ret   func(args ...any) error
-	onErr func(err error)
+	ret     func(args ...any) error
+	onErr   func(err error)
+	lastErr error
 	test.Case
+
+	query *query // query
 }
 
 func (p *Class) initClass(self any) {
@@ -147,19 +149,22 @@ func (p *Class) call(name string, vFn reflect.Value, args ...any) {
 	}
 	defer func() {
 		p.onErr = old
-		if e := recover(); e != nil {
-			if p.result == nil { // set p.result to zero if panic
-				fnt := vFn.Type()
-				n := fnt.NumOut()
-				p.result = make([]reflect.Value, n)
-				for i := 0; i < n; i++ {
-					p.result[i] = reflect.Zero(fnt.Out(i))
-				}
+		if p.result == nil { // set p.result to zero if panic
+			fnt := vFn.Type()
+			n := fnt.NumOut()
+			p.result = make([]reflect.Value, n, n+1)
+			for i := 0; i < n; i++ {
+				p.result[i] = reflect.Zero(fnt.Out(i))
 			}
+		}
+		if !hasRetErrType(p.result) {
+			p.result = append(p.result, reflect.Zero(tyError))
+		}
+		if e := recover(); e != nil {
 			if errRet == nil {
 				errRet = recoverErr(e)
 			}
-			setRetErr(p.result, errRet)
+			p.result[len(p.result)-1] = reflect.ValueOf(errRet)
 			if debugExec {
 				log.Println("PANIC:", e)
 				debug.PrintStack()
@@ -175,10 +180,13 @@ func (p *Class) callRet(args ...any) error {
 	t := p.t()
 	result := p.result
 	if len(result) != len(args) {
-		t.Fatalf(
-			"call ret: unmatched result parameters count - got %d, expected %d\n",
-			len(args), len(result),
-		)
+		if len(result) != len(args)+1 {
+			t.Fatalf(
+				"call ret: unmatched result parameters count - got %d, expected %d\n",
+				len(args), len(result),
+			)
+		}
+		args = append(args, nil)
 	}
 	for i, arg := range args {
 		ret := result[i].Interface()
@@ -192,12 +200,11 @@ var (
 	tyError = reflect.TypeOf((*error)(nil)).Elem()
 )
 
-func setRetErr(result []reflect.Value, errRet error) {
+func hasRetErrType(result []reflect.Value) bool {
 	if n := len(result); n > 0 {
-		if result[n-1].Type() == tyError {
-			result[n-1] = reflect.ValueOf(errRet)
-		}
+		return result[n-1].Type() == tyError
 	}
+	return false
 }
 
 // Out returns the ith reuslt.

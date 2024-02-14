@@ -36,6 +36,7 @@ func (p *Class) Query__0(src ast.Expr, cond string, args ...any) {
 	p.query = &query{
 		cond: cond, args: args,
 	}
+	p.lastErr = nil
 	p.ret = p.queryRet
 }
 
@@ -43,6 +44,16 @@ func (p *Class) Query__0(src ast.Expr, cond string, args ...any) {
 //   - query <cond>, <arg1>, <arg2>, ...
 func (p *Class) Query__1(cond string, args ...any) {
 	p.Query__0(nil, cond, args...)
+}
+
+// NoRows checkes there are query result rows or not.
+func (p *Class) NoRows() bool {
+	return p.lastErr == ErrNoRows
+}
+
+// LastErr returns last error.
+func (p *Class) LastErr() error {
+	return p.lastErr
 }
 
 // -----------------------------------------------------------------------------
@@ -192,6 +203,7 @@ func (p *Class) queryVals(ctx context.Context, query string, args, rets []any) e
 		log.Println("==>", query, args)
 	}
 	rows, err := p.db.QueryContext(ctx, query, args...)
+	p.lastErr = err
 	if err != nil {
 		p.handleErr("query:", err)
 		return err
@@ -207,10 +219,14 @@ func (p *Class) queryRetRow(rows *sql.Rows, rets []any) error {
 		if err == nil {
 			err = ErrNoRows
 		}
-		p.handleErr("ret:", err)
+		p.lastErr = err
+		if err != ErrNoRows {
+			p.handleErr("ret:", err)
+		}
 		return err
 	}
 	err := rows.Scan(rets...)
+	p.lastErr = err
 	if err != nil {
 		p.handleErr("ret:", err)
 	}
@@ -227,6 +243,7 @@ func (p *Class) queryRetRows(rows *sql.Rows, vRets []reflect.Value, oneRet []any
 			needInit = true
 		}
 		err := rows.Scan(oneRet...)
+		p.lastErr = err
 		if err != nil {
 			p.handleErr("ret:", err)
 			return err
@@ -237,6 +254,7 @@ func (p *Class) queryRetRows(rows *sql.Rows, vRets []reflect.Value, oneRet []any
 		}
 	}
 	err := rows.Err()
+	p.lastErr = err
 	if err != nil {
 		p.handleErr("ret:", err)
 	}
@@ -255,6 +273,7 @@ func (p *Class) queryRows(ctx context.Context, query string, args, rets []any) e
 		log.Println("==>", query, args)
 	}
 	rows, err := p.db.QueryContext(ctx, query, args...)
+	p.lastErr = err
 	if err != nil {
 		p.handleErr("query:", err)
 		return err
@@ -283,6 +302,7 @@ func (p *Class) queryMultiOne(ctx context.Context, query string, args, oneRet []
 		log.Println("==>", query, args)
 	}
 	rows, err := p.db.QueryContext(ctx, query, args...)
+	p.lastErr = err
 	if err != nil {
 		p.handleErr("query:", err)
 		return err

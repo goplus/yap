@@ -19,18 +19,18 @@ type Tag struct {
 	Doc  string `CHAR(32)`
 }
 
-func API_Add(doc Article) error {
+func API_Add(doc Article) {
 	insert doc
-	return nil
 }
 
 func API_Get(docId string) (doc Article, err error) {
 	query "id=?", docId
 	ret &doc
+	err = lastErr
 	return
 }
 
-func API_SetTags(docId string, tags ...string) error {
+func API_SetTags(docId string, tags ...string) {
 	var oldtags []string
 	query "tag.doc=?", docId
 	ret "tag.name", &oldtags
@@ -40,10 +40,9 @@ func API_SetTags(docId string, tags ...string) error {
 
 	delete "tag.name=?", tagsDel
 	insert "tag.doc", docId, "tag.name", tagsAdd
-	return nil
 }
 
-func API_Tags(docId string) (tags []string, err error) {
+func API_Tags(docId string) (tags []string) {
 	query "tag.doc=?", docId
 	ret "tag.name", &tags
 	return
@@ -75,7 +74,7 @@ use "article"
 doc1 := Article{}
 doc1.Id, doc1.Author, doc1.Title = "123", "abc", "title1"
 add doc1
-ret nil
+ret
 
 add doc1
 ret ErrDuplicated
@@ -83,43 +82,43 @@ ret ErrDuplicated
 doc2 := Article{}
 doc2.Id, doc2.Author, doc2.Title = "124", "efg", "title2"
 add doc2
-ret nil
+ret
 
 doc3 := Article{}
 doc3.Id, doc3.Author, doc3.Title = "125", "efg", "title3"
 add doc3
-ret nil
+ret
 
 doc4 := Article{}
 doc4.Id, doc4.Author, doc4.Title = "225", "abc", "title4"
 add doc4
-ret nil
+ret
 
 doc5 := Article{}
 doc5.Id, doc5.Author, doc5.Title = "555", "abc", "title5"
 add doc5
-ret nil
+ret
 
 get doc1.Id
-ret doc1, nil
+ret doc1
 
 get doc2.Id
-ret doc2, nil
+ret doc2
 
 get "unknown"
 match out(1), ErrNoRows
 
 setTags doc1.Id, "tag1", "tag2"
-ret nil
+ret
 
 tags doc1.Id
-ret set("tag2", "tag1"), nil
+ret set("tag2", "tag1")
 
 setTags doc1.Id, "tag1", "tag3"
-ret nil
+ret
 
 tags doc1.Id
-ret set("tag1", "tag3"), nil
+ret set("tag1", "tag3")
 
 setTags doc2.Id, "tag1", "tag5"
 setTags doc3.Id, "tag1", "tag3"
