@@ -37,16 +37,14 @@ var (
 
 // -----------------------------------------------------------------------------
 
-type dbTable = Table
-type dbClass = Class
-
 type Sql struct {
-	driver  *Engine
+	driver *Engine
+	wrap   func(string, error) error
+
 	tables  map[string]*Table
 	classes map[string]*Class
 	db      *sql.DB
-	*dbTable
-	*dbClass
+
 	autodrop bool
 }
 
@@ -79,6 +77,7 @@ func (p *Sql) Engine__0(name string, src ...ast.Expr) {
 	}
 	p.db = db
 	p.driver = driver
+	p.wrap = driver.WrapErr
 }
 
 // Engine returns engine name of the database.
@@ -102,7 +101,6 @@ func (p *Sql) defineTable(nameVer string, zeroSchema any) {
 		log.Panicf("table `%s` exists\n", name)
 	}
 	tbl := newTable(name, ver, schema)
-	p.dbTable = tbl
 	p.tables[name] = tbl
 	tbl.create(context.TODO(), p)
 }
@@ -118,23 +116,6 @@ func dbName(fldName string) string {
 // Table creates a new table by specified Schema.
 func Gopt_Sql_Gopx_Table[Schema any](sql interface{ defineTable(string, any) }, nameVer string, src ...ast.Expr) {
 	sql.defineTable(nameVer, (*Schema)(nil))
-}
-
-// From migrates from old table because it's an incompatible change
-func (p *Sql) From(old string, migrate func(), src ...ast.Expr) {
-	if p.dbTable == nil {
-		log.Panicln("please call `from` after a `table` statement")
-	}
-}
-
-// Class creates a new class by a spec.
-func (p *Sql) Class(name string, spec func(), src ...ast.Expr) {
-	cls := newClass(name, p)
-	p.dbClass = cls
-	p.classes[name] = cls
-	spec()
-	cls.gen(context.TODO())
-	p.dbClass = nil
 }
 
 // -----------------------------------------------------------------------------
@@ -162,7 +143,7 @@ type AppGen struct {
 func (p *AppGen) initApp() {
 }
 
-func Gopt_AppGen_Main(app interface{ initApp() }, workers ...interface{ initSql() }) {
+func Gopt_AppGen_Main(app interface{ initApp() }, workers ...interface{ initClass(self any) }) {
 	flag.BoolVar(&debugExec, "v", false, "verbose infromation")
 	flag.Parse()
 	app.initApp()
@@ -170,7 +151,7 @@ func Gopt_AppGen_Main(app interface{ initApp() }, workers ...interface{ initSql(
 		me.MainEntry()
 	}
 	for _, worker := range workers {
-		worker.initSql()
+		worker.initClass(worker)
 		worker.(interface{ Main() }).Main()
 	}
 }
