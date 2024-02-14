@@ -20,6 +20,5 @@ func (this *statichttp) MainEntry() {
 	this.Run(":8888")
 }
 func main() {
-//line demo/classfile_statichttp/statichttp_yap.gox:5:1
 	yap.Gopt_App_Main(new(statichttp))
 }

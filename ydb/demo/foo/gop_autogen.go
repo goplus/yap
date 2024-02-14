@@ -53,7 +53,6 @@ type users struct {
 }
 
 func main() {
-//line ydb/demo/foo/users_ydb.gox:59:1
 	ydb.Gopt_AppGen_Main(new(ydb.AppGen), new(articles), new(users))
 }
 //line ydb/demo/foo/articles_ydb.gox:22:1
