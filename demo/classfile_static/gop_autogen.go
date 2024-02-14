@@ -19,6 +19,6 @@ func (this *staticfile) MainEntry() {
 	this.Run(":8888")
 }
 func main() {
-//line demo/classfile_static/staticfile_yap.gox:4:1
+//line demo/classfile_static/staticfile_yap.gox:5:1
 	yap.Gopt_App_Main(new(staticfile))
 }

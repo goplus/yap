@@ -20,6 +20,6 @@ func (this *blog) MainEntry() {
 	this.Run(":8080")
 }
 func main() {
-//line demo/classfile_blog/blog_yap.gox:7:1
+//line demo/classfile_blog/blog_yap.gox:8:1
 	yap.Gopt_App_Main(new(blog))
 }

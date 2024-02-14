@@ -20,6 +20,6 @@ func (this *foo) MainEntry() {
 	this.Run(":8080")
 }
 func main() {
-//line ytest/demo/foo/foo_ytest.gox:3:1
+//line ytest/demo/foo/foo_ytest.gox:8:1
 	yap.Gopt_App_Main(new(foo))
 }

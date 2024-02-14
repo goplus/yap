@@ -33,6 +33,9 @@ func API_Login(id, pwd string) bool {
 	var spwd, salt string
 	query "id=?", id
 	ret "salt", &salt, "spwd", &spwd
+	if noRows {
+		return false
+	}
 	return hs256(pwd, salt) == spwd
 }
 
