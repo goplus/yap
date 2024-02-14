@@ -20,6 +20,6 @@ func (this *jwtdemo) MainEntry() {
 	this.Run(":8080")
 }
 func main() {
-//line ytest/demo/jwtdemo/jwtdemo_ytest.gox:17:1
+//line ytest/demo/jwtdemo/jwtdemo_ytest.gox:19:1
 	yap.Gopt_App_Main(new(jwtdemo))
 }
