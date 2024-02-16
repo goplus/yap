@@ -11,6 +11,12 @@ This repo contains three [Go+ classfiles](https://github.com/goplus/gop/blob/mai
 
 The classfile `yap` has the file suffix `_yap.gox`. The classfile `yaptest` has the file suffix `_ytest.gox`. And the classfile `ydb` has the file suffix `_ydb.gox`.
 
+Before using `yap`, `yaptest` or `ydb`, you need to add `github.com/goplus/yap` to `go.mod`:
+
+```sh
+gop get github.com/goplus/yap@latest
+```
+
 For more details, see [YAP Web Framework Manual](doc/manual.md).
 
 ### How to use in Go+
