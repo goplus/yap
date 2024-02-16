@@ -7,46 +7,73 @@ yap - Yet Another Go/Go+ HTTP Web Framework
 [![Coverage Status](https://codecov.io/gh/goplus/yap/branch/main/graph/badge.svg)](https://codecov.io/gh/goplus/yap)
 [![GoDoc](https://pkg.go.dev/badge/github.com/goplus/yap.svg)](https://pkg.go.dev/github.com/goplus/yap)
 
+This repo contains three [Go+ classfiles](https://github.com/goplus/gop/blob/main/doc/classfile.md): `yap` (a HTTP Web Framework), `yaptest` (a HTTP Test Framework) and `ydb` (a Go+ Database Framework).
+
+The classfile `yap` has the file suffix `_yap.gox`. The classfile `yaptest` has the file suffix `_ytest.gox`. And the classfile `ydb` has the file suffix `_ydb.gox`.
+
+For more details, see [YAP Web Framework Manual](doc/manual.md).
+
 ### How to use in Go+
 
-This repo contains two [Go+ classfiles](https://github.com/goplus/gop/blob/main/doc/classfile.md): `yap` (a HTTP Web Framework) and `yaptest` (a HTTP Test Framework).
-
-The classfile `yap` has the file suffix `_yap.gox`. And the classfile `yaptest` has the file suffix `_ytest.gox`.
-
-Before using `yap` or `yaptest`, you need to add `github.com/goplus/yap` to `go.mod` by using `go get`:
+First let us initialize a hello project:
 
 ```sh
-go get github.com/goplus/yap@latest
+gop mod init hello
 ```
 
-Then find `require github.com/goplus/yap` statement in `go.mod` and add `//gop:class` at the end of the line:
+Then we have it reference a classfile called `yap` as the HTTP Web Framework:
 
-```go.mod
-require github.com/goplus/yap v0.7.2 //gop:class
+```sh
+gop get github.com/goplus/yap@latest
 ```
 
-### Router and Parameters
+We can use it to implement a static file server:
 
-demo in Go ([hello.go](demo/hello/hello.go)):
+```coffee
+static "/foo", FS("public")
+static "/"    # Equivalent to static "/", FS("static")
 
-```go
-import "github.com/goplus/yap"
-
-y := yap.New()
-y.GET("/p/:id", func(ctx *yap.Context) {
-	ctx.JSON(200, yap.H{
-		"id": ctx.Param("id"),
-	})
-})
-y.Handle("/", func(ctx *yap.Context) {
-	ctx.TEXT(200, "text/html", `<html><body>Hello, <a href="/p/123">Yap</a>!</body></html>`)
-})
-y.Run(":8080")
+run ":8080"
 ```
+
+We can also add the ability to handle dynamic GET/POST requests:
+
+```coffee
+static "/foo", FS("public")
+static "/"    # Equivalent to static "/", FS("static")
+
+get "/p/:id", ctx => {
+	ctx.json {
+		"id": ctx.param("id"),
+	}
+}
+
+run ":8080"
+```
+
+Save this code to `hello_yap.gox` file and execute:
+
+```sh
+mkdir -p yap/static yap/public    # Static resources can be placed in these directories
+gop mod tidy
+gop run .
+```
+
+A simplest web program is running now. At this time, if you visit http://localhost:8080/p/123, you will get:
+
+```
+{"id":"123"}
+```
+
+### yap: HTTP Web Framework
+
+This classfile has the file suffix `_yap.gox`.
+
+#### Router and Parameters
 
 demo in Go+ classfile ([hello_yap.gox](demo/classfile_hello/hello_yap.gox)):
 
-```go
+```coffee
 get "/p/:id", ctx => {
 	ctx.json {
 		"id": ctx.param("id"),
@@ -59,59 +86,22 @@ handle "/", ctx => {
 run ":8080"
 ```
 
-### Static files
-
-Static files server demo in Go:
-
-```go
-y := yap.New(os.DirFS("."))
-y.Static("/foo", y.FS("public"))
-y.Static("/") // means: y.Static("/", y.FS("static"))
-y.Run(":8888")
-```
+#### Static files
 
 Static files server demo in Go+ classfile ([staticfile_yap.gox](demo/classfile_static/staticfile_yap.gox)):
 
-```go
+```coffee
 static "/foo", FS("public")
 static "/"
-run ":8888"
+
+run ":8080"
 ```
 
-Static files server also can use a `http.FileSystem` instead of `fs.FS` object (See [yapserve](https://github.com/xushiwei/yapserve) for details):
-
-```go
-import "github.com/qiniu/x/http/fs"
-
-static "/", fs.http("https://goplus.org"), false // false means not allow to redirect
-run ":8888"
-```
-
-### YAP Template
-
-demo in Go ([blog.go](demo/blog/blog.go), [article_yap.html](demo/blog/yap/article_yap.html)):
-
-```go
-import (
-	"os"
-
-	"github.com/goplus/yap"
-)
-
-y := yap.New(os.DirFS("."))
-
-y.GET("/p/:id", func(ctx *yap.Context) {
-	ctx.YAP(200, "article", yap.H{
-		"id": ctx.Param("id"),
-	})
-})
-
-y.Run(":8080")
-```
+#### YAP Template
 
 demo in Go+ classfile ([blog_yap.gox](demo/classfile_blog/blog_yap.gox), [article_yap.html](demo/classfile_blog/yap/article_yap.html)):
 
-```go
+```coffee
 get "/p/:id", ctx => {
 	ctx.yap "article", {
 		"id": ctx.param("id"),
@@ -121,7 +111,9 @@ get "/p/:id", ctx => {
 run ":8080"
 ```
 
-### YAP Test Framework
+### yaptest: HTTP Test Framework
+
+This classfile has the file suffix `_ytest.gox`.
 
 Suppose we have a web server named `foo` ([demo/foo/foo_yap.gox](ytest/demo/foo/foo_yap.gox)):
 
@@ -170,3 +162,9 @@ run "test get /p/$id", => {
 The directive `testServer` creates the `foo` server by [net/http/httptest](https://pkg.go.dev/net/http/httptest#NewServer) and obtained a random port as the service address. Then it calls the directive [host](https://pkg.go.dev/github.com/goplus/yap/ytest#App.Host) to map the random service address to `foo.com`. This makes all other code no need to changed.
 
 For more details, see [yaptest - Go+ HTTP Test Framework](ytest).
+
+### ydb: Database Framework
+
+This classfile has the file suffix `_ydb.gox`.
+
+TODO
