@@ -2,9 +2,7 @@ github.com/go-sql-driver/mysql v1.7.1 h1:lUIinVbN1DY0xBg0eMOzmmtGoHwWBbvnWubQUrt
 github.com/go-sql-driver/mysql v1.7.1/go.mod h1:OXbVy3sEdcQ2Doequ6Z5BW6fXNQTmx+9S1MCJN5yJMI=
 github.com/golang-jwt/jwt/v5 v5.2.0 h1:d/ix8ftRUorsN+5eMIlF4T6J8CAt9rch3My2winC1Jw=
 github.com/golang-jwt/jwt/v5 v5.2.0/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVIyoH402zdk=
-github.com/goplus/gop v1.2.1 h1:7wzLmAvVU3qYgnbE5b/ngpVjgxXvi6XMmUEDx+8nYp4=
-github.com/goplus/gop v1.2.1/go.mod h1:9LoUwwzyyW1tN5Llk/o51QHaUp92glLF74EGZYj+tEc=
 github.com/mattn/go-sqlite3 v1.14.22 h1:2gZY6PC6kBnID23Tichd1K+Z0oS6nE/XwU+Vz/5o4kU=
 github.com/mattn/go-sqlite3 v1.14.22/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
-github.com/qiniu/x v1.13.5 h1:YJz5i3RD/7srMLEmp7UAcYmZ9qrhOPk0EL0pGiuxGbA=
-github.com/qiniu/x v1.13.5/go.mod h1:INZ2TSWSJVWO/RuELQROERcslBwVgFG7MkTfEdaQz9E=
+github.com/qiniu/x v1.13.8 h1:xXXD1LuTw4VaqTWxFKonm0F6XlhQNE59+vgPYP3ij8Q=
+github.com/qiniu/x v1.13.8/go.mod h1:INZ2TSWSJVWO/RuELQROERcslBwVgFG7MkTfEdaQz9E=

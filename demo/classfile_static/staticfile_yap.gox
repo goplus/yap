@@ -1,4 +1,4 @@
 static "/foo", FS("public")
 static "/"
 
-run ":8888"
+run ":8080"
