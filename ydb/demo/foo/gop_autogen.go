@@ -248,10 +248,9 @@ func Diff(new []string, old []string) (add []string, del []string) {
 //line ydb/demo/foo/foo.gop:35:1
 	return stringutil.Diff(new, old)
 }
+//line ydb/demo/foo/foo.gop:38:1
 // Info calls Output to print to the standard logger.
 // Arguments are handled in the manner of fmt.Println.
-//
-//line ydb/demo/foo/foo.gop:40:1
 func Info(args ...interface {
 }) {
 //line ydb/demo/foo/foo.gop:41:1
