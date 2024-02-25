@@ -27,7 +27,7 @@ import (
 	"unsafe"
 
 	"github.com/goplus/yap/reflectutil"
-	"github.com/goplus/yap/stringutil"
+	"github.com/qiniu/x/stringutil"
 )
 
 // -----------------------------------------------------------------------------
