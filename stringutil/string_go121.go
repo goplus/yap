@@ -1,5 +1,5 @@
-//go:build go1.20
-// +build go1.20
+//go:build go1.21
+// +build go1.21
 
 /*
  * Copyright (c) 2024 The GoPlus Authors (goplus.org). All rights reserved.
@@ -28,5 +28,7 @@ import (
 // Since Go strings are immutable, the bytes passed to String
 // must not be modified afterwards.
 func String(b []byte) string {
-	return unsafe.String(&b[0], len(b))
+	// Although unsafe.SliceData/String was introduced in go1.20, but
+	// the go version in go.mod is 1.18 so we cannot use them.
+	return unsafe.String(unsafe.SliceData(b), len(b))
 }
