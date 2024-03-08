@@ -1,0 +1,3 @@
+json {
+	"id": param("id"),
+}

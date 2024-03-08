@@ -82,46 +82,46 @@ type router struct {
 	HandleOPTIONS bool
 }
 
-func (r *router) init() {
-	r.RedirectTrailingSlash = true
-	r.RedirectFixedPath = true
-	r.HandleMethodNotAllowed = true
-	r.HandleOPTIONS = true
+func (p *router) init() {
+	p.RedirectTrailingSlash = true
+	p.RedirectFixedPath = true
+	p.HandleMethodNotAllowed = true
+	p.HandleOPTIONS = true
 }
 
 // GET is a shortcut for router.Route(http.MethodGet, path, handle)
-func (r *router) GET(path string, handle func(ctx *Context)) {
-	r.Route(http.MethodGet, path, handle)
+func (p *router) GET(path string, handle func(ctx *Context)) {
+	p.Route(http.MethodGet, path, handle)
 }
 
 // HEAD is a shortcut for router.Route(http.MethodHead, path, handle)
-func (r *router) HEAD(path string, handle func(ctx *Context)) {
-	r.Route(http.MethodHead, path, handle)
+func (p *router) HEAD(path string, handle func(ctx *Context)) {
+	p.Route(http.MethodHead, path, handle)
 }
 
 // OPTIONS is a shortcut for router.Route(http.MethodOptions, path, handle)
-func (r *router) OPTIONS(path string, handle func(ctx *Context)) {
-	r.Route(http.MethodOptions, path, handle)
+func (p *router) OPTIONS(path string, handle func(ctx *Context)) {
+	p.Route(http.MethodOptions, path, handle)
 }
 
 // POST is a shortcut for router.Route(http.MethodPost, path, handle)
-func (r *router) POST(path string, handle func(ctx *Context)) {
-	r.Route(http.MethodPost, path, handle)
+func (p *router) POST(path string, handle func(ctx *Context)) {
+	p.Route(http.MethodPost, path, handle)
 }
 
 // PUT is a shortcut for router.Route(http.MethodPut, path, handle)
-func (r *router) PUT(path string, handle func(ctx *Context)) {
-	r.Route(http.MethodPut, path, handle)
+func (p *router) PUT(path string, handle func(ctx *Context)) {
+	p.Route(http.MethodPut, path, handle)
 }
 
 // PATCH is a shortcut for router.Route(http.MethodPatch, path, handle)
-func (r *router) PATCH(path string, handle func(ctx *Context)) {
-	r.Route(http.MethodPatch, path, handle)
+func (p *router) PATCH(path string, handle func(ctx *Context)) {
+	p.Route(http.MethodPatch, path, handle)
 }
 
 // DELETE is a shortcut for router.Route(http.MethodDelete, path, handle)
-func (r *router) DELETE(path string, handle func(ctx *Context)) {
-	r.Route(http.MethodDelete, path, handle)
+func (p *router) DELETE(path string, handle func(ctx *Context)) {
+	p.Route(http.MethodDelete, path, handle)
 }
 
 // Route registers a new request handle with the given path and method.
@@ -132,7 +132,7 @@ func (r *router) DELETE(path string, handle func(ctx *Context)) {
 // This function is intended for bulk loading and to allow the usage of less
 // frequently used, non-standardized or custom methods (e.g. for internal
 // communication with a proxy).
-func (r *router) Route(method, path string, handle func(ctx *Context)) {
+func (p *router) Route(method, path string, handle func(ctx *Context)) {
 	if method == "" {
 		panic("method must not be empty")
 	}
@@ -143,34 +143,34 @@ func (r *router) Route(method, path string, handle func(ctx *Context)) {
 		panic("handle must not be nil")
 	}
 
-	if r.trees == nil {
-		r.trees = make(map[string]*node)
+	if p.trees == nil {
+		p.trees = make(map[string]*node)
 	}
 
-	root := r.trees[method]
+	root := p.trees[method]
 	if root == nil {
 		root = new(node)
-		r.trees[method] = root
+		p.trees[method] = root
 
-		r.globalAllowed = r.allowed("*", "")
+		p.globalAllowed = p.allowed("*", "")
 	}
 
 	root.addRoute(path, handle)
 }
 
-func (r *router) recv(w http.ResponseWriter, req *http.Request) {
+func (p *router) recv(w http.ResponseWriter, req *http.Request) {
 	if rcv := recover(); rcv != nil {
-		r.PanicHandler(w, req, rcv)
+		p.PanicHandler(w, req, rcv)
 	}
 }
 
-func (r *router) allowed(path, reqMethod string) (allow string) {
+func (p *router) allowed(path, reqMethod string) (allow string) {
 	allowed := make([]string, 0, 9)
 
 	if path == "*" { // server-wide
 		// empty method is used for internal calls to refresh the cache
 		if reqMethod == "" {
-			for method := range r.trees {
+			for method := range p.trees {
 				if method == http.MethodOptions {
 					continue
 				}
@@ -178,16 +178,16 @@ func (r *router) allowed(path, reqMethod string) (allow string) {
 				allowed = append(allowed, method)
 			}
 		} else {
-			return r.globalAllowed
+			return p.globalAllowed
 		}
 	} else { // specific path
-		for method := range r.trees {
+		for method := range p.trees {
 			// Skip the requested method - we already tried this one
 			if method == reqMethod || method == http.MethodOptions {
 				continue
 			}
 
-			handle, _ := r.trees[method].getValue(path, nil)
+			handle, _ := p.trees[method].getValue(path, nil)
 			if handle != nil {
 				// Route request method to list of allowed methods
 				allowed = append(allowed, method)
@@ -215,13 +215,13 @@ func (r *router) allowed(path, reqMethod string) (allow string) {
 	return allow
 }
 
-func (r *router) serveHTTP(w http.ResponseWriter, req *http.Request, e *Engine) {
-	if r.PanicHandler != nil {
-		defer r.recv(w, req)
+func (p *router) serveHTTP(w http.ResponseWriter, req *http.Request, e *Engine) {
+	if p.PanicHandler != nil {
+		defer p.recv(w, req)
 	}
 
 	path := req.URL.Path
-	root := r.trees[req.Method]
+	root := p.trees[req.Method]
 	if root != nil {
 		ctx := e.NewContext(w, req)
 		if handle, tsr := root.getValue(path, ctx); handle != nil {
@@ -235,7 +235,7 @@ func (r *router) serveHTTP(w http.ResponseWriter, req *http.Request, e *Engine) 
 				code = http.StatusPermanentRedirect
 			}
 
-			if tsr && r.RedirectTrailingSlash {
+			if tsr && p.RedirectTrailingSlash {
 				if len(path) > 1 && path[len(path)-1] == '/' {
 					req.URL.Path = path[:len(path)-1]
 				} else {
@@ -246,10 +246,10 @@ func (r *router) serveHTTP(w http.ResponseWriter, req *http.Request, e *Engine) 
 			}
 
 			// Try to fix the request path
-			if r.RedirectFixedPath {
+			if p.RedirectFixedPath {
 				fixedPath, found := root.findCaseInsensitivePath(
 					url.CleanPath(path),
-					r.RedirectTrailingSlash,
+					p.RedirectTrailingSlash,
 				)
 				if found {
 					req.URL.Path = fixedPath
@@ -260,20 +260,20 @@ func (r *router) serveHTTP(w http.ResponseWriter, req *http.Request, e *Engine) 
 		}
 	}
 
-	if req.Method == http.MethodOptions && r.HandleOPTIONS {
+	if req.Method == http.MethodOptions && p.HandleOPTIONS {
 		// Route OPTIONS requests
-		if allow := r.allowed(path, http.MethodOptions); allow != "" {
+		if allow := p.allowed(path, http.MethodOptions); allow != "" {
 			w.Header().Set("Allow", allow)
-			if r.GlobalOPTIONS != nil {
-				r.GlobalOPTIONS.ServeHTTP(w, req)
+			if p.GlobalOPTIONS != nil {
+				p.GlobalOPTIONS.ServeHTTP(w, req)
 			}
 			return
 		}
-	} else if r.HandleMethodNotAllowed { // Route 405
-		if allow := r.allowed(path, req.Method); allow != "" {
+	} else if p.HandleMethodNotAllowed { // Route 405
+		if allow := p.allowed(path, req.Method); allow != "" {
 			w.Header().Set("Allow", allow)
-			if r.MethodNotAllowed != nil {
-				r.MethodNotAllowed.ServeHTTP(w, req)
+			if p.MethodNotAllowed != nil {
+				p.MethodNotAllowed.ServeHTTP(w, req)
 			} else {
 				http.Error(w,
 					http.StatusText(http.StatusMethodNotAllowed),

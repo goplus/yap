@@ -1,0 +1,63 @@
+/*
+ * Copyright (c) 2023 The GoPlus Authors (goplus.org). All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package yap
+
+import (
+	"reflect"
+	"strings"
+)
+
+// Handler is worker class of YAP classfile (v2).
+type Handler struct {
+	Context
+}
+
+func (p *Handler) Main(ctx *Context) {
+	p.Context = *ctx
+}
+
+func parseHandlerName(name string) (method, path string) {
+	pos := strings.IndexByte(name, '_')
+	if pos < 0 {
+		return name, "/"
+	}
+	return name[:pos], strings.ReplaceAll(name[pos:], "_", "/")
+}
+
+// AppV2 is project class of YAP classfile (v2).
+type AppV2 struct {
+	App
+}
+
+// Gopt_AppV2_Main is required by Go+ compiler as the entry of a YAP project.
+func Gopt_AppV2_Main(app AppType, handlers ...interface{ Main(ctx *Context) }) {
+	app.InitYap()
+	for _, h := range handlers {
+		name := reflect.TypeOf(h).Elem().Name() // class name of handler
+		switch method, path := parseHandlerName(name); method {
+		case "handle":
+			app.Handle(path, h.Main)
+		default:
+			app.Route(method, path, h.Main)
+		}
+	}
+	if me, ok := app.(interface{ MainEntry() }); ok {
+		me.MainEntry()
+	} else {
+		app.Run(":8080")
+	}
+}

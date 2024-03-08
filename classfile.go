@@ -28,6 +28,7 @@ const (
 	GopPackage = true
 )
 
+// App is project class of YAP classfile (old version).
 type App struct {
 	Engine
 }
@@ -86,6 +87,9 @@ func (p *App) Static__2(pattern string, fs http.FileSystem, allowRedirect ...boo
 type AppType interface {
 	InitYap(fs ...fs.FS)
 	SetLAS(listenAndServe func(addr string, handler http.Handler) error)
+	Route(method, path string, handle func(ctx *Context))
+	Handle(pattern string, f func(ctx *Context))
+	Run(addr string, mws ...func(h http.Handler) http.Handler) error
 }
 
 var (
