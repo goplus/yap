@@ -4,6 +4,7 @@ package main
 
 import (
 	"github.com/goplus/yap/ytest"
+	"github.com/qiniu/x/stringutil"
 	"testing"
 )
 
@@ -23,12 +24,15 @@ func (this *case_foo) Main() {
 //line ytest/demo/basic/foo_ytest.gox:6:1
 		id := "123"
 //line ytest/demo/basic/foo_ytest.gox:7:1
-		this.Get("http://foo.com/p/" + id)
+		this.Get(stringutil.Concat("http://foo.com/p/", id))
 //line ytest/demo/basic/foo_ytest.gox:8:1
 		this.RetWith(200)
 //line ytest/demo/basic/foo_ytest.gox:9:1
 		this.Json(map[string]string{"id": id})
 	})
+}
+func (this *case_foo) Classfname() string {
+	return "foo"
 }
 func Test_foo(t *testing.T) {
 	ytest.Gopt_Case_TestMain(new(case_foo), t)

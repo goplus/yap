@@ -4,7 +4,6 @@ package main
 
 import "github.com/goplus/yap"
 
-const GopPackage = "github.com/goplus/yap"
 const _ = true
 
 type get struct {

@@ -224,6 +224,9 @@ func (this *articles) Main() {
 //line ydb/demo/foo/articles_ydb.gox:135:1
 	this.Ret(test.Set__2(doc2.ArticleEntry, doc3.ArticleEntry))
 }
+func (this *articles) Classfname() string {
+	return "articles"
+}
 
 var ErrNoEmailAndTel = errors.New("no email and telephone")
 var rnd = rand.New(rand.NewSource(time.Now().UnixMicro()))
@@ -251,8 +254,7 @@ func Diff(new []string, old []string) (add []string, del []string) {
 //line ydb/demo/foo/foo.gop:38:1
 // Info calls Output to print to the standard logger.
 // Arguments are handled in the manner of fmt.Println.
-func Info(args ...interface {
-}) {
+func Info(args ...interface{}) {
 //line ydb/demo/foo/foo.gop:41:1
 	log.Println(args...)
 }
@@ -320,4 +322,7 @@ func (this *users) Main() {
 	this.Gop_Exec("login", "user", "pwd")
 //line ydb/demo/foo/users_ydb.gox:58:1
 	this.Ret(true)
+}
+func (this *users) Classfname() string {
+	return "users"
 }
