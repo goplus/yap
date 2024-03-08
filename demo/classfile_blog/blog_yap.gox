@@ -3,5 +3,8 @@ get "/p/:id", ctx => {
 		"id": ctx.param("id"),
 	}
 }
+get "/", ctx => {
+	ctx.html `<html><body>Hello, <a href="/p/123">YAP</a>!</body></html>`
+}
 
-run ":8080"
+run ":8888"

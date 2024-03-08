@@ -20,7 +20,7 @@ func main() {
 func (this *get) Main(_gop_arg0 *yap.Context) {
 	this.Handler.Main(_gop_arg0)
 //line demo/classfile2_hello/get.yap:1:1
-	this.Html__1(`<html><body>Hello, <a href="/p/123">Yap</a>!</body></html>`)
+	this.Html__1(`<html><body>Hello, YAP!</body></html>`)
 }
 func (this *get) Classfname() string {
 	return "get"

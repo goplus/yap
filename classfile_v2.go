@@ -65,6 +65,6 @@ func Gopt_AppV2_Main(app AppType, handlers ...iHandler) {
 	if me, ok := app.(interface{ MainEntry() }); ok {
 		me.MainEntry()
 	} else {
-		app.Run(":8080")
+		app.Run("localhost:8080")
 	}
 }

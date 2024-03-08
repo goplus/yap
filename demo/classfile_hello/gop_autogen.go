@@ -12,17 +12,17 @@ type AppV2 struct {
 //line demo/classfile_hello/main.yap:1
 func (this *AppV2) MainEntry() {
 //line demo/classfile_hello/main.yap:1:1
-	this.Get("/p/:id", func(ctx *yap.Context) {
+	this.Get("/", func(ctx *yap.Context) {
 //line demo/classfile_hello/main.yap:2:1
+		ctx.Html__1(`<html><body>Hello, YAP!</body></html>`)
+	})
+//line demo/classfile_hello/main.yap:4:1
+	this.Get("/p/:id", func(ctx *yap.Context) {
+//line demo/classfile_hello/main.yap:5:1
 		ctx.Json__1(map[string]string{"id": ctx.Param("id")})
 	})
-//line demo/classfile_hello/main.yap:6:1
-	this.Handle("/", func(ctx *yap.Context) {
-//line demo/classfile_hello/main.yap:7:1
-		ctx.Html__1(`<html><body>Hello, <a href="/p/123">Yap</a>!</body></html>`)
-	})
 //line demo/classfile_hello/main.yap:10:1
-	this.Run(":8080")
+	this.Run("localhost:8080")
 }
 func main() {
 	yap.Gopt_AppV2_Main(new(AppV2))
