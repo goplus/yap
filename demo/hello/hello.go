@@ -12,7 +12,7 @@ func main() {
 		})
 	})
 	y.Handle("/", func(ctx *yap.Context) {
-		ctx.TEXT(200, "text/html", `<html><body>Hello, <a href="/p/123">Yap</a>!</body></html>`)
+		ctx.TEXT(200, "text/html", `<html><body>Hello, <a href="/p/123">YAP</a>!</body></html>`)
 	})
 	y.Run(":8080")
 }

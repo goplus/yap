@@ -3,13 +3,14 @@ yap - Yet Another Go/Go+ HTTP Web Framework
 
 This repo contains three [Go+ classfiles](https://github.com/goplus/gop/blob/main/doc/classfile.md): `yap` (a HTTP Web Framework), `yaptest` (a HTTP Test Framework) and `ydb` (a Go+ Database Framework).
 
-The classfile `yap` has the file suffix `_yap.gox`. The classfile `yaptest` has the file suffix `_ytest.gox`. And the classfile `ydb` has the file suffix `_ydb.gox`.
+The classfile `yap` has the file suffix `.yap`. The classfile `yaptest` has the file suffix `_ytest.gox`. And the classfile `ydb` has the file suffix `_ydb.gox`.
 
 Before using `yap`, `yaptest` or `ydb`, you need to add `github.com/goplus/yap` to `go.mod`:
 
 ```sh
 gop get github.com/goplus/yap@latest
 ```
+
 
 ### Router and Parameters
 
@@ -19,31 +20,32 @@ demo in Go ([hello.go](../demo/hello/hello.go)):
 import "github.com/goplus/yap"
 
 y := yap.New()
+y.GET("/", func(ctx *yap.Context) {
+	ctx.TEXT(200, "text/html", `<html><body>Hello, <a href="/p/123">YAP</a>!</body></html>`)
+})
 y.GET("/p/:id", func(ctx *yap.Context) {
 	ctx.JSON(200, yap.H{
 		"id": ctx.Param("id"),
 	})
 })
-y.Handle("/", func(ctx *yap.Context) {
-	ctx.TEXT(200, "text/html", `<html><body>Hello, <a href="/p/123">Yap</a>!</body></html>`)
-})
 y.Run(":8080")
 ```
 
-demo in Go+ classfile ([hello_yap.gox](../demo/classfile_hello/hello_yap.gox)):
+demo in Go+ classfile ([main.yap](../demo/classfile_hello/main.yap)):
 
 ```go
+get "/", ctx => {
+	ctx.html `<html><body>Hello, <a href="/p/123">YAP</a>!</body></html>`
+}
 get "/p/:id", ctx => {
 	ctx.json {
 		"id": ctx.param("id"),
 	}
 }
-handle "/", ctx => {
-	ctx.html `<html><body>Hello, <a href="/p/123">Yap</a>!</body></html>`
-}
 
-run ":8080"
+run "localhost:8080"
 ```
+
 
 ### Static files
 
