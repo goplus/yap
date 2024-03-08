@@ -17,7 +17,6 @@
 package yap
 
 import (
-	"reflect"
 	"strings"
 )
 
@@ -30,7 +29,7 @@ func (p *Handler) Main(ctx *Context) {
 	p.Context = *ctx
 }
 
-func parseHandlerName(name string) (method, path string) {
+func parseClassfname(name string) (method, path string) {
 	pos := strings.IndexByte(name, '_')
 	if pos < 0 {
 		return name, "/"
@@ -43,16 +42,20 @@ type AppV2 struct {
 	App
 }
 
+type iHandler interface {
+	Main(ctx *Context)
+	Classfname() string
+}
+
 // Gopt_AppV2_Main is required by Go+ compiler as the entry of a YAP project.
-func Gopt_AppV2_Main(app AppType, handlers ...interface{ Main(ctx *Context) }) {
+func Gopt_AppV2_Main(app AppType, handlers ...iHandler) {
 	app.InitYap()
 	for _, h := range handlers {
-		name := reflect.TypeOf(h).Elem().Name() // class name of handler
-		switch method, path := parseHandlerName(name); method {
+		switch method, path := parseClassfname(h.Classfname()); method {
 		case "handle":
 			app.Handle(path, h.Main)
 		default:
-			app.Route(method, path, h.Main)
+			app.Route(strings.ToUpper(method), path, h.Main)
 		}
 	}
 	if me, ok := app.(interface{ MainEntry() }); ok {

@@ -23,10 +23,15 @@ func (this *get_p_id) Main(_gop_arg0 *yap.Context) {
 //line demo/classfile2_hello/get_p_:id.yap:1:1
 	this.Json__1(map[string]string{"id": this.Param("id")})
 }
+func (this *get_p_id) Classfname() string {
+	return "get_p_:id"
+}
 //line demo/classfile2_hello/handle.yap:1
 func (this *handle) Main(_gop_arg0 *yap.Context) {
-//line demo/classfile2_hello/get_p_:id.yap:1:1
 	this.Handler.Main(_gop_arg0)
 //line demo/classfile2_hello/handle.yap:1:1
 	this.Html__1(`<html><body>Hello, <a href="/p/123">Yap</a>!</body></html>`)
+}
+func (this *handle) Classfname() string {
+	return "handle"
 }
