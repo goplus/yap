@@ -7,15 +7,24 @@ import "github.com/goplus/yap"
 const GopPackage = "github.com/goplus/yap"
 const _ = true
 
-type get_p_id struct {
+type get struct {
 	yap.Handler
 }
-type handle struct {
+type get_p_id struct {
 	yap.Handler
 }
 
 func main() {
-	yap.Gopt_AppV2_Main(new(yap.AppV2), new(get_p_id), new(handle))
+	yap.Gopt_AppV2_Main(new(yap.AppV2), new(get), new(get_p_id))
+}
+//line demo/classfile2_hello/get.yap:1
+func (this *get) Main(_gop_arg0 *yap.Context) {
+	this.Handler.Main(_gop_arg0)
+//line demo/classfile2_hello/get.yap:1:1
+	this.Html__1(`<html><body>Hello, <a href="/p/123">Yap</a>!</body></html>`)
+}
+func (this *get) Classfname() string {
+	return "get"
 }
 //line demo/classfile2_hello/get_p_:id.yap:1
 func (this *get_p_id) Main(_gop_arg0 *yap.Context) {
@@ -25,13 +34,4 @@ func (this *get_p_id) Main(_gop_arg0 *yap.Context) {
 }
 func (this *get_p_id) Classfname() string {
 	return "get_p_:id"
-}
-//line demo/classfile2_hello/handle.yap:1
-func (this *handle) Main(_gop_arg0 *yap.Context) {
-	this.Handler.Main(_gop_arg0)
-//line demo/classfile2_hello/handle.yap:1:1
-	this.Html__1(`<html><body>Hello, <a href="/p/123">Yap</a>!</body></html>`)
-}
-func (this *handle) Classfname() string {
-	return "handle"
 }
