@@ -19,6 +19,7 @@ gop get github.com/goplus/yap@latest
 
 For more details, see [YAP Framework Manual](doc/manual.md).
 
+
 ### How to use in Go+
 
 First let us initialize a hello project:
@@ -88,7 +89,7 @@ yap "article", {
 ```
 
 
-### Run at specified address
+#### Run at specified address
 
 By default the YAP server runs on `localhost:8080`, but you can change it in [main.yap](demo/classfile2_blog/main.yap) file:
 
