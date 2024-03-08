@@ -9,12 +9,12 @@ const _ = true
 type get struct {
 	yap.Handler
 }
-type get_p_#id struct {
+type get_p_id struct {
 	yap.Handler
 }
 
 func main() {
-	yap.Gopt_AppV2_Main(new(yap.AppV2), new(get), new(get_p_#id))
+	yap.Gopt_AppV2_Main(new(yap.AppV2), new(get), new(get_p_id))
 }
 //line demo/classfile2_hello/get.yap:1
 func (this *get) Main(_gop_arg0 *yap.Context) {
@@ -26,11 +26,11 @@ func (this *get) Classfname() string {
 	return "get"
 }
 //line demo/classfile2_hello/get_p_#id.yap:1
-func (this *get_p_#id) Main(_gop_arg0 *yap.Context) {
+func (this *get_p_id) Main(_gop_arg0 *yap.Context) {
 	this.Handler.Main(_gop_arg0)
 //line demo/classfile2_hello/get_p_#id.yap:1:1
 	this.Json__1(map[string]string{"id": this.Param("id")})
 }
-func (this *get_p_#id) Classfname() string {
+func (this *get_p_id) Classfname() string {
 	return "get_p_#id"
 }
