@@ -140,7 +140,12 @@ func (p *Engine) Handler(mws ...func(h http.Handler) http.Handler) http.Handler 
 // Accepted connections are configured to enable TCP keep-alives.
 func (p *Engine) Run(addr string, mws ...func(h http.Handler) http.Handler) error {
 	h := p.Handler(mws...)
-	return p.las(addr, h)
+	log.Println("Listen", addr)
+	err := p.las(addr, h)
+	if err != nil {
+		log.Println(err)
+	}
+	return err
 }
 
 // SetLAS sets listenAndServe func to listens on the TCP network address addr
