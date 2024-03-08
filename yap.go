@@ -143,7 +143,7 @@ func (p *Engine) Run(addr string, mws ...func(h http.Handler) http.Handler) erro
 	log.Println("Listen", addr)
 	err := p.las(addr, h)
 	if err != nil {
-		log.Println(err)
+		log.Fatalln(err)
 	}
 	return err
 }
