@@ -1,5 +1,9 @@
 gop 1.2
 
+project .yap AppV2 github.com/goplus/yap
+
+class .yap Handler
+
 project _yap.gox App github.com/goplus/yap
 
 project _yapt.gox App github.com/goplus/yap/ytest github.com/goplus/yap/test

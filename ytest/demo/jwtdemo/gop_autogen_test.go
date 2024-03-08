@@ -5,6 +5,7 @@ package main
 import (
 	"github.com/goplus/yap/ytest"
 	"github.com/goplus/yap/ytest/auth/jwt"
+	"github.com/qiniu/x/stringutil"
 	"testing"
 	"time"
 )
@@ -23,7 +24,7 @@ func (this *case_jwtdemo) Main() {
 //line ytest/demo/jwtdemo/jwtdemo_ytest.gox:12:1
 		id := "123"
 //line ytest/demo/jwtdemo/jwtdemo_ytest.gox:13:1
-		this.Get("http://foo.com/p/" + id)
+		this.Get(stringutil.Concat("http://foo.com/p/", id))
 //line ytest/demo/jwtdemo/jwtdemo_ytest.gox:14:1
 		this.Auth(testuser)
 //line ytest/demo/jwtdemo/jwtdemo_ytest.gox:15:1
@@ -31,6 +32,9 @@ func (this *case_jwtdemo) Main() {
 //line ytest/demo/jwtdemo/jwtdemo_ytest.gox:16:1
 		this.Json(map[string]string{"id": id})
 	})
+}
+func (this *case_jwtdemo) Classfname() string {
+	return "jwtdemo"
 }
 func Test_jwtdemo(t *testing.T) {
 	ytest.Gopt_Case_TestMain(new(case_jwtdemo), t)
