@@ -29,12 +29,16 @@ func (p *Handler) Main(ctx *Context) {
 	p.Context = *ctx
 }
 
+var (
+	repl = strings.NewReplacer("_", "/", "#", ":")
+)
+
 func parseClassfname(name string) (method, path string) {
 	pos := strings.IndexByte(name, '_')
 	if pos < 0 {
 		return name, "/"
 	}
-	return name[:pos], strings.ReplaceAll(name[pos:], "_", "/")
+	return name[:pos], repl.Replace(name[pos:])
 }
 
 // AppV2 is project class of YAP classfile (v2).
