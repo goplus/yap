@@ -80,7 +80,7 @@ Execute `gop run .` and visit http://localhost:8080/p/123, you will get:
 
 #### YAP Template
 
-In most cases, we will not use the `html` directive to return a html page, but use the yap template. See [get_p_#id.yap](demo/classfile2_blog/get_p_%23id.yap):
+In most cases, we will not use the `html` directive to return a html page, but use the `yap` template engine. See [get_p_#id.yap](demo/classfile2_blog/get_p_%23id.yap):
 
 ```coffee
 yap "article", {
@@ -88,6 +88,14 @@ yap "article", {
 }
 ```
 
+It means we need to find a template called `article` to render. See [yap/article_yap.html](demo/classfile2_blog/yap/article_yap.html):
+
+```html
+<html>
+<head><meta charset="utf-8"/></head>
+<body>Article {{.id}}</body>
+</html>
+```
 
 #### Run at specified address
 
