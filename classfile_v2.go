@@ -25,6 +25,7 @@ type Handler struct {
 	Context
 }
 
+// Main is required by Go+ compiler as the entry of a YAP HTTP handler.
 func (p *Handler) Main(ctx *Context) {
 	p.Context = *ctx
 }

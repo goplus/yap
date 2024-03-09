@@ -37,6 +37,14 @@ func (p *Context) setParam(name, val string) {
 	p.Form.Set(name, val)
 }
 
+// Gop_Env returns the value associated with the name.
+// If the name exists in URL query, it returns the first value for the name.
+func (p *Context) Gop_Env(name string) string {
+	return p.Param(name)
+}
+
+// Param returns the value associated with the name.
+// If the name exists in URL query, it returns the first value for the name.
 func (p *Context) Param(name string) string {
 	return p.FormValue(name)
 }
