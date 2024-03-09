@@ -1,3 +1,3 @@
 json {
-	"id": param("id"),
+	"id": ${id},
 }

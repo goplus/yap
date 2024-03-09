@@ -67,7 +67,7 @@ Let's create a file named [get_p_#id.yap](demo/classfile2_hello/get_p_%23id.yap)
 
 ```coffee
 json {
-	"id": param("id"),
+	"id": ${id},
 }
 ```
 
@@ -80,15 +80,15 @@ Execute `gop run .` and visit http://localhost:8080/p/123, you will get:
 
 #### YAP Template
 
-In most cases, we will not use the `html` directive to return a html page, but use the `yap` template engine. See [get_p_#id.yap](demo/classfile2_blog/get_p_%23id.yap):
+In most cases, we don't use the `html` directive to generate html pages, but use the `yap` template engine. See [get_p_#id.yap](demo/classfile2_blog/get_p_%23id.yap):
 
 ```coffee
 yap "article", {
-	"id": param("id"),
+	"id": ${id},
 }
 ```
 
-It means we need to find a template called `article` to render. See [yap/article_yap.html](demo/classfile2_blog/yap/article_yap.html):
+It means finding a template called `article` to render. See [yap/article_yap.html](demo/classfile2_blog/yap/article_yap.html):
 
 ```html
 <html>

@@ -12,14 +12,14 @@ type blog struct {
 //line demo/classfile_blog/blog_yap.gox:1
 func (this *blog) MainEntry() {
 //line demo/classfile_blog/blog_yap.gox:1:1
-	this.Get("/p/:id", func(ctx *yap.Context) {
-//line demo/classfile_blog/blog_yap.gox:2:1
-		ctx.Yap__1("article", map[string]string{"id": ctx.Param("id")})
-	})
-//line demo/classfile_blog/blog_yap.gox:6:1
 	this.Get("/", func(ctx *yap.Context) {
-//line demo/classfile_blog/blog_yap.gox:7:1
+//line demo/classfile_blog/blog_yap.gox:2:1
 		ctx.Html__1(`<html><body>Hello, <a href="/p/123">YAP</a>!</body></html>`)
+	})
+//line demo/classfile_blog/blog_yap.gox:4:1
+	this.Get("/p/:id", func(ctx *yap.Context) {
+//line demo/classfile_blog/blog_yap.gox:5:1
+		ctx.Yap__1("article", map[string]string{"id": ctx.Param("id")})
 	})
 //line demo/classfile_blog/blog_yap.gox:10:1
 	this.Run(":8888")
