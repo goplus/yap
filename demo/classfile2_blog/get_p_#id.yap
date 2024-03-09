@@ -1,3 +1,3 @@
 yap "article", {
-	"id": param("id"),
+	"id": ${id},
 }

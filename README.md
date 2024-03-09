@@ -67,7 +67,7 @@ Let's create a file named [get_p_#id.yap](demo/classfile2_hello/get_p_%23id.yap)
 
 ```coffee
 json {
-	"id": param("id"),
+	"id": ${id},
 }
 ```
 
@@ -84,7 +84,7 @@ In most cases, we will not use the `html` directive to return a html page, but u
 
 ```coffee
 yap "article", {
-	"id": param("id"),
+	"id": ${id},
 }
 ```
 

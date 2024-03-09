@@ -39,7 +39,7 @@ func (this *get) Classfname() string {
 func (this *get_p_id) Main(_gop_arg0 *yap.Context) {
 	this.Handler.Main(_gop_arg0)
 //line demo/classfile2_blog/get_p_#id.yap:1:1
-	this.Yap__1("article", map[string]string{"id": this.Param("id")})
+	this.Yap__1("article", map[string]string{"id": this.Gop_Env("id")})
 }
 func (this *get_p_id) Classfname() string {
 	return "get_p_#id"
