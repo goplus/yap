@@ -54,7 +54,7 @@ func (p *App) Mock(host string, app yap.AppType) {
 	app.SetLAS(func(addr string, h http.Handler) error {
 		return tr.ListenAndServe(host, h)
 	})
-	app.(interface{ MainEntry() }).MainEntry()
+	app.(interface{ Main() }).Main()
 }
 
 // TestServer runs a YAP server by httptest.Server.
@@ -65,7 +65,7 @@ func (p *App) TestServer(host string, app yap.AppType) {
 		p.Host("http://"+host, svr.URL)
 		return nil
 	})
-	app.(interface{ MainEntry() }).MainEntry()
+	app.(interface{ Main() }).Main()
 }
 
 // RunMock runs a HTTP server by mockhttp.

@@ -18,20 +18,17 @@ type case_foo struct {
 //line ytest/demo/foo/bar_ytest.gox:1
 func (this *case_bar) Main() {
 //line ytest/demo/foo/bar_ytest.gox:1:1
-	this.TestServer("foo.com", new(foo))
+	this.TestServer("foo.com", new(AppV2))
 //line ytest/demo/foo/bar_ytest.gox:3:1
-	this.Run("test get /p/$id", func() {
+	id := "123"
 //line ytest/demo/foo/bar_ytest.gox:4:1
-		id := "123"
+	this.Get(stringutil.Concat("http://foo.com/p/", id))
 //line ytest/demo/foo/bar_ytest.gox:5:1
-		this.Get(stringutil.Concat("http://foo.com/p/", id))
+	this.Send()
 //line ytest/demo/foo/bar_ytest.gox:6:1
-		this.Send()
+	test.Gopt_Case_MatchTBase(this, this.Resp().Code(), 200)
 //line ytest/demo/foo/bar_ytest.gox:7:1
-		test.Gopt_Case_MatchTBase(this, this.Resp().Code(), 200)
-//line ytest/demo/foo/bar_ytest.gox:8:1
-		this.Json(map[string]string{"id": id})
-	})
+	this.Json(map[string]string{"id": id})
 }
 func (this *case_bar) Classfname() string {
 	return "bar"
@@ -39,18 +36,15 @@ func (this *case_bar) Classfname() string {
 //line ytest/demo/foo/foo_ytest.gox:1
 func (this *case_foo) Main() {
 //line ytest/demo/foo/foo_ytest.gox:1:1
-	this.Mock("foo.com", new(foo))
+	this.Mock("foo.com", new(AppV2))
 //line ytest/demo/foo/foo_ytest.gox:3:1
-	this.Run("test get /p/$id", func() {
+	id := "123"
 //line ytest/demo/foo/foo_ytest.gox:4:1
-		id := "123"
+	this.Get(stringutil.Concat("http://foo.com/p/", id))
 //line ytest/demo/foo/foo_ytest.gox:5:1
-		this.Get(stringutil.Concat("http://foo.com/p/", id))
+	this.RetWith(200)
 //line ytest/demo/foo/foo_ytest.gox:6:1
-		this.RetWith(200)
-//line ytest/demo/foo/foo_ytest.gox:7:1
-		this.Json(map[string]string{"id": id})
-	})
+	this.Json(map[string]string{"id": id})
 }
 func (this *case_foo) Classfname() string {
 	return "foo"

@@ -122,51 +122,43 @@ run ":8080"
 
 This classfile has the file suffix `_ytest.gox`.
 
-Suppose we have a web server named `foo` ([demo/foo/foo_yap.gox](ytest/demo/foo/foo_yap.gox)):
+Suppose we have a web server ([foo/get_p_#id.yap](ytest/demo/foo/get_p_%23id.yap)):
 
 ```go
-get "/p/:id", ctx => {
-	ctx.json {
-		"id": ctx.param("id"),
-	}
-}
-
-run ":8080"
-```
-
-Then we create a yaptest file ([demo/foo/foo_ytest.gox](ytest/demo/foo/foo_ytest.gox)):
-
-```go
-mock "foo.com", new(foo)
-
-run "test get /p/$id", => {
-	id := "123"
-	get "http://foo.com/p/${id}"
-	ret 200
-	json {
-		"id": id,
-	}
+json {
+	"id": ${id},
 }
 ```
 
-The directive `mock` creates the `foo` server by [mockhttp](https://pkg.go.dev/github.com/qiniu/x/mockhttp). Then we call the directive `run` to run a subtest.
-
-You can change the directive `mock` to `testServer` (see [demo/foo/bar_ytest.gox](ytest/demo/foo/bar_ytest.gox)), and keep everything else unchanged:
+Then we create a yaptest file ([foo/foo_ytest.gox](ytest/demo/foo/foo_ytest.gox)):
 
 ```go
-testServer "foo.com", new(foo)
+mock "foo.com", new(AppV2)  // name of any YAP v2 web server is `AppV2`
 
-run "test get /p/$id", => {
-	id := "123"
-	get "http://foo.com/p/${id}"
-	ret 200
-	json {
-		"id": id,
-	}
+id := "123"
+get "http://foo.com/p/${id}"
+ret 200
+json {
+	"id": id,
 }
 ```
 
-The directive `testServer` creates the `foo` server by [net/http/httptest](https://pkg.go.dev/net/http/httptest#NewServer) and obtained a random port as the service address. Then it calls the directive [host](https://pkg.go.dev/github.com/goplus/yap/ytest#App.Host) to map the random service address to `foo.com`. This makes all other code no need to changed.
+The directive `mock` creates the web server by [mockhttp](https://pkg.go.dev/github.com/qiniu/x/mockhttp). Then we write test code directly.
+
+You can change the directive `mock` to `testServer` (see [foo/bar_ytest.gox](ytest/demo/foo/bar_ytest.gox)), and keep everything else unchanged:
+
+```go
+testServer "foo.com", new(AppV2)
+
+id := "123"
+get "http://foo.com/p/${id}"
+ret 200
+json {
+	"id": id,
+}
+```
+
+The directive `testServer` creates the web server by [net/http/httptest](https://pkg.go.dev/net/http/httptest#NewServer) and obtained a random port as the service address. Then it calls the directive [host](https://pkg.go.dev/github.com/goplus/yap/ytest#App.Host) to map the random service address to `foo.com`. This makes all other code no need to changed.
 
 For more details, see [yaptest - Go+ HTTP Test Framework](ytest).
 

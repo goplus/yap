@@ -4,16 +4,14 @@ import (
 	"github.com/goplus/yap/ytest/auth/jwt"
 )
 
-mock "foo.com", new(jwtdemo)
+mock "foo.com", new(AppV2)
 
 testuser := jwt.HS256("<secret key>").audience("testuser").expiration(time.now.add(time.Hour))
 
-run "test get /p/$id", => {
-	id := "123"
-	get "http://foo.com/p/${id}"
-	auth testuser
-	ret 200
-	json {
-		"id": id,
-	}
+id := "123"
+get "http://foo.com/p/${id}"
+auth testuser
+ret 200
+json {
+	"id": id,
 }
