@@ -22,12 +22,11 @@ func (this *AppV2) MainEntry() {
 //line demo/classfile2_blog/main.yap:1:1
 	this.Run(":8888")
 }
-func main() {
-	yap.Gopt_AppV2_Main(new(AppV2), new(get), new(get_p_id))
+func (this *AppV2) Main() {
+	yap.Gopt_AppV2_Main(this, new(get), new(get_p_id))
 }
 //line demo/classfile2_blog/get.yap:1
 func (this *get) Main(_gop_arg0 *yap.Context) {
-//line demo/classfile2_blog/main.yap:1:1
 	this.Handler.Main(_gop_arg0)
 //line demo/classfile2_blog/get.yap:1:1
 	this.Html__1(`<html><body>Hello, <a href="/p/123">YAP</a>!</body></html>`)
@@ -43,4 +42,7 @@ func (this *get_p_id) Main(_gop_arg0 *yap.Context) {
 }
 func (this *get_p_id) Classfname() string {
 	return "get_p_#id"
+}
+func main() {
+	new(AppV2).Main()
 }

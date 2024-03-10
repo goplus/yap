@@ -19,6 +19,9 @@ func (this *jwtdemo) MainEntry() {
 //line ytest/demo/jwtdemo/jwtdemo_yap.gox:7:1
 	this.Run(":8080")
 }
+func (this *jwtdemo) Main() {
+	yap.Gopt_App_Main(this)
+}
 func main() {
-	yap.Gopt_App_Main(new(jwtdemo))
+	new(jwtdemo).Main()
 }

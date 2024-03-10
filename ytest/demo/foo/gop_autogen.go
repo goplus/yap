@@ -19,6 +19,9 @@ func (this *foo) MainEntry() {
 //line ytest/demo/foo/foo_yap.gox:7:1
 	this.Run(":8080")
 }
+func (this *foo) Main() {
+	yap.Gopt_App_Main(this)
+}
 func main() {
-	yap.Gopt_App_Main(new(foo))
+	new(foo).Main()
 }
