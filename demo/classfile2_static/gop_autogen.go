@@ -18,6 +18,9 @@ func (this *AppV2) MainEntry() {
 //line demo/classfile2_static/main.yap:4:1
 	this.Run(":8080")
 }
+func (this *AppV2) Main() {
+	yap.Gopt_AppV2_Main(this)
+}
 func main() {
-	yap.Gopt_AppV2_Main(new(AppV2))
+	new(AppV2).Main()
 }

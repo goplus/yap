@@ -8,13 +8,14 @@ const _ = true
 
 type get struct {
 	yap.Handler
+	*AppV2
 }
 type get_p_id struct {
 	yap.Handler
+	*AppV2
 }
-
-func main() {
-	yap.Gopt_AppV2_Main(new(yap.AppV2), new(get), new(get_p_id))
+type AppV2 struct {
+	yap.AppV2
 }
 //line demo/classfile2_hello/get.yap:1
 func (this *get) Main(_gop_arg0 *yap.Context) {
@@ -33,4 +34,10 @@ func (this *get_p_id) Main(_gop_arg0 *yap.Context) {
 }
 func (this *get_p_id) Classfname() string {
 	return "get_p_#id"
+}
+func (this *AppV2) Main() {
+	yap.Gopt_AppV2_Main(this, new(get), new(get_p_id))
+}
+func main() {
+	new(AppV2).Main()
 }

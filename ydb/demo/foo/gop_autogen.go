@@ -47,13 +47,14 @@ type User struct {
 }
 type articles struct {
 	ydb.Class
+	*AppGen
 }
 type users struct {
 	ydb.Class
+	*AppGen
 }
-
-func main() {
-	ydb.Gopt_AppGen_Main(new(ydb.AppGen), new(articles), new(users))
+type AppGen struct {
+	ydb.AppGen
 }
 //line ydb/demo/foo/articles_ydb.gox:22:1
 func (this *articles) API_Add(doc Article) {
@@ -325,4 +326,10 @@ func (this *users) Main() {
 }
 func (this *users) Classfname() string {
 	return "users"
+}
+func (this *AppGen) Main() {
+	ydb.Gopt_AppGen_Main(this, new(articles), new(users))
+}
+func main() {
+	new(AppGen).Main()
 }

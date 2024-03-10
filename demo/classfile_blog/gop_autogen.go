@@ -24,6 +24,9 @@ func (this *blog) MainEntry() {
 //line demo/classfile_blog/blog_yap.gox:10:1
 	this.Run(":8888")
 }
+func (this *blog) Main() {
+	yap.Gopt_App_Main(this)
+}
 func main() {
-	yap.Gopt_App_Main(new(blog))
+	new(blog).Main()
 }
