@@ -1,7 +1,0 @@
-get "/p/:id", ctx => {
-	ctx.json {
-		"id": ctx.param("id"),
-	}
-}
-
-run ":8080"

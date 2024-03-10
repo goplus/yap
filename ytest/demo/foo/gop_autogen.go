@@ -6,22 +6,25 @@ import "github.com/goplus/yap"
 
 const _ = true
 
-type foo struct {
-	yap.App
+type get_p_id struct {
+	yap.Handler
+	*AppV2
 }
-//line ytest/demo/foo/foo_yap.gox:1
-func (this *foo) MainEntry() {
-//line ytest/demo/foo/foo_yap.gox:1:1
-	this.Get("/p/:id", func(ctx *yap.Context) {
-//line ytest/demo/foo/foo_yap.gox:2:1
-		ctx.Json__1(map[string]string{"id": ctx.Param("id")})
-	})
-//line ytest/demo/foo/foo_yap.gox:7:1
-	this.Run(":8080")
+type AppV2 struct {
+	yap.AppV2
 }
-func (this *foo) Main() {
-	yap.Gopt_App_Main(this)
+//line ytest/demo/foo/get_p_#id.yap:1
+func (this *get_p_id) Main(_gop_arg0 *yap.Context) {
+	this.Handler.Main(_gop_arg0)
+//line ytest/demo/foo/get_p_#id.yap:1:1
+	this.Json__1(map[string]string{"id": this.Gop_Env("id")})
+}
+func (this *get_p_id) Classfname() string {
+	return "get_p_#id"
+}
+func (this *AppV2) Main() {
+	yap.Gopt_AppV2_Main(this, new(get_p_id))
 }
 func main() {
-	new(foo).Main()
+	new(AppV2).Main()
 }

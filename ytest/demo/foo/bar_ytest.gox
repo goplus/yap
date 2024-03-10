@@ -1,11 +1,9 @@
-testServer "foo.com", new(foo)
+testServer "foo.com", new(AppV2)
 
-run "test get /p/$id", => {
-	id := "123"
-	get "http://foo.com/p/${id}"
-	ret
-	match resp.code, 200
-	json {
-		"id": id,
-	}
+id := "123"
+get "http://foo.com/p/${id}"
+ret
+match resp.code, 200
+json {
+	"id": id,
 }
