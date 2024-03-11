@@ -29,7 +29,7 @@ func main() {
 			"id": ctx.Param("id"),
 		})
 	})
-	y.Run(":8080")
+	y.Run("localhost:8080")
 }
 ```
 
@@ -115,7 +115,7 @@ y.GET("/p/:id", func(ctx *yap.Context) {
 	})
 })
 
-y.Run(":8080")
+y.Run(":8888")
 ```
 
 demo in Go+ classfile v1 ([main.yap](../demo/classfile_blog/blog_yap.gox), [article_yap.html](../demo/classfile_blog/yap/article_yap.html)):
