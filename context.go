@@ -143,6 +143,9 @@ func (p *Context) JSON(code int, data interface{}) {
 func (p *Context) YAP(code int, yapFile string, data interface{}) {
 	w := p.ResponseWriter
 	t := p.engine.templ(yapFile)
+	if t == nil {
+		log.Panicln("YAP: not find template:", yapFile)
+	}
 	h := w.Header()
 	h.Set("Content-Type", "text/html")
 	err := t.Execute(w, data)

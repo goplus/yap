@@ -83,14 +83,6 @@ func (p *App) Static__2(pattern string, fs http.FileSystem, allowRedirect ...boo
 	p.StaticHttp(pattern, fs, allowRedirect...)
 }
 
-// load go templates
-func (p *App) LoadTemplate(pattern ...string) {
-	p.Engine.LoadTemplate(pattern...)
-}
-func (p *App) Template(pattern ...string) {
-	p.Engine.LoadTemplate(pattern...)
-}
-
 // AppType represents an abstract of YAP applications.
 type AppType interface {
 	InitYap(fs ...fs.FS)

@@ -158,8 +158,8 @@ func readFileOS(file string) (name string, b []byte, err error) {
 func readFileFS(fsys fs.FS) func(string) (string, []byte, error) {
 	return func(file string) (name string, b []byte, err error) {
 		name = filepath.ToSlash(file)
+		// compatible yap template name for older versions of yap, without the suffix "_ yap.html"
 		name = strings.TrimSuffix(name, "_yap.html")
-		// name = strings.TrimSuffix(name, ".html")
 		b, err = fs.ReadFile(fsys, file)
 		return
 	}

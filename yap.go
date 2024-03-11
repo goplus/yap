@@ -69,11 +69,8 @@ func (p *Engine) initYapFS(fsys fs.FS) {
 }
 
 // Load template
-func (p *Engine) LoadTemplate(pattern ...string) {
-	if len(pattern) == 0 {
-		pattern = append(pattern, "*_yap.html")
-	}
-	t, err := parseFS(NewTemplate(""), p.yapFS(), pattern)
+func (p *Engine) loadTemplate() {
+	t, err := parseFS(NewTemplate(""), p.yapFS(), []string{"*_yap.html"})
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -168,7 +165,7 @@ func (p *Engine) SetLAS(listenAndServe func(addr string, handler http.Handler) e
 
 func (p *Engine) templ(path string) *template.Template {
 	if p.tpl == nil {
-		p.LoadTemplate()
+		p.loadTemplate()
 	}
 	return p.tpl.Lookup(path)
 }
