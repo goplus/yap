@@ -47,7 +47,6 @@ json {
 
 The directive `testServer` creates the web server by [net/http/httptest](https://pkg.go.dev/net/http/httptest#NewServer) and obtained a random port as the service address. Then it calls the directive [host](https://pkg.go.dev/github.com/goplus/yap/ytest#App.Host) to map the random service address to `foo.com`. This makes all other code no need to changed.
 
-## yaptest User Manual
 
 ### match
 
@@ -61,7 +60,7 @@ match id, 1+2
 echo id
 ```
 
-Here we define a variable called `id` and match it with expression `1+2`. If the variable is unbound, it is assigned the value of the expression.
+Here we define a variable called `id` and match it with expression `1+2`. If the variable is unbound, it is assigned the value of the expression. In this way the value of `id` becomes `3`.
 
 So far, you've seen `match` like the assignment side. But you cannot assign a different value to a variable that has been bound:
 
@@ -74,7 +73,7 @@ echo id
 match id, 5  // unmatched value - expected: 3, got: 5
 ```
 
-In the second match statement, the variable `id` has been bound. At this time, it will be compared with the expression value. If it is equal, it will succeed, otherwise an error will be reported (such as the third match statement above).
+In the second `match` statement, the variable `id` has been bound. At this time, it will be compared with the expression value. If it is equal, it will succeed, otherwise an error will be reported (such as the third `match` statement above).
 
 The `match` statement [can be complex](demo/match/complex/complex_yap.gox), such as:
 
