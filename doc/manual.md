@@ -92,7 +92,7 @@ Static files server also can use a `http.FileSystem` instead of `fs.FS` object (
 import "github.com/qiniu/x/http/fs"
 
 static "/", fs.http("https://goplus.org"), false // false means not allow to redirect
-run ":8888"
+run ":8080"
 ```
 
 
