@@ -29,21 +29,14 @@ type CaseT = test.CaseT
 
 type Case struct {
 	*Request
-	*App
 	test.Case
+	app *App
 
 	DefaultHeader http.Header
 }
 
-// Gopt_Case_TestMain is required by Go+ compiler as the entry of a YAP test case.
-func Gopt_Case_TestMain(c interface{ initCase(*App, CaseT) }, t *testing.T) {
-	app := new(App).initApp()
-	c.initCase(app, test.NewT(t))
-	c.(interface{ Main() }).Main()
-}
-
 func (p *Case) initCase(app *App, t CaseT) {
-	p.App = app
+	p.app = app
 	p.CaseT = t
 	p.DefaultHeader = make(http.Header)
 }
@@ -130,6 +123,25 @@ func (p *Case) PATCH(url string) *Request {
 // DELETE is a shortcut for Req(http.MethodDelete, url)
 func (p *Case) DELETE(url string) *Request {
 	return p.Req__0(http.MethodDelete, url)
+}
+
+// -----------------------------------------------------------------------------
+
+type CaseApp struct {
+	Case
+	*App
+}
+
+// Gopt_CaseApp_TestMain is required by Go+ compiler as the entry of a YAP test case.
+func Gopt_CaseApp_TestMain(c interface{ initCaseApp(*App, CaseT) }, t *testing.T) {
+	app := new(App).initApp()
+	c.initCaseApp(app, test.NewT(t))
+	c.(interface{ Main() }).Main()
+}
+
+func (p *CaseApp) initCaseApp(app *App, t CaseT) {
+	p.initCase(app, t)
+	p.App = app
 }
 
 // -----------------------------------------------------------------------------

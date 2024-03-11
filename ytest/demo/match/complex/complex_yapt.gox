@@ -1,0 +1,13 @@
+d := Var(string)
+
+match {
+    "c": {"d": d},
+}, {
+    "a": 1,
+    "b": 3.14,
+    "c": {"d": "hello", "e": "world"},
+    "f": 1,
+}
+
+echo d
+match d, "hello"

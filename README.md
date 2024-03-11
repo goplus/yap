@@ -120,7 +120,7 @@ run ":8080"
 
 ### yaptest: HTTP Test Framework
 
-This classfile has the file suffix `_ytest.gox`.
+yaptest is a web server testing framework. This classfile has the file suffix `_ytest.gox`.
 
 Suppose we have a web server ([foo/get_p_#id.yap](ytest/demo/foo/get_p_%23id.yap)):
 

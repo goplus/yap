@@ -26,6 +26,7 @@ import (
 
 	"github.com/goplus/yap"
 	"github.com/goplus/yap/test"
+	"github.com/goplus/yap/test/logt"
 	"github.com/qiniu/x/mockhttp"
 )
 
@@ -96,8 +97,9 @@ func Gopt_App_Main(app interface{ initApp() *App }, workers ...interface{ initCa
 	if me, ok := app.(interface{ MainEntry() }); ok {
 		me.MainEntry()
 	}
+	t := logt.New()
 	for _, worker := range workers {
-		worker.initCase(a, nil)
+		worker.initCase(a, t)
 		worker.(interface{ Main() }).Main()
 	}
 }

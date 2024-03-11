@@ -11,7 +11,7 @@ import (
 )
 
 type case_jwtdemo struct {
-	ytest.Case
+	ytest.CaseApp
 }
 //line ytest/demo/jwtdemo/jwtdemo_ytest.gox:7
 func (this *case_jwtdemo) Main() {
@@ -34,5 +34,5 @@ func (this *case_jwtdemo) Classfname() string {
 	return "jwtdemo"
 }
 func Test_jwtdemo(t *testing.T) {
-	ytest.Gopt_Case_TestMain(new(case_jwtdemo), t)
+	ytest.Gopt_CaseApp_TestMain(new(case_jwtdemo), t)
 }

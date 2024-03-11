@@ -1,0 +1,6 @@
+id := Var(int)
+match id, 1+2
+match id, 3
+echo id
+
+match id, 5  // unmatched value - expected: 3, got: 5

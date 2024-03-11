@@ -40,6 +40,27 @@ func toMapAny[T basetype](val map[string]T) map[string]any {
 	return ret
 }
 
+func tryToMapAny(val any) (ret map[string]any, ok bool) {
+	v := reflect.ValueOf(val)
+	return castMapAny(v)
+}
+
+func castMapAny(v reflect.Value) (ret map[string]any, ok bool) {
+	if v.Kind() != reflect.Map || v.Type().Key() != tyString {
+		return
+	}
+	ret, ok = make(map[string]any, v.Len()), true
+	for it := v.MapRange(); it.Next(); {
+		key := it.Key().String()
+		ret[key] = it.Value().Interface()
+	}
+	return
+}
+
+var (
+	tyString = reflect.TypeOf("")
+)
+
 // -----------------------------------------------------------------------------
 
 type baseelem interface {
@@ -234,6 +255,11 @@ retry:
 		case *Var__1[map[string]any]:
 			Gopt_Case_MatchMap(t, ev, gv.Val(), name...)
 			return
+		default:
+			if gv, ok := tryToMapAny(got); ok {
+				Gopt_Case_MatchMap(t, ev, gv, name...)
+				return
+			}
 		}
 	case []any:
 		switch gv := got.(type) {
@@ -351,6 +377,10 @@ retry:
 
 	// other types:
 	default:
+		if v, ok := tryToMapAny(expected); ok {
+			expected = v
+			goto retry
+		}
 		if reflect.DeepEqual(expected, got) {
 			return
 		}
