@@ -14,5 +14,5 @@ func main() {
 			"id": ctx.Param("id"),
 		})
 	})
-	y.Run(":8080")
+	y.Run("localhost:8080")
 }
