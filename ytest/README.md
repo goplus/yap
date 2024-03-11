@@ -75,7 +75,7 @@ match id, 5  // unmatched value - expected: 3, got: 5
 
 In the second `match` statement, the variable `id` has been bound. At this time, it will be compared with the expression value. If it is equal, it will succeed, otherwise an error will be reported (such as the third `match` statement above).
 
-The `match` statement [can be complex](demo/match/complex/complex_yap.gox), such as:
+The `match` statement [can be complex](demo/match/complex/complex_yapt.gox), such as:
 
 ```go
 d := Var(string)
@@ -99,7 +99,9 @@ Generally, the syntax of the match command is:
 match <ExpectedObject> <SourceObject>
 ```
 
-Unbound variables are allowed in `<ExpectedObject>`, but cannot appear in `<SourceObject>`. `<ExpectedObject>` and `<SourceObject>` do not have to be exactly the same, but what appears in `<ExpectedObject>` must also appear in `<SourceObject>`. That is, it is required to be a subset relationship (`<ExpectedObject>` is a subset of `<SourceObject>`). If a variable in `<ExpectedObject>` has not been bound, it will be bound according to the value of the corresponding `<SourceObject>`; if the variable has been bound, the values on both sides must match.
+Unbound variables are allowed in `<ExpectedObject>`, but cannot appear in `<SourceObject>`. `<ExpectedObject>` and `<SourceObject>` do not have to be exactly the same, but what appears in `<ExpectedObject>` must also appear in `<SourceObject>`. That is, it is required to be a subset relationship (`<ExpectedObject>` is a subset of `<SourceObject>`).
+
+If a variable in `<ExpectedObject>` has not been bound, it will be bound according to the value of the corresponding `<SourceObject>`; if the variable has been bound, the values on both sides must match.
 
 The cornerstone of `yaptest` is matching grammar. Let's look at the next example you saw at the beginning:
 
