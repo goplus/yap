@@ -10,10 +10,10 @@ import (
 )
 
 type case_bar struct {
-	ytest.Case
+	ytest.CaseApp
 }
 type case_foo struct {
-	ytest.Case
+	ytest.CaseApp
 }
 //line ytest/demo/foo/bar_ytest.gox:1
 func (this *case_bar) Main() {
@@ -50,8 +50,8 @@ func (this *case_foo) Classfname() string {
 	return "foo"
 }
 func Test_bar(t *testing.T) {
-	ytest.Gopt_Case_TestMain(new(case_bar), t)
+	ytest.Gopt_CaseApp_TestMain(new(case_bar), t)
 }
 func Test_foo(t *testing.T) {
-	ytest.Gopt_Case_TestMain(new(case_foo), t)
+	ytest.Gopt_CaseApp_TestMain(new(case_foo), t)
 }

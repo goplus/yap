@@ -14,7 +14,7 @@ import github.com/goplus/yap/ytest/auth/jwt
 
 project _ytest.gox App github.com/goplus/yap/ytest github.com/goplus/yap/test
 
-class _ytest.gox Case
+class _ytest.gox CaseApp
 
 import github.com/goplus/yap/ytest/auth/jwt
 

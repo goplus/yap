@@ -9,7 +9,7 @@ import (
 )
 
 type case_foo struct {
-	ytest.Case
+	ytest.CaseApp
 }
 //line ytest/demo/basic/foo_ytest.gox:1
 func (this *case_foo) Main() {
@@ -35,5 +35,5 @@ func (this *case_foo) Classfname() string {
 	return "foo"
 }
 func Test_foo(t *testing.T) {
-	ytest.Gopt_Case_TestMain(new(case_foo), t)
+	ytest.Gopt_CaseApp_TestMain(new(case_foo), t)
 }

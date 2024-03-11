@@ -243,7 +243,7 @@ func mergeHeader(to, from http.Header) {
 
 func (p *Request) doSend() (resp *http.Response, err error) {
 	body := p.body
-	req, err := p.ctx.newRequest(p.method, p.url, body)
+	req, err := p.ctx.app.newRequest(p.method, p.url, body)
 	if err != nil {
 		log.Fatalf("newRequest(%s, %s) failed: %v\n", p.method, p.url, err)
 	}
@@ -257,7 +257,7 @@ func (p *Request) doSend() (resp *http.Response, err error) {
 		}
 		req.ContentLength = body.Size()
 	}
-	tr := p.ctx.transport
+	tr := p.ctx.app.transport
 	if p.auth != nil {
 		tr = p.auth.Compose(tr)
 	}
