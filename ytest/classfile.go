@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -31,7 +32,8 @@ import (
 )
 
 const (
-	GopPackage = "github.com/goplus/yap/test"
+	GopPackage   = "github.com/goplus/yap/test"
+	GopTestClass = true
 )
 
 // -----------------------------------------------------------------------------
@@ -100,6 +102,7 @@ func Gopt_App_Main(app interface{ initApp() *App }, workers ...interface{ initCa
 	t := logt.New()
 	for _, worker := range workers {
 		worker.initCase(a, t)
+		reflect.ValueOf(worker).Elem().Field(1).Set(reflect.ValueOf(app)) // (*worker).App = app
 		worker.(interface{ Main() }).Main()
 	}
 }

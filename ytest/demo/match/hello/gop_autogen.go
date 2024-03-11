@@ -60,4 +60,5 @@ func (this *App) Main() {
 	ytest.Gopt_App_Main(this, new(hello))
 }
 func main() {
+	new(App).Main()
 }
