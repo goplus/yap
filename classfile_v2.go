@@ -17,6 +17,7 @@
 package yap
 
 import (
+	"reflect"
 	"strings"
 )
 
@@ -56,6 +57,7 @@ type iHandler interface {
 func Gopt_AppV2_Main(app AppType, handlers ...iHandler) {
 	app.InitYap()
 	for _, h := range handlers {
+		reflect.ValueOf(h).Elem().Field(1).Set(reflect.ValueOf(app)) // (*handler).AppV2 = app
 		switch method, path := parseClassfname(h.Classfname()); method {
 		case "handle":
 			app.Handle(path, h.Main)
