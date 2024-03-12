@@ -21,15 +21,35 @@ import (
 )
 
 func Translate(text string) string {
+	var b strings.Builder
+	if TranslateEx(&b, text, "{{", "}}") {
+		return b.String()
+	}
+	return text
+}
+
+type iBuilder interface {
+	Grow(n int)
+	WriteString(s string) (int, error)
+	String() string
+}
+
+func TranslateEx[Builder iBuilder](b Builder, text, delimLeft, delimRight string) bool {
 	offs := make([]int, 0, 16)
 	base := 0
+	if delimLeft == "" {
+		delimLeft = "{{"
+	}
+	if delimRight == "" {
+		delimRight = "}}"
+	}
 	for {
-		pos := strings.Index(text[base:], "{{")
+		pos := strings.Index(text[base:], delimLeft)
 		if pos < 0 {
 			break
 		}
 		begin := base + pos + 2 // script begin
-		n := strings.Index(text[begin:], "}}")
+		n := strings.Index(text[begin:], delimRight)
 		if n < 0 {
 			n = len(text) - begin // script length
 		}
@@ -51,19 +71,19 @@ func Translate(text string) string {
 	}
 	n := len(offs)
 	if n == 0 {
-		return text
+		return false
 	}
-	var b strings.Builder
 	b.Grow(len(text) + n*4)
 	base = 0
+	delimRightLeft := delimRight + delimLeft
 	for i := 0; i < n; i++ {
 		off := offs[i]
 		b.WriteString(text[base:off])
-		b.WriteString("}}{{")
+		b.WriteString(delimRightLeft)
 		base = off
 	}
 	b.WriteString(text[base:])
-	return b.String()
+	return true
 }
 
 func isSpace(c byte) bool {

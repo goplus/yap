@@ -43,11 +43,11 @@ func (this *hello) Main() {
 	id := "123"
 //line ytest/demo/match/hello/hello_yapt.gox:4:1
 	this.Get(stringutil.Concat("http://foo.com/p/", id))
-//line ytest/demo/match/hello/hello_yapt.gox:5:1
-	this.RetWith(200)
 //line ytest/demo/match/hello/hello_yapt.gox:6:1
+	this.RetWith(200)
+//line ytest/demo/match/hello/hello_yapt.gox:7:1
 	this.Json(map[string]string{"id": id})
-//line ytest/demo/match/hello/hello_yapt.gox:9:1
+//line ytest/demo/match/hello/hello_yapt.gox:11:1
 	fmt.Println("OK")
 }
 func (this *hello) Classfname() string {

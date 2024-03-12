@@ -24,6 +24,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/goplus/yap/internal/htmltempl"
 	"github.com/goplus/yap/noredirect"
 )
 
@@ -33,7 +34,9 @@ type Engine struct {
 	router
 	Mux *http.ServeMux
 
-	tpl *Template
+	delimLeft, delimRight string
+
+	tpl htmltempl.Template
 	fs  fs.FS
 	las func(addr string, handler http.Handler) error
 }
@@ -66,15 +69,6 @@ func (p *Engine) initYapFS(fsys fs.FS) {
 		}
 	}
 	p.fs = fsys
-}
-
-// Load template
-func (p *Engine) loadTemplate() {
-	t, err := parseFS(NewTemplate(""), p.yapFS(), []string{"*_yap.html"})
-	if err != nil {
-		log.Panicln(err)
-	}
-	p.tpl = t
 }
 
 func (p *Engine) yapFS() fs.FS {
@@ -163,9 +157,15 @@ func (p *Engine) SetLAS(listenAndServe func(addr string, handler http.Handler) e
 	p.las = listenAndServe
 }
 
+// SetDelims sets the action delimiters to the specified strings. Nested template definitions
+// will inherit the settings. An empty delimiter stands for the corresponding default: {{ or }}.
+func (p *Engine) SetDelims(left, right string) {
+	p.delimLeft, p.delimRight = left, right
+}
+
 func (p *Engine) templ(path string) *template.Template {
-	if p.tpl == nil {
-		p.loadTemplate()
+	if p.tpl.Template == nil {
+		p.tpl.InitTemplates(p.yapFS(), p.delimLeft, p.delimRight, "_yap.html")
 	}
 	return p.tpl.Lookup(path)
 }
