@@ -16,7 +16,10 @@
 
 package templ
 
-import "testing"
+import (
+	"bytes"
+	"testing"
+)
 
 const yapScriptIn = `
 <html>
@@ -94,5 +97,10 @@ efg
 `
 	if ret := Translate(noScriptEnd); ret != noScriptEndOut {
 		t.Fatal("translate(noScriptEnd):", ret)
+	}
+	var b bytes.Buffer
+	TranslateEx(&b, yapScriptIn, "", "")
+	if b.String() != yapScriptOut {
+		t.Fatal("TranslateEx:", b.String())
 	}
 }
