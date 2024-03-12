@@ -33,16 +33,14 @@ import (
 // as unexported by all other clients.
 type Template struct {
 	*template.Template
-	// yap fs directory
-	fs fs.FS
 }
 
 // NewTemplate allocates a new, undefined template with the given name.
 func NewTemplate(name string) *Template {
-	return &Template{template.New(name), nil}
+	return &Template{template.New(name)}
 }
 func (t *Template) NewTemplate(name string) *Template {
-	return &Template{Template: t.Template.New(name), fs: t.fs}
+	return &Template{Template: t.Template.New(name)}
 }
 
 func (t Template) Parse(text string) (ret Template, err error) {
