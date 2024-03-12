@@ -1,0 +1,13 @@
+mock "foo.com", new(AppV2)
+
+id := "123"
+get "http://foo.com/p/${id}"
+
+send                 // send request
+match 200, resp.code // assert resp.code == 200
+match "application/json", resp.header.get("Content-Type")
+match {              // assert resp.body.id == id
+	"id": id,
+}, resp.body
+
+echo "OK"

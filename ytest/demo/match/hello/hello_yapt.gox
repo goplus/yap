@@ -2,8 +2,10 @@ mock "foo.com", new(AppV2)
 
 id := "123"
 get "http://foo.com/p/${id}"
+
 ret 200
 json {
 	"id": id,
 }
+
 echo "OK"
