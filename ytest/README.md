@@ -1,5 +1,9 @@
 yaptest - Go+ HTTP Test Framework
 =====
+[![Language](https://img.shields.io/badge/language-Go+-blue.svg)](https://github.com/goplus/gop)
+[![GitHub release](https://img.shields.io/github/v/tag/goplus/gop.svg?label=Go%2b+release)](https://github.com/goplus/gop/releases)
+[![Discord](https://img.shields.io/badge/Discord-online-success.svg?logo=discord&logoColor=white)](https://discord.gg/mYjWCJDcAr)
+[![GoDoc](https://pkg.go.dev/badge/github.com/goplus/yap/ytest.svg)](https://pkg.go.dev/github.com/goplus/yap/ytest)
 
 yaptest is a web server testing framework. This classfile has the file suffix `_ytest.gox`.
 
@@ -48,7 +52,7 @@ json {
 The directive `testServer` creates the web server by [net/http/httptest](https://pkg.go.dev/net/http/httptest#NewServer) and obtained a random port as the service address. Then it calls the directive [host](https://pkg.go.dev/github.com/goplus/yap/ytest#App.Host) to map the random service address to `foo.com`. This makes all other code no need to changed.
 
 
-### match
+## match
 
 This is almost the core concept in `yaptest`. It matches two objects.
 
@@ -103,11 +107,28 @@ Unbound variables are allowed in `<ExpectedObject>`, but cannot appear in `<Sour
 
 If a variable in `<ExpectedObject>` has not been bound, it will be bound according to the value of the corresponding `<SourceObject>`; if the variable has been bound, the values on both sides must match.
 
-The cornerstone of `yaptest` is matching grammar. Let's look at the next example you saw at the beginning:
+The cornerstone of `yaptest` is matching grammar. Let's look at [the example](demo/match/hello/hello_yapt.gox) you saw at the beginning:
 
 ```go
+id := "123"
+get "http://foo.com/p/${id}"
+
 ret 200
 json {
 	"id": id,
 }
+```
+
+It is [equivalent to](demo/match/diveinto/hello_yapt.gox):
+
+```go
+id := "123"
+get "http://foo.com/p/${id}"
+
+send                 // send request
+match 200, resp.code // assert resp.code == 200
+match "application/json", resp.header.get("Content-Type")
+match {              // assert resp.body.id == id
+	"id": id,
+}, resp.body
 ```

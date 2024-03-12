@@ -6,6 +6,7 @@ yap - Yet Another Go/Go+ HTTP Web Framework
 [![GitHub release](https://img.shields.io/github/v/tag/goplus/yap.svg?label=release)](https://github.com/goplus/yap/releases)
 [![Coverage Status](https://codecov.io/gh/goplus/yap/branch/main/graph/badge.svg)](https://codecov.io/gh/goplus/yap)
 [![GoDoc](https://pkg.go.dev/badge/github.com/goplus/yap.svg)](https://pkg.go.dev/github.com/goplus/yap)
+[![Language](https://img.shields.io/badge/language-Go+-blue.svg)](https://github.com/goplus/gop)
 
 This repo contains three [Go+ classfiles](https://github.com/goplus/gop/blob/main/doc/classfile.md): `yap` (a HTTP Web Framework), `yaptest` (a HTTP Test Framework) and `ydb` (a Go+ Database Framework).
 
@@ -36,7 +37,7 @@ gop get github.com/goplus/yap@latest
 
 Create a file named [get.yap](demo/classfile2_hello/get.yap) with the following content:
 
-```coffee
+```go
 html `<html><body>Hello, YAP!</body></html>`
 ```
 
