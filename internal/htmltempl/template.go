@@ -56,6 +56,12 @@ func parseFS(fsys fs.FS, delimLeft, delimRight, suffix string) (*template.Templa
 	if len(filenames) == 0 {
 		return nil, fmt.Errorf("template: pattern matches no files: %#q", pattern)
 	}
+	if delimLeft == "" {
+		delimLeft = "{{"
+	}
+	if delimRight == "" {
+		delimRight = "}}"
+	}
 	t := template.New("").Delims(delimLeft, delimRight)
 	return parseFiles(t, readFileFS(fsys, delimLeft, delimRight, suffix), filenames...)
 }

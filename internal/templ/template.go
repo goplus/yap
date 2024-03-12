@@ -37,12 +37,6 @@ type iBuilder interface {
 func TranslateEx[Builder iBuilder](b Builder, text, delimLeft, delimRight string) bool {
 	offs := make([]int, 0, 16)
 	base := 0
-	if delimLeft == "" {
-		delimLeft = "{{"
-	}
-	if delimRight == "" {
-		delimRight = "}}"
-	}
 	for {
 		pos := strings.Index(text[base:], delimLeft)
 		if pos < 0 {
