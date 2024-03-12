@@ -17,6 +17,7 @@
 package yap
 
 import (
+	"html/template"
 	"io/fs"
 	"log"
 	"net/http"
@@ -32,9 +33,9 @@ type Engine struct {
 	router
 	Mux *http.ServeMux
 
-	tpls map[string]Template
-	fs   fs.FS
-	las  func(addr string, handler http.Handler) error
+	tpl *Template
+	fs  fs.FS
+	las func(addr string, handler http.Handler) error
 }
 
 // New creates a YAP engine.
@@ -65,7 +66,15 @@ func (p *Engine) initYapFS(fsys fs.FS) {
 		}
 	}
 	p.fs = fsys
-	p.tpls = make(map[string]Template)
+}
+
+// Load template
+func (p *Engine) loadTemplate() {
+	t, err := parseFS(NewTemplate(""), p.yapFS(), []string{"*_yap.html"})
+	if err != nil {
+		log.Panicln(err)
+	}
+	p.tpl = t
 }
 
 func (p *Engine) yapFS() fs.FS {
@@ -154,20 +163,11 @@ func (p *Engine) SetLAS(listenAndServe func(addr string, handler http.Handler) e
 	p.las = listenAndServe
 }
 
-func (p *Engine) templ(path string) (t Template, err error) {
-	fsys := p.yapFS()
-	if p.tpls == nil {
-		return Template{}, os.ErrNotExist
+func (p *Engine) templ(path string) *template.Template {
+	if p.tpl == nil {
+		p.loadTemplate()
 	}
-	t, ok := p.tpls[path]
-	if !ok {
-		t, err = ParseFSFile(fsys, path+"_yap.html")
-		if err != nil {
-			return
-		}
-		p.tpls[path] = t
-	}
-	return
+	return p.tpl.Lookup(path)
 }
 
 // SubFS returns a sub filesystem by specified a dir.

@@ -1,0 +1,10 @@
+get "/", ctx => {
+	ctx.html `<html><body>Hello, <a href="/p/123">YAP</a>!</body></html>`
+}
+get "/p/:id", ctx => {
+	ctx.yap "blog", {
+		"Id": ctx.param("id"),
+	}
+}
+
+run ":8888"
