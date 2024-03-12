@@ -99,7 +99,7 @@ efg
 		t.Fatal("translate(noScriptEnd):", ret)
 	}
 	var b bytes.Buffer
-	TranslateEx(&b, yapScriptIn, "", "")
+	TranslateEx(&b, yapScriptIn, "{{", "}}")
 	if b.String() != yapScriptOut {
 		t.Fatal("TranslateEx:", b.String())
 	}
