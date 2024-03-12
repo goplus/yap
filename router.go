@@ -258,6 +258,9 @@ func (p *router) serveHTTP(w http.ResponseWriter, req *http.Request, e *Engine) 
 				}
 			}
 		}
+	} else if req.Method == http.MethodHead {
+		p.head(w, req, e)
+		return
 	}
 
 	if req.Method == http.MethodOptions && p.HandleOPTIONS {
@@ -285,4 +288,17 @@ func (p *router) serveHTTP(w http.ResponseWriter, req *http.Request, e *Engine) 
 	}
 
 	e.Mux.ServeHTTP(w, req)
+}
+
+func (p *router) head(w http.ResponseWriter, req *http.Request, e *Engine) {
+	req.Method = http.MethodGet
+	p.serveHTTP(&headWriter{w}, req, e)
+}
+
+type headWriter struct {
+	http.ResponseWriter
+}
+
+func (p *headWriter) Write(b []byte) (int, error) {
+	return len(b), nil
 }
