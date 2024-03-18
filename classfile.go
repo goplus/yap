@@ -63,6 +63,11 @@ func (p *App) Patch(path string, handle func(ctx *Context)) {
 	p.Route(http.MethodPatch, path, handle)
 }
 
+// Delete is a shortcut for router.Route(http.MethodDelete, path, handle)
+func (p *App) Delete(path string, handle func(ctx *Context)) {
+	p.Route(http.MethodDelete, path, handle)
+}
+
 // Static serves static files from a dir (default is "$YapFS/static").
 func (p *App) Static__0(pattern string, dir ...fs.FS) {
 	p.Static(pattern, dir...)
