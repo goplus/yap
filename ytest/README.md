@@ -132,3 +132,34 @@ match {              // assert resp.body.id == id
 	"id": id,
 }, resp.body
 ```
+
+
+## host
+
+TODO
+
+
+## auth
+
+TODO
+
+
+## req/post/get/delete/put
+
+TODO
+
+
+## header
+
+TODO
+
+
+## body/json/form/text/binary
+
+TODO
+
+
+## ret
+
+TODO
+
