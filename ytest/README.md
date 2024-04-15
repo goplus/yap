@@ -140,7 +140,9 @@ match {              // assert resp.body.id == id
 host <host> <real>
 ```
 
-The Host directive allows you to use an abstract domain name (which does not necessarily exist) to represent a service. For examples:
+The Host directive allows you to use an abstract domain name (which does not necessarily exist) to represent a service.
+
+For examples:
 
 ```go
 host "https://foo.com", "http://127.0.0.1:8080"
@@ -153,10 +155,6 @@ host "https://foo.com", ${FOO_HOST}
 // Let env FOO_HOST point to the test environment or production environment
 ```
 
-## auth
-
-TODO
-
 
 ## req/post/get/delete/put
 
@@ -168,12 +166,40 @@ TODO
 TODO
 
 
+## ret
+
+TODO
+
+
 ## body/json/form/text/binary
 
 TODO
 
 
-## ret
+## auth
 
-TODO
+```go
+auth <auth>
+```
 
+Auth sets an Authorization for a request. For example:
+
+```go
+auth qiniu("<AccessKey>", "<SecretKey>")
+```
+
+Authorization information can be shared between different requests:
+
+```go
+testauth := qiniu("<AccessKey>", "<SecretKey>")
+
+post "https://foo.com/bar"
+auth testauth
+ret 200
+
+...
+
+get "https://foo.com/bar"
+auth testauth
+ret 200
+```
