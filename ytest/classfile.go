@@ -109,8 +109,8 @@ func Gopt_App_Main(app interface{ initApp() *App }, workers ...interface{ initCa
 
 // Host replaces a host into real. For example:
 //
-//	host "https://example.com" "http://localhost:8080"
-//	host "http://example.com" "http://localhost:8888"
+//	host "https://example.com", "http://localhost:8080"
+//	host "http://example.com", "http://localhost:8888"
 func (p *App) Host(host, real string) {
 	if !strings.HasPrefix(host, "http") {
 		test.Fatalf("invalid host `%s`: should start with http:// or https://\n", host)
