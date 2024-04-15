@@ -136,8 +136,22 @@ match {              // assert resp.body.id == id
 
 ## host
 
-TODO
+```go
+host <host> <real>
+```
 
+The Host directive allows you to use an abstract domain name (which does not necessarily exist) to represent a service. For examples:
+
+```go
+host "https://foo.com", "http://127.0.0.1:8080"
+```
+
+The host directive makes it easy for you to use the same test code between your test environment and production environment:
+
+```go
+host "https://foo.com", ${FOO_HOST}
+// Let env FOO_HOST point to the test environment or production environment
+```
 
 ## auth
 
