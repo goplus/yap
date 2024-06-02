@@ -57,12 +57,22 @@ type iHandler interface {
 func Gopt_AppV2_Main(app AppType, handlers ...iHandler) {
 	app.InitYap()
 	for _, h := range handlers {
-		reflect.ValueOf(h).Elem().Field(1).Set(reflect.ValueOf(app)) // (*handler).AppV2 = app
+		hVal := reflect.ValueOf(h).Elem()
+		hVal.FieldByName("AppV2").Set(reflect.ValueOf(app))
+		hType := hVal.Type()
+		handle := func(ctx *Context) {
+			// We must duplicate the handler instance for each request
+			// to ensure state isolation.
+			h2Val := reflect.New(hType).Elem()
+			h2Val.Set(hVal)
+			h2 := h2Val.Addr().Interface().(iHandler)
+			h2.Main(ctx)
+		}
 		switch method, path := parseClassfname(h.Classfname()); method {
 		case "handle":
-			app.Handle(path, h.Main)
+			app.Handle(path, handle)
 		default:
-			app.Route(strings.ToUpper(method), path, h.Main)
+			app.Route(strings.ToUpper(method), path, handle)
 		}
 	}
 	if me, ok := app.(interface{ MainEntry() }); ok {
