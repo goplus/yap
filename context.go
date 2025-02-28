@@ -153,3 +153,49 @@ func (p *Context) YAP(code int, yapFile string, data interface{}) {
 		log.Panicln("YAP:", err)
 	}
 }
+
+func (p *Context) STREAM(code int, mime string, read io.ReadCloser, buf []byte) {
+	w := p.ResponseWriter
+	h := w.Header()
+	if mime != "" {
+		h.Set("Content-Type", mime)
+	}
+	w.WriteHeader(code)
+	defer read.Close()
+	if buf != nil && cap(buf) >= 32*1024 {
+		if _, ok := w.(http.Flusher); ok {
+			w = NewAutoFlushWriter(w)
+		}
+	}
+
+	io.CopyBuffer(w, read, buf)
+}
+
+// AutoFlushWriter wraps http.ResponseWriter and implements automatic flushing
+type AutoFlushWriter struct {
+	http.ResponseWriter // Embeds the original interface
+	flusher             http.Flusher
+}
+
+// NewAutoFlushWriter creates a new AutoFlushWriter instance
+func NewAutoFlushWriter(w http.ResponseWriter) *AutoFlushWriter {
+	return &AutoFlushWriter{
+		ResponseWriter: w,
+		flusher:        w.(http.Flusher), // Type assertion must be done at creation time
+	}
+}
+
+// Write implements the write method with automatic flushing
+func (w *AutoFlushWriter) Write(p []byte) (n int, err error) {
+	// Call the original write method
+	n, err = w.ResponseWriter.Write(p)
+	if err != nil {
+		return
+	}
+
+	// Immediately flush the buffer
+	if w.flusher != nil {
+		w.flusher.Flush()
+	}
+	return
+}
