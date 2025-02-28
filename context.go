@@ -162,7 +162,9 @@ func (p *Context) STREAM(code int, mime string, read io.ReadCloser, buf []byte) 
 	}
 	w.WriteHeader(code)
 	defer read.Close()
-	if buf != nil && cap(buf) >= 32*1024 {
+
+	// Auto flush if the buffer is small
+	if buf != nil && cap(buf) < 32*1024 {
 		if _, ok := w.(http.Flusher); ok {
 			w = NewAutoFlushWriter(w)
 		}
