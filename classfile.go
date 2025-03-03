@@ -18,6 +18,7 @@ package yap
 
 import (
 	"context"
+	"io"
 	"io/fs"
 	"net/http"
 
@@ -192,4 +193,16 @@ func (p *Context) Yap__0(code int, yapFile string, data interface{}) {
 
 func (p *Context) Yap__1(yapFile string, data interface{}) {
 	p.YAP(200, yapFile, data)
+}
+
+func (p *Context) Stream__0(code int, mime string, read io.Reader, buf []byte) {
+	p.STREAM(code, mime, read, buf)
+}
+
+func (p *Context) Stream__1(code int, mime string, read io.Reader) {
+	p.STREAM(code, mime, read, nil)
+}
+
+func (p *Context) Stream__2(read io.Reader, buf []byte) {
+	p.STREAM(200, "", read, buf)
 }
