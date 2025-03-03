@@ -154,14 +154,13 @@ func (p *Context) YAP(code int, yapFile string, data interface{}) {
 	}
 }
 
-func (p *Context) STREAM(code int, mime string, read io.ReadCloser, buf []byte) {
+func (p *Context) STREAM(code int, mime string, read io.Reader, buf []byte) {
 	w := p.ResponseWriter
 	h := w.Header()
 	if mime != "" {
 		h.Set("Content-Type", mime)
 	}
 	w.WriteHeader(code)
-	defer read.Close()
 
 	// Auto flush if the buffer is small
 	if buf != nil && cap(buf) < 32*1024 {
