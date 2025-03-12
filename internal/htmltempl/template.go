@@ -24,7 +24,6 @@ import (
 	"log"
 	"path"
 	"strings"
-	_ "unsafe"
 
 	"github.com/goplus/yap/internal/templ"
 )
@@ -44,10 +43,15 @@ func (p *Template) InitTemplates(fsys fs.FS, delimLeft, delimRight, suffix strin
 	p.Template = tpl
 }
 
-//go:linkname parseFiles html/template.parseFiles
-func parseFiles(t *template.Template, readFile func(string) (string, []byte, error), filenames ...string) (*template.Template, error)
-
 func parseFS(fsys fs.FS, delimLeft, delimRight, suffix string) (*template.Template, error) {
+	if delimLeft == "" {
+		delimLeft = "{{"
+	}
+	if delimRight == "" {
+		delimRight = "}}"
+	}
+	t := template.New("").Delims(delimLeft, delimRight)
+
 	pattern := "*" + suffix
 	filenames, err := fs.Glob(fsys, pattern)
 	if err != nil {
@@ -56,26 +60,21 @@ func parseFS(fsys fs.FS, delimLeft, delimRight, suffix string) (*template.Templa
 	if len(filenames) == 0 {
 		return nil, fmt.Errorf("template: pattern matches no files: %#q", pattern)
 	}
-	if delimLeft == "" {
-		delimLeft = "{{"
-	}
-	if delimRight == "" {
-		delimRight = "}}"
-	}
-	t := template.New("").Delims(delimLeft, delimRight)
-	return parseFiles(t, readFileFS(fsys, delimLeft, delimRight, suffix), filenames...)
-}
+	for _, filename := range filenames {
+		content, err := fs.ReadFile(fsys, filename)
+		if err != nil {
+			return nil, err
+		}
 
-func readFileFS(fsys fs.FS, delimLeft, delimRight, suffix string) func(string) (string, []byte, error) {
-	return func(file string) (name string, b []byte, err error) {
-		name = strings.TrimSuffix(path.Base(file), suffix)
-		if b, err = fs.ReadFile(fsys, file); err != nil {
-			return
-		}
 		var buf bytes.Buffer
-		if templ.TranslateEx(&buf, string(b), delimLeft, delimRight) {
-			b = buf.Bytes()
+		if templ.TranslateEx(&buf, string(content), delimLeft, delimRight) {
+			content = buf.Bytes()
 		}
-		return
+
+		name := strings.TrimSuffix(path.Base(filename), suffix)
+		if _, err := t.New(name).Parse(string(content)); err != nil {
+			return nil, err
+		}
 	}
+	return t, nil
 }

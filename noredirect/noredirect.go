@@ -17,10 +17,10 @@
 package noredirect
 
 import (
-	"io"
+	"errors"
+	"io/fs"
 	"net/http"
 	"strings"
-	"time"
 	_ "unsafe"
 )
 
@@ -43,12 +43,6 @@ func (f *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	serveFile(w, r, f.root, upath)
 }
 
-//go:linkname serveContent net/http.serveContent
-func serveContent(w http.ResponseWriter, r *http.Request, name string, modtime time.Time, sizeFunc func() (int64, error), content io.ReadSeeker)
-
-//go:linkname toHTTPError net/http.toHTTPError
-func toHTTPError(err error) (msg string, httpStatus int)
-
 // name is '/'-separated, not filepath.Separator.
 func serveFile(w http.ResponseWriter, r *http.Request, fs http.FileSystem, name string) {
 	f, err := fs.Open(name)
@@ -66,24 +60,21 @@ func serveFile(w http.ResponseWriter, r *http.Request, fs http.FileSystem, name 
 		return
 	}
 
-	// serveContent will check modification time
-	sizeFunc := func() (int64, error) {
-		if size := d.Size(); size >= 0 {
-			return size, nil
-		}
-		return fileSize(f)
-	}
-	serveContent(w, r, d.Name(), d.ModTime(), sizeFunc, f)
+	http.ServeContent(w, r, d.Name(), d.ModTime(), f)
 }
 
-func fileSize(content http.File) (size int64, err error) {
-	size, err = content.Seek(0, io.SeekEnd)
-	if err != nil {
-		return
+// toHTTPError returns a non-specific HTTP error message and status code
+// for a given non-nil error value. It's important that toHTTPError does not
+// actually return err.Error(), since msg and httpStatus are returned to users,
+// and historically Go's ServeContent always returned just "404 Not Found" for
+// all errors. We don't want to start leaking information in error messages.
+func toHTTPError(err error) (msg string, httpStatus int) {
+	if errors.Is(err, fs.ErrNotExist) {
+		return "404 page not found", http.StatusNotFound
 	}
-	_, err = content.Seek(0, io.SeekStart)
-	if err != nil {
-		return
+	if errors.Is(err, fs.ErrPermission) {
+		return "403 Forbidden", http.StatusForbidden
 	}
-	return size, nil
+	// Default:
+	return "500 Internal Server Error", http.StatusInternalServerError
 }
