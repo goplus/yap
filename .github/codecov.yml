@@ -1,0 +1,9 @@
+coverage:
+  ignore:
+    - "ydb"
+    - "ytest"
+    - "test"
+    - "demo"
+    - "noredirect"
+    - "internal/url"
+    - "internal/htmltempl"
