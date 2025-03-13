@@ -1,0 +1,7 @@
+coverage:
+  ignore:
+    - "demo"
+    - "test"
+    - "noredirect"
+    - "internal/url"
+    - "internal/htmltempl"
