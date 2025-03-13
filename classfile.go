@@ -206,3 +206,7 @@ func (p *Context) Stream__1(code int, mime string, read io.Reader) {
 func (p *Context) Stream__2(read io.Reader, buf []byte) {
 	p.STREAM(200, "", read, buf)
 }
+
+func (p *Context) Stream__3(read io.Reader) {
+	p.STREAM(200, "", read, nil)
+}
