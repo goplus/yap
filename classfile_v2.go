@@ -38,7 +38,7 @@ func (p *Engine) ProtoHandle(pattern string, proto HandlerProto) {
 }
 
 // ProtoRoute registers a YAP handler with a prototype.
-func (p *router) ProtoRoute(method, path string, proto HandlerProto) {
+func (p *Engine) ProtoRoute(method, path string, proto HandlerProto) {
 	p.Route(method, path, func(ctx *Context) {
 		// ensure isolation of handler state per request
 		h := proto.Classclone().(HandlerProto)
