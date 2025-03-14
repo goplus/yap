@@ -40,3 +40,27 @@ func TestBasic(t *testing.T) {
 	})
 	y.Run(":8888")
 }
+
+type handler struct{}
+
+func (p *handler) Main(ctx *yap.Context) {
+	ctx.JSON(200, yap.H{
+		"msg": "Hello, YAP!",
+	})
+}
+
+func (p *handler) Classclone() any {
+	ret := *p
+	return &ret
+}
+
+func TestProto(t *testing.T) {
+	y := yap.New(os.DirFS("."))
+
+	y.ProtoHandle("/", new(handler))
+	y.ProtoRoute("GET", "/p/:id", new(handler))
+	y.SetLAS(func(addr string, h http.Handler) error {
+		return nil
+	})
+	y.Run(":8888")
+}
