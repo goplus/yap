@@ -26,6 +26,10 @@ func (this *get) Main(_gop_arg0 *yap.Context) {
 func (this *get) Classfname() string {
 	return "get"
 }
+func (this *get) Classclone() interface{} {
+	_gop_ret := *this
+	return &_gop_ret
+}
 //line demo/classfile2_hello/get_p_#id.yap:1
 func (this *get_p_id) Main(_gop_arg0 *yap.Context) {
 	this.Handler.Main(_gop_arg0)
@@ -34,6 +38,10 @@ func (this *get_p_id) Main(_gop_arg0 *yap.Context) {
 }
 func (this *get_p_id) Classfname() string {
 	return "get_p_#id"
+}
+func (this *get_p_id) Classclone() interface{} {
+	_gop_ret := *this
+	return &_gop_ret
 }
 func (this *AppV2) Main() {
 	yap.Gopt_AppV2_Main(this, new(get), new(get_p_id))

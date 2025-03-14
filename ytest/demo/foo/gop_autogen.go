@@ -15,12 +15,17 @@ type AppV2 struct {
 }
 //line ytest/demo/foo/get_p_#id.yap:1
 func (this *get_p_id) Main(_gop_arg0 *yap.Context) {
+//line ytest/demo/foo/foo_ytest.gox:6:1
 	this.Handler.Main(_gop_arg0)
 //line ytest/demo/foo/get_p_#id.yap:1:1
 	this.Json__1(map[string]string{"id": this.Gop_Env("id")})
 }
 func (this *get_p_id) Classfname() string {
 	return "get_p_#id"
+}
+func (this *get_p_id) Classclone() interface{} {
+	_gop_ret := *this
+	return &_gop_ret
 }
 func (this *AppV2) Main() {
 	yap.Gopt_AppV2_Main(this, new(get_p_id))

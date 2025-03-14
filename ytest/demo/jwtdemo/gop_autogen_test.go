@@ -30,9 +30,6 @@ func (this *case_jwtdemo) Main() {
 //line ytest/demo/jwtdemo/jwtdemo_ytest.gox:15:1
 	this.Json(map[string]string{"id": id})
 }
-func (this *case_jwtdemo) Classfname() string {
-	return "jwtdemo"
-}
 func Test_jwtdemo(t *testing.T) {
 	ytest.Gopt_CaseApp_TestMain(new(case_jwtdemo), t)
 }

@@ -22,7 +22,19 @@ import (
 	"testing"
 
 	"github.com/goplus/yap"
+	"github.com/qiniu/x/mockhttp"
 )
+
+// mock runs a YAP server by mockhttp.
+func mock(host string, app yap.AppType) *mockhttp.Transport {
+	tr := mockhttp.NewTransport()
+	app.InitYap()
+	app.SetLAS(func(addr string, h http.Handler) error {
+		return tr.ListenAndServe(host, h)
+	})
+	app.(interface{ Main() }).Main()
+	return tr
+}
 
 func TestBasic(t *testing.T) {
 	y := yap.New(os.DirFS("."))
@@ -39,4 +51,47 @@ func TestBasic(t *testing.T) {
 		return nil
 	})
 	y.Run(":8888")
+}
+
+type handler struct{}
+
+func (p *handler) Main(ctx *yap.Context) {
+	ctx.JSON(200, yap.H{
+		"msg": "Hello, YAP!",
+	})
+}
+
+func (p *handler) Classclone() any {
+	ret := *p
+	return &ret
+}
+
+type app struct {
+	*yap.Engine
+}
+
+func (app) Main() {
+}
+
+func TestProto(t *testing.T) {
+	y := yap.New(os.DirFS("."))
+
+	y.ProtoHandle("/", new(handler))
+	y.ProtoRoute("GET", "/p/:id", new(handler))
+	tr := mock("example.com", app{y})
+	y.Run(":8888")
+
+	c := http.Client{Transport: tr}
+
+	resp, err := c.Get("http://example.com/p/123")
+	if err != nil {
+		t.Fatal("GET /p/123 failed:", err)
+	}
+	defer resp.Body.Close()
+
+	resp, err = c.Get("http://example.com/")
+	if err != nil {
+		t.Fatal("GET / failed:", err)
+	}
+	defer resp.Body.Close()
 }

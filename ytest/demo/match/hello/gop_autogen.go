@@ -31,6 +31,10 @@ func (this *get_p_id) Main(_gop_arg0 *yap.Context) {
 func (this *get_p_id) Classfname() string {
 	return "get_p_#id"
 }
+func (this *get_p_id) Classclone() interface{} {
+	_gop_ret := *this
+	return &_gop_ret
+}
 
 type App struct {
 	ytest.App
@@ -49,9 +53,6 @@ func (this *hello) Main() {
 	this.Json(map[string]string{"id": id})
 //line ytest/demo/match/hello/hello_yapt.gox:11:1
 	fmt.Println("OK")
-}
-func (this *hello) Classfname() string {
-	return "hello"
 }
 func (this *AppV2) Main() {
 	yap.Gopt_AppV2_Main(this, new(get_p_id))
