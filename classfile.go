@@ -93,8 +93,8 @@ func (p *App) Static__2(pattern string, fs http.FileSystem, allowRedirect ...boo
 type AppType interface {
 	InitYap(fs ...fs.FS)
 	SetLAS(listenAndServe func(addr string, handler http.Handler) error)
-	Route(method, path string, handle func(ctx *Context))
-	Handle(pattern string, f func(ctx *Context))
+	ProtoRoute(method, path string, proto HandlerProto)
+	ProtoHandle(pattern string, proto HandlerProto)
 	Run(addr string, mws ...func(h http.Handler) http.Handler) error
 }
 

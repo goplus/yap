@@ -30,9 +30,6 @@ func (this *case_bar) Main() {
 //line ytest/demo/foo/bar_ytest.gox:7:1
 	this.Json(map[string]string{"id": id})
 }
-func (this *case_bar) Classfname() string {
-	return "bar"
-}
 //line ytest/demo/foo/foo_ytest.gox:1
 func (this *case_foo) Main() {
 //line ytest/demo/foo/foo_ytest.gox:1:1
@@ -45,9 +42,6 @@ func (this *case_foo) Main() {
 	this.RetWith(200)
 //line ytest/demo/foo/foo_ytest.gox:6:1
 	this.Json(map[string]string{"id": id})
-}
-func (this *case_foo) Classfname() string {
-	return "foo"
 }
 func Test_bar(t *testing.T) {
 	ytest.Gopt_CaseApp_TestMain(new(case_bar), t)

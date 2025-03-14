@@ -28,8 +28,10 @@ import (
 	"github.com/goplus/yap/noredirect"
 )
 
-type H map[string]interface{}
+type H map[string]any
 
+// Engine is the HTTP Web framework's instance,
+// it contains the muxer, middlewares and rendering templates.
 type Engine struct {
 	router
 	Mux *http.ServeMux
@@ -78,6 +80,7 @@ func (p *Engine) yapFS() fs.FS {
 	return p.fs
 }
 
+// NewContext returns a new Context instance.
 func (p *Engine) NewContext(w http.ResponseWriter, r *http.Request) *Context {
 	ctx := &Context{ResponseWriter: w, Request: r, engine: p}
 	return ctx
@@ -123,9 +126,9 @@ func (p *Engine) StaticHttp(pattern string, fsys http.FileSystem, allowRedirect 
 }
 
 // Handle registers the handler function for the given pattern.
-func (p *Engine) Handle(pattern string, f func(ctx *Context)) {
+func (p *Engine) Handle(pattern string, handle func(ctx *Context)) {
 	p.Mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		f(p.NewContext(w, r))
+		handle(p.NewContext(w, r))
 	})
 }
 

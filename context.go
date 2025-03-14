@@ -124,7 +124,7 @@ func (p *Context) DATA(code int, mime string, data []byte) {
 	w.Write(data)
 }
 
-func (p *Context) PrettyJSON(code int, data interface{}) {
+func (p *Context) PrettyJSON(code int, data any) {
 	msg, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		panic(err)
@@ -132,7 +132,7 @@ func (p *Context) PrettyJSON(code int, data interface{}) {
 	p.DATA(code, "application/json", msg)
 }
 
-func (p *Context) JSON(code int, data interface{}) {
+func (p *Context) JSON(code int, data any) {
 	msg, err := json.Marshal(data)
 	if err != nil {
 		panic(err)
@@ -140,7 +140,7 @@ func (p *Context) JSON(code int, data interface{}) {
 	p.DATA(code, "application/json", msg)
 }
 
-func (p *Context) YAP(code int, yapFile string, data interface{}) {
+func (p *Context) YAP(code int, yapFile string, data any) {
 	w := p.ResponseWriter
 	t := p.engine.templ(yapFile)
 	if t == nil {
