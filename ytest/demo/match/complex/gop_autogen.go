@@ -28,9 +28,6 @@ func (this *complex) Main() {
 //line ytest/demo/match/complex/complex_yapt.gox:13:1
 	test.Gopt_Case_MatchAny(this, d, "hello")
 }
-func (this *complex) Classfname() string {
-	return "complex"
-}
 func (this *App) Main() {
 	ytest.Gopt_App_Main(this, new(complex))
 }

@@ -25,14 +25,14 @@ import (
 // HandlerProto is the prototype of a YAP handler.
 type HandlerProto interface {
 	Main(ctx *Context)
-	Classclone() any
+	Classclone() HandlerProto
 }
 
 // ProtoHandle registers a YAP handler with a prototype.
 func (p *Engine) ProtoHandle(pattern string, proto HandlerProto) {
 	p.Mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		// ensure isolation of handler state per request
-		h := proto.Classclone().(HandlerProto)
+		h := proto.Classclone()
 		h.Main(p.NewContext(w, r))
 	})
 }
@@ -41,7 +41,7 @@ func (p *Engine) ProtoHandle(pattern string, proto HandlerProto) {
 func (p *Engine) ProtoRoute(method, path string, proto HandlerProto) {
 	p.Route(method, path, func(ctx *Context) {
 		// ensure isolation of handler state per request
-		h := proto.Classclone().(HandlerProto)
+		h := proto.Classclone()
 		h.Main(ctx)
 	})
 }

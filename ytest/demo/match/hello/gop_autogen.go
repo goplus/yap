@@ -31,7 +31,7 @@ func (this *get_p_id) Main(_gop_arg0 *yap.Context) {
 func (this *get_p_id) Classfname() string {
 	return "get_p_#id"
 }
-func (this *get_p_id) Classclone() interface{} {
+func (this *get_p_id) Classclone() yap.HandlerProto {
 	_gop_ret := *this
 	return &_gop_ret
 }
