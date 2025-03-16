@@ -56,9 +56,7 @@ func TestBasic(t *testing.T) {
 type handler struct{}
 
 func (p *handler) Main(ctx *yap.Context) {
-	ctx.JSON(200, yap.H{
-		"msg": "Hello, YAP!",
-	})
+	ctx.TEXT(200, "text/html", `<html><body>Hello, <a href="/p/123">YAP</a>!</body></html>`)
 }
 
 func (p *handler) Classclone() yap.HandlerProto {
