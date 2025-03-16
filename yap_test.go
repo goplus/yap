@@ -61,7 +61,7 @@ func (p *handler) Main(ctx *yap.Context) {
 	})
 }
 
-func (p *handler) Classclone() any {
+func (p *handler) Classclone() yap.HandlerProto {
 	ret := *p
 	return &ret
 }
