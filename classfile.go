@@ -171,27 +171,27 @@ func (p *Context) Html__3(text []byte) {
 	p.DATA(200, mimeHtml, text)
 }
 
-func (p *Context) Json__0(code int, data interface{}) {
+func (p *Context) Json__0(code int, data any) {
 	p.JSON(code, data)
 }
 
-func (p *Context) Json__1(data interface{}) {
+func (p *Context) Json__1(data any) {
 	p.JSON(200, data)
 }
 
-func (p *Context) PrettyJson__0(code int, data interface{}) {
+func (p *Context) PrettyJson__0(code int, data any) {
 	p.PrettyJSON(code, data)
 }
 
-func (p *Context) PrettyJson__1(data interface{}) {
+func (p *Context) PrettyJson__1(data any) {
 	p.PrettyJSON(200, data)
 }
 
-func (p *Context) Yap__0(code int, yapFile string, data interface{}) {
+func (p *Context) Yap__0(code int, yapFile string, data any) {
 	p.YAP(code, yapFile, data)
 }
 
-func (p *Context) Yap__1(yapFile string, data interface{}) {
+func (p *Context) Yap__1(yapFile string, data any) {
 	p.YAP(200, yapFile, data)
 }
 

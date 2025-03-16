@@ -30,9 +30,6 @@ func (this *simple) Main() {
 //line ytest/demo/match/simple/simple_yapt.gox:6:1
 	test.Gopt_Case_MatchAny(this, id, 5)
 }
-func (this *simple) Classfname() string {
-	return "simple"
-}
 func (this *App) Main() {
 	ytest.Gopt_App_Main(this, new(simple))
 }

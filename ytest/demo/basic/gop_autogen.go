@@ -20,4 +20,6 @@ func (this *foo) Main() {
 	})
 }
 func main() {
+//line ytest/demo/basic/foo_ytest.gox:5:1
+	new(foo).Main()
 }

@@ -34,12 +34,13 @@ func (this *get) Main(_gop_arg0 *yap.Context) {
 func (this *get) Classfname() string {
 	return "get"
 }
-func (this *get) Classclone() interface{} {
+func (this *get) Classclone() yap.HandlerProto {
 	_gop_ret := *this
 	return &_gop_ret
 }
 //line demo/classfile2_blog/get_p_#id.yap:1
 func (this *get_p_id) Main(_gop_arg0 *yap.Context) {
+//line demo/classfile2_blog/get.yap:1:1
 	this.Handler.Main(_gop_arg0)
 //line demo/classfile2_blog/get_p_#id.yap:1:1
 	this.Yap__1("article", map[string]string{"id": this.Gop_Env("id")})
@@ -47,10 +48,11 @@ func (this *get_p_id) Main(_gop_arg0 *yap.Context) {
 func (this *get_p_id) Classfname() string {
 	return "get_p_#id"
 }
-func (this *get_p_id) Classclone() interface{} {
+func (this *get_p_id) Classclone() yap.HandlerProto {
 	_gop_ret := *this
 	return &_gop_ret
 }
 func main() {
+//line demo/classfile2_blog/get_p_#id.yap:1:1
 	new(AppV2).Main()
 }

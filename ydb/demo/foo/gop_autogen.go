@@ -225,9 +225,6 @@ func (this *articles) Main() {
 //line ydb/demo/foo/articles_ydb.gox:135:1
 	this.Ret(test.Set__2(doc2.ArticleEntry, doc3.ArticleEntry))
 }
-func (this *articles) Classfname() string {
-	return "articles"
-}
 
 var ErrNoEmailAndTel = errors.New("no email and telephone")
 var rnd = rand.New(rand.NewSource(time.Now().UnixMicro()))
@@ -323,9 +320,6 @@ func (this *users) Main() {
 	this.Gop_Exec("login", "user", "pwd")
 //line ydb/demo/foo/users_ydb.gox:58:1
 	this.Ret(true)
-}
-func (this *users) Classfname() string {
-	return "users"
 }
 func (this *AppGen) Main() {
 	ydb.Gopt_AppGen_Main(this, new(articles), new(users))

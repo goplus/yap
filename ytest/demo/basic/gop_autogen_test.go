@@ -31,9 +31,6 @@ func (this *case_foo) Main() {
 		this.Json(map[string]string{"id": id})
 	})
 }
-func (this *case_foo) Classfname() string {
-	return "foo"
-}
 func Test_foo(t *testing.T) {
 	ytest.Gopt_CaseApp_TestMain(new(case_foo), t)
 }
