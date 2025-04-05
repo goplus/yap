@@ -21,6 +21,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/goplus/yap/test"
 )
@@ -94,7 +95,7 @@ func (p *Response) RawBody() []byte {
 func (p *Response) Body() (ret any) {
 	if p.mime == mimeNone {
 		mime := p.header.Get("Content-Type")
-		switch mime {
+		switch mimeTypeOf(mime) {
 		case mimeJson:
 			if err := json.Unmarshal(p.raw, &ret); err != nil {
 				test.Fatal("json.Unmarshal resp.Body:", err)
@@ -119,8 +120,15 @@ func (p *Response) Body() (ret any) {
 func (p *Response) matchBody(t CaseT, bodyType string, body any) {
 	t.Helper()
 	mime := p.header.Get("Content-Type")
-	if mime != bodyType {
+	if mimeTypeOf(mime) != bodyType {
 		t.Fatalf("resp.MatchBody: unmatched mime type - got: %s, expected: %s\n", mime, bodyType)
 	}
 	test.Gopt_Case_MatchAny(t, body, p.Body())
+}
+
+func mimeTypeOf(mime string) string {
+	if pos := strings.IndexByte(mime, ';'); pos > 0 {
+		mime = mime[:pos]
+	}
+	return mime
 }

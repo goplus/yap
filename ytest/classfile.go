@@ -49,6 +49,11 @@ func (p *App) initApp() *App {
 	return p
 }
 
+// Gop_Env retrieves the value of the environment variable named by the key.
+func (p *App) Gop_Env(key string) string {
+	return os.Getenv(key)
+}
+
 // Mock runs a YAP server by mockhttp.
 func (p *App) Mock(host string, app yap.AppType) {
 	tr := mockhttp.NewTransport()
