@@ -1,0 +1,20 @@
+host "https://api.weixin.qq.com"
+
+errcode := Var(int)
+errmsg := Var(string)
+token := Var(string)
+expires := Var(float64)
+
+get "/cgi-bin/token?grant_type=client_credential&appid=${WECHAT_AK}&secret=${WECHAT_SK}"
+ret 200
+json {
+    "errcode": errcode,
+    "errmsg": errmsg,
+    "access_token": token,
+    "expires_in": expires,
+}
+if errcode.ok {
+    echo errcode, errmsg
+} else {
+    echo token, expires
+}

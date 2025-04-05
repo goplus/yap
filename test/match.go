@@ -305,6 +305,9 @@ retry:
 		case *Var__0[string]:
 			ev.Match(t, gv.Val(), name...)
 			return
+		case nil:
+			ev.MatchNil(t, name...)
+			return
 		}
 	case *Var__0[int]:
 		switch gv := got.(type) {
@@ -313,6 +316,9 @@ retry:
 			return
 		case *Var__0[int]:
 			ev.Match(t, gv.Val(), name...)
+			return
+		case nil:
+			ev.MatchNil(t, name...)
 			return
 		}
 	case *Var__0[bool]:
@@ -323,6 +329,9 @@ retry:
 		case *Var__0[bool]:
 			ev.Match(t, gv.Val(), name...)
 			return
+		case nil:
+			ev.MatchNil(t, name...)
+			return
 		}
 	case *Var__0[float64]:
 		switch gv := got.(type) {
@@ -331,6 +340,9 @@ retry:
 			return
 		case *Var__0[float64]:
 			ev.Match(t, gv.Val(), name...)
+			return
+		case nil:
+			ev.MatchNil(t, name...)
 			return
 		}
 	case *Var__1[map[string]any]:
@@ -404,7 +416,7 @@ func (p *Var__0[T]) check() {
 	}
 }
 
-func (p *Var__0[T]) Valid() bool {
+func (p *Var__0[T]) Ok() bool {
 	return p.valid
 }
 
@@ -442,6 +454,13 @@ func (p *Var__0[T]) Match(t CaseT, v T, name ...string) {
 	Gopt_Case_MatchTBase(t, p.val, v, name...)
 }
 
+func (p *Var__0[T]) MatchNil(t CaseT, name ...string) {
+	if p.valid {
+		t.Helper()
+		t.Fatalf("unmatched%s - expected: nil, got: %v\n", nameCtx(name), p.val)
+	}
+}
+
 // -----------------------------------------------------------------------------
 
 type Var__1[T map[string]any] struct {
@@ -454,7 +473,7 @@ func (p *Var__1[T]) check() {
 	}
 }
 
-func (p *Var__1[T]) Valid() bool {
+func (p *Var__1[T]) Ok() bool {
 	return p.val != nil
 }
 
@@ -494,7 +513,7 @@ func (p *Var__2[T]) check() {
 	}
 }
 
-func (p *Var__2[T]) Valid() bool {
+func (p *Var__2[T]) Ok() bool {
 	return p.valid
 }
 
@@ -535,7 +554,7 @@ func (p *Var__3[T]) check() {
 	}
 }
 
-func (p *Var__3[T]) Valid() bool {
+func (p *Var__3[T]) Ok() bool {
 	return p.valid
 }
 

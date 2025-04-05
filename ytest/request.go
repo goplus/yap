@@ -47,6 +47,9 @@ type Request struct {
 }
 
 func newRequest(ctx *Case, method, url string) *Request {
+	if strings.HasPrefix(url, "/") {
+		url = ctx.host + url
+	}
 	return &Request{
 		method: method,
 		url:    url,

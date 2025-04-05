@@ -3,6 +3,7 @@ coverage:
     - "ydb"
     - "ytest"
     - "test"
+    - "cmd"
     - "demo"
     - "noredirect"
     - "internal/url"

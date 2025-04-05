@@ -32,6 +32,8 @@ type Case struct {
 	test.Case
 	app *App
 
+	host string
+
 	DefaultHeader http.Header
 }
 
@@ -44,6 +46,19 @@ func (p *Case) initCase(app *App, t CaseT) {
 // T returns the testing object.
 func (p *Case) T() CaseT {
 	return p.CaseT
+}
+
+// Host replaces a host into real. For example:
+//
+//	host "https://example.com", "http://localhost:8080"
+//	host "http://example.com", "http://localhost:8888"
+func (p *Case) Host__0(host, real string) {
+	p.app.Host(host, real)
+}
+
+// Host sets the host for the following requests.
+func (p *Case) Host__1(host string) {
+	p.host = host
 }
 
 // Req create a new request given a method and url.
