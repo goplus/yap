@@ -23,8 +23,8 @@ import (
 	"reflect"
 	"runtime/debug"
 
-	"github.com/goplus/yap/test"
-	"github.com/goplus/yap/test/logt"
+	"github.com/qiniu/x/test"
+	"github.com/qiniu/x/test/logt"
 )
 
 var (

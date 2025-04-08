@@ -7,7 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
-	"github.com/goplus/yap/test"
+	"github.com/qiniu/x/test"
 	"github.com/goplus/yap/ydb"
 	_ "github.com/goplus/yap/ydb/mysql"
 	_ "github.com/goplus/yap/ydb/sqlite3"

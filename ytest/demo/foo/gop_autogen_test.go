@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/goplus/yap/test"
+	"github.com/qiniu/x/test"
 	"github.com/goplus/yap/ytest"
 	"github.com/qiniu/x/stringutil"
 	"testing"

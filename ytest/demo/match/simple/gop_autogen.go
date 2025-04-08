@@ -4,7 +4,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/goplus/yap/test"
+	"github.com/qiniu/x/test"
 	"github.com/goplus/yap/ytest"
 )
 

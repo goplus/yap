@@ -25,8 +25,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/goplus/yap/test"
 	"github.com/goplus/yap/ytest/auth"
+	"github.com/qiniu/x/test"
 )
 
 type RequestBody interface {

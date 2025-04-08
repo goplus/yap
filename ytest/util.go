@@ -21,9 +21,9 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/goplus/yap/test"
 	"github.com/goplus/yap/ytest/auth"
 	"github.com/goplus/yap/ytest/auth/bearer"
+	"github.com/qiniu/x/test"
 )
 
 // -----------------------------------------------------------------------------

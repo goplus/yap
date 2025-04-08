@@ -26,13 +26,13 @@ import (
 	"testing"
 
 	"github.com/goplus/yap"
-	"github.com/goplus/yap/test"
-	"github.com/goplus/yap/test/logt"
 	"github.com/qiniu/x/mockhttp"
+	"github.com/qiniu/x/test"
+	"github.com/qiniu/x/test/logt"
 )
 
 const (
-	GopPackage   = "github.com/goplus/yap/test"
+	GopPackage   = "github.com/qiniu/x/test"
 	GopTestClass = true
 )
 
