@@ -3,9 +3,9 @@
 package main
 
 import (
-	"github.com/qiniu/x/test"
 	"github.com/goplus/yap/ytest"
 	"github.com/qiniu/x/stringutil"
+	"github.com/qiniu/x/test"
 	"testing"
 )
 

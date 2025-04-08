@@ -38,6 +38,19 @@ const (
 
 // -----------------------------------------------------------------------------
 
+type MainApp struct {
+}
+
+// Gopt_MainApp_TestMain is required by Go+ compiler as the TestMain entry of a YAP testing project.
+func Gopt_MainApp_TestMain(app any, m *testing.M) {
+	if me, ok := app.(interface{ MainEntry() }); ok {
+		me.MainEntry()
+	}
+	os.Exit(m.Run())
+}
+
+// -----------------------------------------------------------------------------
+
 type App struct {
 	hosts     map[string]string
 	transport http.RoundTripper
@@ -87,15 +100,6 @@ func (p *App) RunMock(host string, h http.Handler) {
 func (p *App) RunTestServer(host string, h http.Handler) {
 	svr := httptest.NewServer(h)
 	p.Host("http://"+host, svr.URL)
-}
-
-// Gopt_App_TestMain is required by Go+ compiler as the TestMain entry of a YAP testing project.
-func Gopt_App_TestMain(app interface{ initApp() *App }, m *testing.M) {
-	app.initApp()
-	if me, ok := app.(interface{ MainEntry() }); ok {
-		me.MainEntry()
-	}
-	os.Exit(m.Run())
 }
 
 // Gopt_App_Main is required by Go+ compiler as the Main entry of a YAP testing project.
