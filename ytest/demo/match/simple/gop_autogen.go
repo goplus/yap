@@ -4,8 +4,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/qiniu/x/test"
 	"github.com/goplus/yap/ytest"
+	"github.com/qiniu/x/test"
 )
 
 const _ = true

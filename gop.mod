@@ -12,7 +12,7 @@ class _yapt.gox Case
 
 import github.com/goplus/yap/ytest/auth/jwt
 
-project _ytest.gox App github.com/goplus/yap/ytest github.com/qiniu/x/test
+project _ytest.gox MainApp github.com/goplus/yap/ytest github.com/qiniu/x/test
 
 class _ytest.gox CaseApp
 
