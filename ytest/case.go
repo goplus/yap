@@ -20,7 +20,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/goplus/yap/test"
+	"github.com/qiniu/x/test"
 )
 
 // -----------------------------------------------------------------------------

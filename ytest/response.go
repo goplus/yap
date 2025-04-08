@@ -23,7 +23,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/goplus/yap/test"
+	"github.com/qiniu/x/test"
 )
 
 type Response struct {

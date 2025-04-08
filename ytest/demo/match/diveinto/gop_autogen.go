@@ -5,7 +5,7 @@ package main
 import (
 	"fmt"
 	"github.com/goplus/yap"
-	"github.com/goplus/yap/test"
+	"github.com/qiniu/x/test"
 	"github.com/goplus/yap/ytest"
 	"github.com/qiniu/x/stringutil"
 )
