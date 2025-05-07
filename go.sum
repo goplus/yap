@@ -6,5 +6,5 @@ github.com/golang-jwt/jwt/v5 v5.2.2 h1:Rl4B7itRWVtYIHFrSNd7vhTiz9UpLdi6gZhZ3wEeD
 github.com/golang-jwt/jwt/v5 v5.2.2/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVIyoH402zdk=
 github.com/mattn/go-sqlite3 v1.14.28 h1:ThEiQrnbtumT+QMknw63Befp/ce/nUPgBPMlRFEum7A=
 github.com/mattn/go-sqlite3 v1.14.28/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
-github.com/qiniu/x v1.13.17 h1:x5GJNg3rN2PagEZ5JvXmusoIaK1iaGGppFK41i0VAis=
-github.com/qiniu/x v1.13.17/go.mod h1:AiovSOCaRijaf3fj+0CBOpR1457pn24b0Vdb1JpwhII=
+github.com/qiniu/x v1.14.0 h1:Dv30khHR5b1tA4ewilu8lsa5t/NTtGU435FApM4Q/SQ=
+github.com/qiniu/x v1.14.0/go.mod h1:AiovSOCaRijaf3fj+0CBOpR1457pn24b0Vdb1JpwhII=
