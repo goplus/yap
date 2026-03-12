@@ -26,7 +26,7 @@ type AppV2 struct {
 
 func (this *AppV2) Main() {
 	_xgo_obj0 := &get_p_id{AppV2: this}
-	yap.Gopt_AppV2_Main(this, _xgo_obj0)
+	yap.XGot_AppV2_Main(this, _xgo_obj0)
 }
 //line ytest/demo/match/diveinto/get_p_#id.yap:1
 func (this *get_p_id) Main(_xgo_arg0 *yap.Context) {
@@ -48,7 +48,7 @@ type App struct {
 
 func (this *App) Main() {
 	_xgo_obj0 := &hello{App: this}
-	ytest.Gopt_App_Main(this, _xgo_obj0)
+	ytest.XGot_App_Main(this, _xgo_obj0)
 }
 //line ytest/demo/match/diveinto/hello_yapt.gox:1
 func (this *hello) Main() {

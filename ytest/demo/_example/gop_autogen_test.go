@@ -2,13 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/goplus/yap/ytest"
 	"testing"
+
+	"github.com/goplus/yap/ytest"
 )
 
 type case_example struct {
 	ytest.Case
 }
+
 //line ytest/demo/_example/example_ytest.gox:1
 func (this *case_example) Main() {
 //line ytest/demo/_example/example_ytest.gox:1:1
@@ -85,5 +87,5 @@ func (this *case_example) Main() {
 	})
 }
 func Test_example(t *testing.T) {
-	ytest.Gopt_Case_TestMain(new(case_example), t)
+	ytest.XGot_Case_TestMain(new(case_example), t)
 }

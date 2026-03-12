@@ -9,6 +9,7 @@ const _ = true
 type blog struct {
 	yap.App
 }
+
 //line demo/classfile_blog/blog_yap.gox:1
 func (this *blog) MainEntry() {
 //line demo/classfile_blog/blog_yap.gox:1:1
@@ -25,7 +26,7 @@ func (this *blog) MainEntry() {
 	this.Run(":8888")
 }
 func (this *blog) Main() {
-	yap.Gopt_App_Main(this)
+	yap.XGot_App_Main(this)
 }
 func main() {
 	new(blog).Main()

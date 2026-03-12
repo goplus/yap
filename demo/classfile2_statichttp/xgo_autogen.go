@@ -12,6 +12,7 @@ const _ = true
 type AppV2 struct {
 	yap.AppV2
 }
+
 //line demo/classfile2_statichttp/main.yap:3
 func (this *AppV2) MainEntry() {
 //line demo/classfile2_statichttp/main.yap:3:1
@@ -20,7 +21,7 @@ func (this *AppV2) MainEntry() {
 	this.Run(":8080")
 }
 func (this *AppV2) Main() {
-	yap.Gopt_AppV2_Main(this)
+	yap.XGot_AppV2_Main(this)
 }
 func main() {
 	new(AppV2).Main()

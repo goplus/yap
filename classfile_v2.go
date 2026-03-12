@@ -78,8 +78,8 @@ type iHandlerProto interface {
 	Classfname() string
 }
 
-// Gopt_AppV2_Main is required by XGo compiler as the entry of a YAP project.
-func Gopt_AppV2_Main(app AppType, handlers ...iHandlerProto) {
+// XGot_AppV2_Main is required by XGo compiler as the entry of a YAP project.
+func XGot_AppV2_Main(app AppType, handlers ...iHandlerProto) {
 	app.InitYap()
 	for _, h := range handlers {
 		reflect.ValueOf(h).Elem().Field(1).Set(reflect.ValueOf(app)) // (*handler).AppV2 = app

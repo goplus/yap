@@ -135,9 +135,9 @@ func (this *articles) Main() {
 //line ydb/demo/foo/articles_ydb.gox:67:1
 	this.Engine__0("mysql")
 //line ydb/demo/foo/articles_ydb.gox:69:1
-	ydb.Gopt_Sql_Gopx_Table[Article](this, "v0.1.0")
+	ydb.XGot_Sql_Gopx_Table[Article](this, "v0.1.0")
 //line ydb/demo/foo/articles_ydb.gox:70:1
-	ydb.Gopt_Sql_Gopx_Table[Tag](this, "v0.1.0")
+	ydb.XGot_Sql_Gopx_Table[Tag](this, "v0.1.0")
 //line ydb/demo/foo/articles_ydb.gox:72:1
 	this.Use("article")
 //line ydb/demo/foo/articles_ydb.gox:74:1
@@ -195,7 +195,7 @@ func (this *articles) Main() {
 //line ydb/demo/foo/articles_ydb.gox:108:1
 	this.Gop_Exec("get", "unknown")
 //line ydb/demo/foo/articles_ydb.gox:109:1
-	test.Gopt_Case_MatchAny(this, this.Out(1), ydb.ErrNoRows)
+	test.XGot_Case_MatchAny(this, this.Out(1), ydb.ErrNoRows)
 //line ydb/demo/foo/articles_ydb.gox:111:1
 	this.Gop_Exec("setTags", doc1.Id, "tag1", "tag2")
 //line ydb/demo/foo/articles_ydb.gox:112:1
@@ -313,7 +313,7 @@ func (this *users) Main() {
 //line ydb/demo/foo/users_ydb.gox:42:1
 	this.Engine__0("sqlite3")
 //line ydb/demo/foo/users_ydb.gox:44:1
-	ydb.Gopt_Sql_Gopx_Table[User](this, "user v0.1.0")
+	ydb.XGot_Sql_Gopx_Table[User](this, "user v0.1.0")
 //line ydb/demo/foo/users_ydb.gox:46:1
 	this.Use("user")
 //line ydb/demo/foo/users_ydb.gox:48:1
@@ -338,7 +338,7 @@ func (this *users) Main() {
 	this.Ret(true)
 }
 func (this *AppGen) Main() {
-	ydb.Gopt_AppGen_Main(this, new(articles), new(users))
+	ydb.XGot_AppGen_Main(this, new(articles), new(users))
 }
 func main() {
 	new(AppGen).Main()

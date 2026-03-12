@@ -103,8 +103,8 @@ var (
 	_ AppType = (*Engine)(nil)
 )
 
-// Gopt_App_Main is required by XGo compiler as the entry of a YAP project.
-func Gopt_App_Main(app AppType) {
+// XGot_App_Main is required by XGo compiler as the entry of a YAP project.
+func XGot_App_Main(app AppType) {
 	app.InitYap()
 	app.(interface{ MainEntry() }).MainEntry()
 }

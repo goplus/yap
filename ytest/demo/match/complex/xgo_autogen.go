@@ -20,7 +20,7 @@ type App struct {
 
 func (this *App) Main() {
 	_xgo_obj0 := &complex{App: this}
-	ytest.Gopt_App_Main(this, _xgo_obj0)
+	ytest.XGot_App_Main(this, _xgo_obj0)
 }
 //line ytest/demo/match/complex/complex_yapt.gox:1
 func (this *complex) Main() {

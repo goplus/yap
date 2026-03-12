@@ -28,7 +28,7 @@ type AppV2 struct {
 }
 
 func (p *AppV2) Main() {
-	yap.Gopt_AppV2_Main(p, &handlerV2{fname: "get_p_#id"}, &handlerV2{fname: "handle"})
+	yap.XGot_AppV2_Main(p, &handlerV2{fname: "get_p_#id"}, &handlerV2{fname: "handle"})
 }
 
 type handlerV2 struct {

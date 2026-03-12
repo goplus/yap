@@ -112,7 +112,7 @@ func dbName(fldName string) string {
 }
 
 // Table creates a new table by specified Schema.
-func Gopt_Sql_Gopx_Table[Schema any](sql interface{ defineTable(string, any) }, nameVer string) {
+func XGot_Sql_Gopx_Table[Schema any](sql interface{ defineTable(string, any) }, nameVer string) {
 	sql.defineTable(nameVer, (*Schema)(nil))
 }
 
@@ -141,7 +141,7 @@ type AppGen struct {
 func (p *AppGen) initApp() {
 }
 
-func Gopt_AppGen_Main(app interface{ initApp() }, workers ...interface{ initClass(self any) }) {
+func XGot_AppGen_Main(app interface{ initApp() }, workers ...interface{ initClass(self any) }) {
 	flag.BoolVar(&debugExec, "v", false, "verbose infromation")
 	flag.Parse()
 	app.initApp()

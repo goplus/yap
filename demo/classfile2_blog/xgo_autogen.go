@@ -17,6 +17,7 @@ type get_p_id struct {
 type AppV2 struct {
 	yap.AppV2
 }
+
 //line demo/classfile2_blog/main.yap:1
 func (this *AppV2) MainEntry() {
 //line demo/classfile2_blog/main.yap:1:1
@@ -25,8 +26,9 @@ func (this *AppV2) MainEntry() {
 func (this *AppV2) Main() {
 	_xgo_obj0 := &get{AppV2: this}
 	_xgo_obj1 := &get_p_id{AppV2: this}
-	yap.Gopt_AppV2_Main(this, _xgo_obj0, _xgo_obj1)
+	yap.XGot_AppV2_Main(this, _xgo_obj0, _xgo_obj1)
 }
+
 //line demo/classfile2_blog/get.yap:1
 func (this *get) Main(_xgo_arg0 *yap.Context) {
 	this.Handler.Main(_xgo_arg0)
@@ -40,6 +42,7 @@ func (this *get) Classclone() yap.HandlerProto {
 	_xgo_ret := *this
 	return &_xgo_ret
 }
+
 //line demo/classfile2_blog/get_p_#id.yap:1
 func (this *get_p_id) Main(_xgo_arg0 *yap.Context) {
 	this.Handler.Main(_xgo_arg0)
