@@ -1,7 +1,7 @@
-yaptest - Go+ HTTP Test Framework
+yaptest - XGo HTTP Test Framework
 =====
-[![Language](https://img.shields.io/badge/language-Go+-blue.svg)](https://github.com/goplus/gop)
-[![GitHub release](https://img.shields.io/github/v/tag/goplus/gop.svg?label=Go%2b+release)](https://github.com/goplus/gop/releases)
+[![Language](https://img.shields.io/badge/language-XGo-blue.svg)](https://github.com/goplus/xgo)
+[![GitHub release](https://img.shields.io/github/v/tag/goplus/xgo.svg?label=XGo+release)](https://github.com/goplus/xgo/releases)
 [![Discord](https://img.shields.io/badge/Discord-online-success.svg?logo=discord&logoColor=white)](https://discord.gg/mYjWCJDcAr)
 [![GoDoc](https://pkg.go.dev/badge/github.com/goplus/yap/ytest.svg)](https://pkg.go.dev/github.com/goplus/yap/ytest)
 

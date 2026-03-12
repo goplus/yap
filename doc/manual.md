@@ -1,7 +1,7 @@
-yap - Yet Another Go/Go+ HTTP Web Framework
+yap - Yet Another Go/XGo HTTP Web Framework
 ======
 
-This repo contains three [Go+ classfiles](https://github.com/goplus/gop/blob/main/doc/classfile.md): `yap` (a HTTP Web Framework), `yaptest` (a HTTP Test Framework) and `ydb` (a Go+ Database Framework).
+This repo contains three [XGo classfiles](https://github.com/goplus/xgo/blob/main/doc/classfile.md): `yap` (a HTTP Web Framework), `yaptest` (a HTTP Test Framework) and `ydb` (a XGo Database Framework).
 
 The classfile `yap` has the file suffix `.yap`. The classfile `yaptest` has the file suffix `_ytest.gox`. And the classfile `ydb` has the file suffix `_ydb.gox`.
 
@@ -33,7 +33,7 @@ func main() {
 }
 ```
 
-demo in Go+ classfile v1 ([main.yap](../demo/classfile_hello/main.yap)):
+demo in XGo classfile v1 ([main.yap](../demo/classfile_hello/main.yap)):
 
 ```go
 get "/", ctx => {
@@ -48,7 +48,7 @@ get "/p/:id", ctx => {
 run "localhost:8080"
 ```
 
-demo in Go+ classfile v2 ([get.yap](../demo/classfile2_hello/get.yap), [get_p_#id.yap](../demo/classfile2_hello/get_p_%23id.yap)):
+demo in XGo classfile v2 ([get.yap](../demo/classfile2_hello/get.yap), [get_p_#id.yap](../demo/classfile2_hello/get_p_%23id.yap)):
 
 * [get.yap](../demo/classfile2_hello/get.yap):
 
@@ -77,7 +77,7 @@ y.Static("/") // means: y.Static("/", y.FS("static"))
 y.Run(":8080")
 ```
 
-Static files server demo in Go+ classfile ([main.yap](../demo/classfile2_static/main.yap)):
+Static files server demo in XGo classfile ([main.yap](../demo/classfile2_static/main.yap)):
 
 ```go
 static "/foo", FS("public")
@@ -118,7 +118,7 @@ y.GET("/p/:id", func(ctx *yap.Context) {
 y.Run(":8888")
 ```
 
-demo in Go+ classfile v1 ([main.yap](../demo/classfile_blog/blog_yap.gox), [article_yap.html](../demo/classfile_blog/yap/article_yap.html)):
+demo in XGo classfile v1 ([main.yap](../demo/classfile_blog/blog_yap.gox), [article_yap.html](../demo/classfile_blog/yap/article_yap.html)):
 
 ```go
 get "/p/:id", ctx => {
@@ -130,7 +130,7 @@ get "/p/:id", ctx => {
 run ":8888"
 ```
 
-demo in Go+ classfile v2 ([get_p_#id.yap](../demo/classfile2_blog/get_p_%23id.yap), [article_yap.html](../demo/classfile2_blog/yap/article_yap.html)):
+demo in XGo classfile v2 ([get_p_#id.yap](../demo/classfile2_blog/get_p_%23id.yap), [article_yap.html](../demo/classfile2_blog/yap/article_yap.html)):
 
 ```go
 yap "article", {
@@ -181,4 +181,4 @@ json {
 
 The directive `testServer` creates the web server by [net/http/httptest](https://pkg.go.dev/net/http/httptest#NewServer) and obtained a random port as the service address. Then it calls the directive [host](https://pkg.go.dev/github.com/goplus/yap/ytest#App.Host) to map the random service address to `foo.com`. This makes all other code no need to changed.
 
-For more details, see [yaptest - Go+ HTTP Test Framework](../ytest).
+For more details, see [yaptest - XGo HTTP Test Framework](../ytest).

@@ -147,7 +147,7 @@ type CaseApp struct {
 	*App
 }
 
-// Gopt_CaseApp_TestMain is required by Go+ compiler as the entry of a YAP test case.
+// Gopt_CaseApp_TestMain is required by XGo compiler as the entry of a YAP test case.
 func Gopt_CaseApp_TestMain(c interface{ initCaseApp(*App, CaseT) }, t *testing.T) {
 	app := new(App).initApp()
 	c.initCaseApp(app, test.NewT(t))

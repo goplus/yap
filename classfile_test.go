@@ -39,7 +39,7 @@ type handlerV2 struct {
 
 func (p *handlerV2) Main(ctx *yap.Context) {
 	p.Handler.Main(ctx)
-	ctx.Json__1(yap.H{"msg": "Hello, Go+!"})
+	ctx.Json__1(yap.H{"msg": "Hello, XGo!"})
 }
 
 func (p *handlerV2) Classfname() string {

@@ -51,7 +51,7 @@ type Handler struct {
 	Context
 }
 
-// Main is required by Go+ compiler as the entry of a YAP HTTP handler.
+// Main is required by XGo compiler as the entry of a YAP HTTP handler.
 func (p *Handler) Main(ctx *Context) {
 	p.Context = *ctx
 }
@@ -78,7 +78,7 @@ type iHandlerProto interface {
 	Classfname() string
 }
 
-// Gopt_AppV2_Main is required by Go+ compiler as the entry of a YAP project.
+// Gopt_AppV2_Main is required by XGo compiler as the entry of a YAP project.
 func Gopt_AppV2_Main(app AppType, handlers ...iHandlerProto) {
 	app.InitYap()
 	for _, h := range handlers {
