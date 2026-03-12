@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/goplus/yap"
 	"github.com/goplus/yap/ytest"
 	"github.com/qiniu/x/stringutil"
@@ -28,7 +27,6 @@ func (this *AppV2) Main() {
 	_xgo_obj0 := &get_p_id{AppV2: this}
 	yap.XGot_AppV2_Main(this, _xgo_obj0)
 }
-
 //line ytest/demo/match/hello/get_p_#id.yap:1
 func (this *get_p_id) Main(_xgo_arg0 *yap.Context) {
 	this.Handler.Main(_xgo_arg0)
@@ -51,7 +49,6 @@ func (this *App) Main() {
 	_xgo_obj0 := &hello{App: this}
 	ytest.XGot_App_Main(this, _xgo_obj0)
 }
-
 //line ytest/demo/match/hello/hello_yapt.gox:1
 func (this *hello) Main() {
 //line ytest/demo/match/hello/hello_yapt.gox:1:1

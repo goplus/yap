@@ -12,7 +12,6 @@ const _ = true
 type AppV2 struct {
 	yap.AppV2
 }
-
 //line demo/classfile2_statichttp/main.yap:3
 func (this *AppV2) MainEntry() {
 //line demo/classfile2_statichttp/main.yap:3:1

@@ -18,7 +18,6 @@ func (this *AppV2) Main() {
 	_xgo_obj0 := &get_p_id{AppV2: this}
 	yap.XGot_AppV2_Main(this, _xgo_obj0)
 }
-
 //line ytest/demo/foo/get_p_#id.yap:1
 func (this *get_p_id) Main(_xgo_arg0 *yap.Context) {
 	this.Handler.Main(_xgo_arg0)
