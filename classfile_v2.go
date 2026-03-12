@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 The GoPlus Authors (goplus.org). All rights reserved.
+ * Copyright (c) 2023 The XGo Authors (xgo.dev). All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ type Handler struct {
 	Context
 }
 
-// Main is required by Go+ compiler as the entry of a YAP HTTP handler.
+// Main is required by XGo compiler as the entry of a YAP HTTP handler.
 func (p *Handler) Main(ctx *Context) {
 	p.Context = *ctx
 }
@@ -78,8 +78,8 @@ type iHandlerProto interface {
 	Classfname() string
 }
 
-// Gopt_AppV2_Main is required by Go+ compiler as the entry of a YAP project.
-func Gopt_AppV2_Main(app AppType, handlers ...iHandlerProto) {
+// XGot_AppV2_Main is required by XGo compiler as the entry of a YAP project.
+func XGot_AppV2_Main(app AppType, handlers ...iHandlerProto) {
 	app.InitYap()
 	for _, h := range handlers {
 		reflect.ValueOf(h).Elem().Field(1).Set(reflect.ValueOf(app)) // (*handler).AppV2 = app

@@ -1,4 +1,4 @@
-yap - Yet Another Go/Go+ HTTP Web Framework
+yap - Yet Another Go/XGo HTTP Web Framework
 ======
 
 [![Build Status](https://github.com/goplus/yap/actions/workflows/go.yml/badge.svg)](https://github.com/goplus/yap/actions/workflows/go.yml)
@@ -6,9 +6,9 @@ yap - Yet Another Go/Go+ HTTP Web Framework
 [![GitHub release](https://img.shields.io/github/v/tag/goplus/yap.svg?label=release)](https://github.com/goplus/yap/releases)
 [![Coverage Status](https://codecov.io/gh/goplus/yap/branch/main/graph/badge.svg)](https://codecov.io/gh/goplus/yap)
 [![GoDoc](https://pkg.go.dev/badge/github.com/goplus/yap.svg)](https://pkg.go.dev/github.com/goplus/yap)
-[![Language](https://img.shields.io/badge/language-Go+-blue.svg)](https://github.com/goplus/gop)
+[![Language](https://img.shields.io/badge/language-XGo-blue.svg)](https://github.com/goplus/xgo)
 
-This repo contains three [Go+ classfiles](https://github.com/goplus/gop/blob/main/doc/classfile.md). They are [yap](#yap-http-web-framework) (a HTTP Web Framework), [yaptest](ytest) (a HTTP Test Framework) and [ydb](ydb) (a Go+ Database Framework).
+This repo contains three [XGo classfiles](https://github.com/goplus/xgo/blob/main/doc/classfile.md). They are [yap](#yap-http-web-framework) (a HTTP Web Framework), [yaptest](ytest) (a HTTP Test Framework) and [ydb](ydb) (a XGo Database Framework).
 
 The classfile [yap](#yap-http-web-framework) has the file suffix `.yap`. The classfile [yaptest](ytest) has the file suffix `_ytest.gox`. And the classfile [ydb](ydb) has the file suffix `_ydb.gox`.
 
@@ -21,7 +21,7 @@ gop get github.com/goplus/yap@latest
 For more details, see [YAP Framework Manual](doc/manual.md).
 
 
-### How to use in Go+
+### How to use in XGo
 
 First let us initialize a hello project:
 
@@ -161,7 +161,7 @@ json {
 
 The directive `testServer` creates the web server by [net/http/httptest](https://pkg.go.dev/net/http/httptest#NewServer) and obtained a random port as the service address. Then it calls the directive [host](https://pkg.go.dev/github.com/goplus/yap/ytest#App.Host) to map the random service address to `foo.com`. This makes all other code no need to changed.
 
-For more details, see [yaptest - Go+ HTTP Test Framework](ytest).
+For more details, see [yaptest - XGo HTTP Test Framework](ytest).
 
 
 ### ydb: Database Framework

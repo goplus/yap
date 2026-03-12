@@ -1,4 +1,4 @@
 import "github.com/qiniu/x/http/fs"
 
-static "/", fs.http("https://goplus.org"), false
+static "/", fs.http("https://xgo.dev"), false
 run ":8080"

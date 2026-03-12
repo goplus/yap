@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 The GoPlus Authors (goplus.org). All rights reserved.
+ * Copyright (c) 2025 The XGo Authors (xgo.dev). All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ type AppV2 struct {
 }
 
 func (p *AppV2) Main() {
-	yap.Gopt_AppV2_Main(p, &handlerV2{fname: "get_p_#id"}, &handlerV2{fname: "handle"})
+	yap.XGot_AppV2_Main(p, &handlerV2{fname: "get_p_#id"}, &handlerV2{fname: "handle"})
 }
 
 type handlerV2 struct {
@@ -39,7 +39,7 @@ type handlerV2 struct {
 
 func (p *handlerV2) Main(ctx *yap.Context) {
 	p.Handler.Main(ctx)
-	ctx.Json__1(yap.H{"msg": "Hello, Go+!"})
+	ctx.Json__1(yap.H{"msg": "Hello, XGo!"})
 }
 
 func (p *handlerV2) Classfname() string {

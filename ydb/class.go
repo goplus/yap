@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 The GoPlus Authors (goplus.org). All rights reserved.
+ * Copyright (c) 2024 The XGo Authors (xgo.dev). All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -177,7 +177,7 @@ func (p *Class) callRet(args ...any) error {
 	}
 	for i, arg := range args {
 		ret := result[i].Interface()
-		test.Gopt_Case_MatchAny(t, arg, ret)
+		test.XGot_Case_MatchAny(t, arg, ret)
 	}
 	p.ret = nil
 	return nil

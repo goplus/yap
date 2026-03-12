@@ -1,4 +1,4 @@
-gop 1.2
+xgo 1.6
 
 project .yap AppV2 github.com/goplus/yap
 
