@@ -62,8 +62,8 @@ func (p *App) initApp() *App {
 	return p
 }
 
-// Gop_Env retrieves the value of the environment variable named by the key.
-func (p *App) Gop_Env(key string) string {
+// XGo_Env retrieves the value of the environment variable named by the key.
+func (p *App) XGo_Env(key string) string {
 	return os.Getenv(key)
 }
 

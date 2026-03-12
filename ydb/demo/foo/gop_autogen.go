@@ -145,11 +145,11 @@ func (this *articles) Main() {
 //line ydb/demo/foo/articles_ydb.gox:75:1
 	doc1.Id, doc1.Author, doc1.Title = "123", "abc", "title1"
 //line ydb/demo/foo/articles_ydb.gox:76:1
-	this.Gop_Exec("add", doc1)
+	this.XGo_Exec("add", doc1)
 //line ydb/demo/foo/articles_ydb.gox:77:1
 	this.Ret()
 //line ydb/demo/foo/articles_ydb.gox:79:1
-	this.Gop_Exec("add", doc1)
+	this.XGo_Exec("add", doc1)
 //line ydb/demo/foo/articles_ydb.gox:80:1
 	this.Ret(ydb.ErrDuplicated)
 //line ydb/demo/foo/articles_ydb.gox:82:1
@@ -157,7 +157,7 @@ func (this *articles) Main() {
 //line ydb/demo/foo/articles_ydb.gox:83:1
 	doc2.Id, doc2.Author, doc2.Title = "124", "efg", "title2"
 //line ydb/demo/foo/articles_ydb.gox:84:1
-	this.Gop_Exec("add", doc2)
+	this.XGo_Exec("add", doc2)
 //line ydb/demo/foo/articles_ydb.gox:85:1
 	this.Ret()
 //line ydb/demo/foo/articles_ydb.gox:87:1
@@ -165,7 +165,7 @@ func (this *articles) Main() {
 //line ydb/demo/foo/articles_ydb.gox:88:1
 	doc3.Id, doc3.Author, doc3.Title = "125", "efg", "title3"
 //line ydb/demo/foo/articles_ydb.gox:89:1
-	this.Gop_Exec("add", doc3)
+	this.XGo_Exec("add", doc3)
 //line ydb/demo/foo/articles_ydb.gox:90:1
 	this.Ret()
 //line ydb/demo/foo/articles_ydb.gox:92:1
@@ -173,7 +173,7 @@ func (this *articles) Main() {
 //line ydb/demo/foo/articles_ydb.gox:93:1
 	doc4.Id, doc4.Author, doc4.Title = "225", "abc", "title4"
 //line ydb/demo/foo/articles_ydb.gox:94:1
-	this.Gop_Exec("add", doc4)
+	this.XGo_Exec("add", doc4)
 //line ydb/demo/foo/articles_ydb.gox:95:1
 	this.Ret()
 //line ydb/demo/foo/articles_ydb.gox:97:1
@@ -181,55 +181,55 @@ func (this *articles) Main() {
 //line ydb/demo/foo/articles_ydb.gox:98:1
 	doc5.Id, doc5.Author, doc5.Title = "555", "abc", "title5"
 //line ydb/demo/foo/articles_ydb.gox:99:1
-	this.Gop_Exec("add", doc5)
+	this.XGo_Exec("add", doc5)
 //line ydb/demo/foo/articles_ydb.gox:100:1
 	this.Ret()
 //line ydb/demo/foo/articles_ydb.gox:102:1
-	this.Gop_Exec("get", doc1.Id)
+	this.XGo_Exec("get", doc1.Id)
 //line ydb/demo/foo/articles_ydb.gox:103:1
 	this.Ret(doc1)
 //line ydb/demo/foo/articles_ydb.gox:105:1
-	this.Gop_Exec("get", doc2.Id)
+	this.XGo_Exec("get", doc2.Id)
 //line ydb/demo/foo/articles_ydb.gox:106:1
 	this.Ret(doc2)
 //line ydb/demo/foo/articles_ydb.gox:108:1
-	this.Gop_Exec("get", "unknown")
+	this.XGo_Exec("get", "unknown")
 //line ydb/demo/foo/articles_ydb.gox:109:1
 	test.XGot_Case_MatchAny(this, this.Out(1), ydb.ErrNoRows)
 //line ydb/demo/foo/articles_ydb.gox:111:1
-	this.Gop_Exec("setTags", doc1.Id, "tag1", "tag2")
+	this.XGo_Exec("setTags", doc1.Id, "tag1", "tag2")
 //line ydb/demo/foo/articles_ydb.gox:112:1
 	this.Ret()
 //line ydb/demo/foo/articles_ydb.gox:114:1
-	this.Gop_Exec("tags", doc1.Id)
+	this.XGo_Exec("tags", doc1.Id)
 //line ydb/demo/foo/articles_ydb.gox:115:1
 	this.Ret(test.Set__0("tag2", "tag1"))
 //line ydb/demo/foo/articles_ydb.gox:117:1
-	this.Gop_Exec("setTags", doc1.Id, "tag1", "tag3")
+	this.XGo_Exec("setTags", doc1.Id, "tag1", "tag3")
 //line ydb/demo/foo/articles_ydb.gox:118:1
 	this.Ret()
 //line ydb/demo/foo/articles_ydb.gox:120:1
-	this.Gop_Exec("tags", doc1.Id)
+	this.XGo_Exec("tags", doc1.Id)
 //line ydb/demo/foo/articles_ydb.gox:121:1
 	this.Ret(test.Set__0("tag1", "tag3"))
 //line ydb/demo/foo/articles_ydb.gox:123:1
-	this.Gop_Exec("setTags", doc2.Id, "tag1", "tag5")
+	this.XGo_Exec("setTags", doc2.Id, "tag1", "tag5")
 //line ydb/demo/foo/articles_ydb.gox:124:1
-	this.Gop_Exec("setTags", doc3.Id, "tag1", "tag3")
+	this.XGo_Exec("setTags", doc3.Id, "tag1", "tag3")
 //line ydb/demo/foo/articles_ydb.gox:125:1
-	this.Gop_Exec("setTags", doc4.Id, "tag2", "tag3")
+	this.XGo_Exec("setTags", doc4.Id, "tag2", "tag3")
 //line ydb/demo/foo/articles_ydb.gox:126:1
-	this.Gop_Exec("setTags", doc5.Id, "tag5", "tag3")
+	this.XGo_Exec("setTags", doc5.Id, "tag5", "tag3")
 //line ydb/demo/foo/articles_ydb.gox:128:1
-	this.Gop_Exec("listByTag", "tag1")
+	this.XGo_Exec("listByTag", "tag1")
 //line ydb/demo/foo/articles_ydb.gox:129:1
 	this.Ret(test.Set__2(doc3.ArticleEntry, doc1.ArticleEntry, doc2.ArticleEntry))
 //line ydb/demo/foo/articles_ydb.gox:131:1
-	this.Gop_Exec("listByTag", "tag3")
+	this.XGo_Exec("listByTag", "tag3")
 //line ydb/demo/foo/articles_ydb.gox:132:1
 	this.Ret(test.Set__2(doc3.ArticleEntry, doc4.ArticleEntry, doc1.ArticleEntry, doc5.ArticleEntry))
 //line ydb/demo/foo/articles_ydb.gox:134:1
-	this.Gop_Exec("listByAuthor", "eft")
+	this.XGo_Exec("listByAuthor", "eft")
 //line ydb/demo/foo/articles_ydb.gox:135:1
 	this.Ret(test.Set__2(doc2.ArticleEntry, doc3.ArticleEntry))
 }
@@ -317,23 +317,23 @@ func (this *users) Main() {
 //line ydb/demo/foo/users_ydb.gox:46:1
 	this.Use("user")
 //line ydb/demo/foo/users_ydb.gox:48:1
-	this.Gop_Exec("register", "user", "pwd", "nickname", "", "", time.Now())
+	this.XGo_Exec("register", "user", "pwd", "nickname", "", "", time.Now())
 //line ydb/demo/foo/users_ydb.gox:49:1
 	this.Ret(ErrNoEmailAndTel)
 //line ydb/demo/foo/users_ydb.gox:50:1
-	this.Gop_Exec("register", "user", "pwd", "nickname", "user@foo.com", "", time.Now())
+	this.XGo_Exec("register", "user", "pwd", "nickname", "user@foo.com", "", time.Now())
 //line ydb/demo/foo/users_ydb.gox:51:1
 	this.Ret(nil)
 //line ydb/demo/foo/users_ydb.gox:52:1
-	this.Gop_Exec("register", "user", "pwd", "nickname", "user@foo.com", "13500000000", time.Now())
+	this.XGo_Exec("register", "user", "pwd", "nickname", "user@foo.com", "13500000000", time.Now())
 //line ydb/demo/foo/users_ydb.gox:53:1
 	this.Ret(ydb.ErrDuplicated)
 //line ydb/demo/foo/users_ydb.gox:55:1
-	this.Gop_Exec("login", "", "")
+	this.XGo_Exec("login", "", "")
 //line ydb/demo/foo/users_ydb.gox:56:1
 	this.Ret(false)
 //line ydb/demo/foo/users_ydb.gox:57:1
-	this.Gop_Exec("login", "user", "pwd")
+	this.XGo_Exec("login", "user", "pwd")
 //line ydb/demo/foo/users_ydb.gox:58:1
 	this.Ret(true)
 }
