@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-package yap
+package radix
 
 import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
 )
+
+// -----------------------------------------------------------------------------
+
+func notZero[T comparable](v T) bool {
+	var zero T
+	return v != zero
+}
 
 func min(a, b int) int {
 	if a <= b {
@@ -63,6 +70,8 @@ func findWildcard(path string) (wilcard string, i int, valid bool) {
 	return "", -1, false
 }
 
+// -----------------------------------------------------------------------------
+
 type nodeType uint8
 
 const (
@@ -72,18 +81,24 @@ const (
 	catchAll
 )
 
-type node struct {
+type context interface {
+	comparable
+	UnderlyingSetPathParam(name, val string)
+}
+
+// Node is a node in the radix tree.
+type Node[T context] struct {
 	path      string
 	indices   string
 	wildChild bool
 	nType     nodeType
 	priority  uint32
-	children  []*node
-	handle    func(ctx *Context)
+	children  []*Node[T]
+	handle    func(ctx T)
 }
 
 // Increments priority of the given child and reorders if necessary
-func (n *node) incrementChildPrio(pos int) int {
+func (n *Node[T]) incrementChildPrio(pos int) int {
 	cs := n.children
 	cs[pos].priority++
 	prio := cs[pos].priority
@@ -105,9 +120,9 @@ func (n *node) incrementChildPrio(pos int) int {
 	return newPos
 }
 
-// addRoute adds a node with the given handle to the path.
+// AddRoute adds a node with the given handle to the path.
 // Not concurrency-safe!
-func (n *node) addRoute(path string, handle func(ctx *Context)) {
+func (n *Node[T]) AddRoute(path string, handle func(ctx T)) {
 	fullPath := path
 	n.priority++
 
@@ -127,7 +142,7 @@ walk:
 
 		// Split edge
 		if i < len(n.path) {
-			child := node{
+			child := Node[T]{
 				path:      n.path[i:],
 				wildChild: n.wildChild,
 				nType:     static,
@@ -137,7 +152,7 @@ walk:
 				priority:  n.priority - 1,
 			}
 
-			n.children = []*node{&child}
+			n.children = []*Node[T]{&child}
 			// []byte for proper unicode char conversion, see #65
 			n.indices = string([]byte{n.path[i]})
 			n.path = path[:i]
@@ -197,7 +212,7 @@ walk:
 			if idxc != ':' && idxc != '*' {
 				// []byte for proper unicode char conversion, see #65
 				n.indices += string([]byte{idxc})
-				child := &node{}
+				child := &Node[T]{}
 				n.children = append(n.children, child)
 				n.incrementChildPrio(len(n.indices) - 1)
 				n = child
@@ -215,7 +230,7 @@ walk:
 	}
 }
 
-func (n *node) insertChild(path, fullPath string, handle func(ctx *Context)) {
+func (n *Node[T]) insertChild(path, fullPath string, handle func(ctx T)) {
 	for {
 		// Find prefix until first wildcard
 		wildcard, i, valid := findWildcard(path)
@@ -250,11 +265,11 @@ func (n *node) insertChild(path, fullPath string, handle func(ctx *Context)) {
 			}
 
 			n.wildChild = true
-			child := &node{
+			child := &Node[T]{
 				nType: param,
 				path:  wildcard,
 			}
-			n.children = []*node{child}
+			n.children = []*Node[T]{child}
 			n = child
 			n.priority++
 
@@ -262,10 +277,10 @@ func (n *node) insertChild(path, fullPath string, handle func(ctx *Context)) {
 			// will be another non-wildcard subpath starting with '/'
 			if len(wildcard) < len(path) {
 				path = path[len(wildcard):]
-				child := &node{
+				child := &Node[T]{
 					priority: 1,
 				}
-				n.children = []*node{child}
+				n.children = []*Node[T]{child}
 				n = child
 				continue
 			}
@@ -293,23 +308,23 @@ func (n *node) insertChild(path, fullPath string, handle func(ctx *Context)) {
 		n.path = path[:i]
 
 		// First node: catchAll node with empty path
-		child := &node{
+		child := &Node[T]{
 			wildChild: true,
 			nType:     catchAll,
 		}
-		n.children = []*node{child}
+		n.children = []*Node[T]{child}
 		n.indices = string('/')
 		n = child
 		n.priority++
 
 		// Second node: node holding the variable
-		child = &node{
+		child = &Node[T]{
 			path:     path[i:],
 			nType:    catchAll,
 			handle:   handle,
 			priority: 1,
 		}
-		n.children = []*node{child}
+		n.children = []*Node[T]{child}
 
 		return
 	}
@@ -319,12 +334,13 @@ func (n *node) insertChild(path, fullPath string, handle func(ctx *Context)) {
 	n.handle = handle
 }
 
-// Returns the handle registered with the given path (key). The values of
+// GetValue returns the handle registered with the given path (key). The values of
 // wildcards are saved to a map.
+//
 // If no handle can be found, a TSR (trailing slash redirect) recommendation is
 // made if a handle exists with an extra (without the) trailing slash for the
 // given path.
-func (n *node) getValue(path string, ctx *Context) (handle func(ctx *Context), tsr bool) {
+func (n *Node[T]) GetValue(path string, ctx T) (handle func(ctx T), tsr bool) {
 walk: // Outer loop for walking the tree
 	for {
 		prefix := n.path
@@ -362,8 +378,8 @@ walk: // Outer loop for walking the tree
 					}
 
 					// Save param value
-					if ctx != nil {
-						ctx.setParam(n.path[1:], path[:end])
+					if notZero(ctx) {
+						ctx.UnderlyingSetPathParam(n.path[1:], path[:end])
 					}
 
 					// We need to go deeper!
@@ -391,8 +407,8 @@ walk: // Outer loop for walking the tree
 
 				case catchAll:
 					// Save param value
-					if ctx != nil {
-						ctx.setParam(n.path[2:], path)
+					if notZero(ctx) {
+						ctx.UnderlyingSetPathParam(n.path[2:], path)
 					}
 
 					handle = n.handle
@@ -444,11 +460,14 @@ walk: // Outer loop for walking the tree
 	}
 }
 
-// Makes a case-insensitive lookup of the given path and tries to find a func(ctx *Context).
+// FindCaseInsensitivePath makes a case-insensitive lookup of the given path
+// and tries to find a func(ctx T).
+//
 // It can optionally also fix trailing slashes.
+//
 // It returns the case-corrected path and a bool indicating whether the lookup
 // was successful.
-func (n *node) findCaseInsensitivePath(path string, fixTrailingSlash bool) (fixedPath string, found bool) {
+func (n *Node[T]) FindCaseInsensitivePath(path string, fixTrailingSlash bool) (fixedPath string, found bool) {
 	const stackBufSize = 128
 
 	// Use a static sized buffer on the stack in the common case.
@@ -485,7 +504,7 @@ func shiftNRuneBytes(rb [4]byte, n int) [4]byte {
 }
 
 // Recursive case-insensitive lookup function used by n.findCaseInsensitivePath
-func (n *node) findCaseInsensitivePathRec(path string, ciPath []byte, rb [4]byte, fixTrailingSlash bool) []byte {
+func (n *Node[T]) findCaseInsensitivePathRec(path string, ciPath []byte, rb [4]byte, fixTrailingSlash bool) []byte {
 	npLen := len(n.path)
 
 walk: // Outer loop for walking the tree
@@ -665,3 +684,5 @@ walk: // Outer loop for walking the tree
 	}
 	return nil
 }
+
+// -----------------------------------------------------------------------------
