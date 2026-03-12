@@ -21,7 +21,10 @@ import (
 	"strings"
 
 	"github.com/goplus/yap/internal/url"
+	"github.com/goplus/yap/radix"
 )
+
+type node = radix.Node[*Context]
 
 // router is a http rounter which can be used to dispatch requests to different
 // handler functions via configurable routes
@@ -155,7 +158,7 @@ func (p *router) Route(method, path string, handle func(ctx *Context)) {
 		p.globalAllowed = p.allowed("*", "")
 	}
 
-	root.addRoute(path, handle)
+	root.AddRoute(path, handle)
 }
 
 func (p *router) recv(w http.ResponseWriter, req *http.Request) {
@@ -187,7 +190,7 @@ func (p *router) allowed(path, reqMethod string) (allow string) {
 				continue
 			}
 
-			handle, _ := p.trees[method].getValue(path, nil)
+			handle, _ := p.trees[method].GetValue(path, nil)
 			if handle != nil {
 				// Route request method to list of allowed methods
 				allowed = append(allowed, method)
@@ -224,7 +227,7 @@ func (p *router) serveHTTP(w http.ResponseWriter, req *http.Request, e *Engine) 
 	root := p.trees[req.Method]
 	if root != nil {
 		ctx := e.NewContext(w, req)
-		if handle, tsr := root.getValue(path, ctx); handle != nil {
+		if handle, tsr := root.GetValue(path, ctx); handle != nil {
 			handle(ctx)
 			return
 		} else if req.Method != http.MethodConnect && path != "/" {
@@ -247,7 +250,7 @@ func (p *router) serveHTTP(w http.ResponseWriter, req *http.Request, e *Engine) 
 
 			// Try to fix the request path
 			if p.RedirectFixedPath {
-				fixedPath, found := root.findCaseInsensitivePath(
+				fixedPath, found := root.FindCaseInsensitivePath(
 					url.CleanPath(path),
 					p.RedirectTrailingSlash,
 				)

@@ -32,7 +32,7 @@ type Context struct {
 	engine *Engine
 }
 
-func (p *Context) setParam(name, val string) {
+func (p *Context) UnderlyingSetPathParam(name, val string) {
 	p.ParseForm()
 	p.Form.Set(name, val)
 }
