@@ -269,7 +269,7 @@ func (p *Request) doSend() (resp *http.Response, err error) {
 }
 
 const (
-	Gopo_Request_Ret = ".Send,.RetWith"
+	XGoo_Request_Ret = ".Send,.RetWith"
 )
 
 func (p *Request) Send() *Request {

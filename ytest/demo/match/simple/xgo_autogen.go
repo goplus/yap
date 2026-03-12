@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/goplus/yap/ytest"
 	"github.com/qiniu/x/test"
 )
@@ -23,7 +22,6 @@ func (this *App) Main() {
 	_xgo_obj0 := &simple{App: this}
 	ytest.XGot_App_Main(this, _xgo_obj0)
 }
-
 //line ytest/demo/match/simple/simple_yapt.gox:1
 func (this *simple) Main() {
 //line ytest/demo/match/simple/simple_yapt.gox:1:1
