@@ -22,7 +22,7 @@ func (this *AppV2) Main() {
 func (this *get_p_id) Main(_xgo_arg0 *yap.Context) {
 	this.Handler.Main(_xgo_arg0)
 //line ytest/demo/foo/get_p_#id.yap:1:1
-	this.Json__1(map[string]string{"id": this.Gop_Env("id")})
+	this.Json__1(map[string]string{"id": this.XGo_Env("id")})
 }
 func (this *get_p_id) Classfname() string {
 	return "get_p_#id"

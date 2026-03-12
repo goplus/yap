@@ -104,7 +104,7 @@ func (p *Class) Ret(args ...any) {
 
 // -----------------------------------------------------------------------------
 
-func (p *Class) Gop_Exec(name string, args ...any) {
+func (p *Class) XGo_Exec(name string, args ...any) {
 	vFn := p.method(name)
 	p.call(name, vFn, args...)
 }

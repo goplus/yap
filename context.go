@@ -37,9 +37,9 @@ func (p *Context) setParam(name, val string) {
 	p.Form.Set(name, val)
 }
 
-// Gop_Env returns the value associated with the name.
+// XGo_Env returns the value associated with the name.
 // If the name exists in URL query, it returns the first value for the name.
-func (p *Context) Gop_Env(name string) string {
+func (p *Context) XGo_Env(name string) string {
 	return p.Param(name)
 }
 
@@ -49,6 +49,7 @@ func (p *Context) Param(name string) string {
 	return p.FormValue(name)
 }
 
+// ParamInt returns the value associated with the name as an integer.
 func (p *Context) ParamInt(name string, defval int) int {
 	ret := p.Param(name)
 	if ret != "" {

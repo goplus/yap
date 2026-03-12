@@ -9,7 +9,6 @@ const _ = true
 type AppV2 struct {
 	yap.AppV2
 }
-
 //line demo/classfile_hello/main.yap:1
 func (this *AppV2) MainEntry() {
 //line demo/classfile_hello/main.yap:1:1
