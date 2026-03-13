@@ -461,7 +461,7 @@ walk: // Outer loop for walking the tree
 }
 
 // FindCaseInsensitivePath makes a case-insensitive lookup of the given path
-// and tries to find a func(ctx T).
+// to find a route with a registered handle.
 //
 // It can optionally also fix trailing slashes.
 //
