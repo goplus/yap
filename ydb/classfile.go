@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	GopPackage = "github.com/qiniu/x/test"
+	XGoPackage = "github.com/qiniu/x/test"
 )
 
 var (
@@ -112,7 +112,7 @@ func dbName(fldName string) string {
 }
 
 // Table creates a new table by specified Schema.
-func XGot_Sql_Gopx_Table[Schema any](sql interface{ defineTable(string, any) }, nameVer string) {
+func XGot_Sql_XGox_Table[Schema any](sql interface{ defineTable(string, any) }, nameVer string) {
 	sql.defineTable(nameVer, (*Schema)(nil))
 }
 

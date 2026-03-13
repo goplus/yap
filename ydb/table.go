@@ -26,7 +26,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/goplus/yap/reflectutil"
+	"github.com/goplus/yap/internal/reflectutil"
 	"github.com/qiniu/x/stringutil"
 )
 
@@ -291,12 +291,12 @@ func (p *Table) create(ctx context.Context, sql *Sql) {
 	for _, uniq := range p.uniqs {
 		cols := uniq.get(p)
 		name := indexName(cols, "uniq_", p.name)
-		createIndex(sql, db, ctx, "CREATE UNIQUE INDEX ", name, p.name, cols)
+		createIndex(db, ctx, "CREATE UNIQUE INDEX ", name, p.name, cols)
 	}
 	for _, idx := range p.idxs {
 		cols := idx.get(p)
 		name := indexName(cols, "idx_", p.name)
-		createIndex(sql, db, ctx, "CREATE INDEX ", name, p.name, cols)
+		createIndex(db, ctx, "CREATE INDEX ", name, p.name, cols)
 	}
 }
 
@@ -316,7 +316,7 @@ func indexName(cols []*column, prefix, tbl string) string {
 	return stringutil.String(b)
 }
 
-func createIndex(sql *Sql, db *sql.DB, ctx context.Context, cmd string, name, tbl string, cols []*column) {
+func createIndex(db *sql.DB, ctx context.Context, cmd string, name, tbl string, cols []*column) {
 	parts := make([]string, 0, 5+2*len(cols))
 	parts = append(parts, cmd, name, " ON ", tbl, "(")
 	for _, col := range cols {

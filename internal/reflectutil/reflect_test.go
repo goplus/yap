@@ -1,6 +1,3 @@
-//go:build go1.20
-// +build go1.20
-
 /*
  * Copyright (c) 2024 The XGo Authors (xgo.dev). All rights reserved.
  *
@@ -21,10 +18,16 @@ package reflectutil
 
 import (
 	"reflect"
+	"testing"
+	"unsafe"
 )
 
-// SetZero sets v to be the zero value of v's type.
-// It panics if CanSet returns false.
-func SetZero(v reflect.Value) {
-	v.SetZero()
+func TestUnsafeAddr(t *testing.T) {
+	if unsafe.Sizeof(value{}) != unsafe.Sizeof(reflect.Value{}) {
+		panic("unexpected sizeof reflect.Value")
+	}
+	v := reflect.ValueOf(0)
+	if UnsafeAddr(v) == 0 {
+		t.Fatal("UnsafeAddr")
+	}
 }
