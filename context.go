@@ -25,6 +25,7 @@ import (
 	"strings"
 )
 
+// Context is the context of a request, it is passed to the handler function.
 type Context struct {
 	*http.Request
 	http.ResponseWriter

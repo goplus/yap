@@ -23,8 +23,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-
-	"github.com/goplus/yap/reflectutil"
 )
 
 // -----------------------------------------------------------------------------
@@ -230,7 +228,7 @@ func (p *Class) queryRetRows(rows *sql.Rows, vRets []reflect.Value, oneRet []any
 	for rows.Next() {
 		if needInit {
 			for _, ret := range oneRet {
-				reflectutil.SetZero(reflect.ValueOf(ret).Elem())
+				reflect.ValueOf(ret).Elem().SetZero()
 			}
 		} else {
 			needInit = true

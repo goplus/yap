@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	GopPackage = true
+	XGoPackage = true
 )
 
 // App is project class of YAP classfile (old version).
