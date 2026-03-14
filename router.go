@@ -24,7 +24,7 @@ import (
 	"github.com/goplus/yap/radix"
 )
 
-type node = radix.Node[*Context]
+type node = radix.Node[func(ctx *Context)]
 
 // router is a http rounter which can be used to dispatch requests to different
 // handler functions via configurable routes
@@ -190,7 +190,7 @@ func (p *router) allowed(path, reqMethod string) (allow string) {
 				continue
 			}
 
-			handle, _ := p.trees[method].GetValue(path, nil)
+			handle, _ := radix.Route[*Context](p.trees[method], path, nil)
 			if handle != nil {
 				// Route request method to list of allowed methods
 				allowed = append(allowed, method)
@@ -227,7 +227,7 @@ func (p *router) serveHTTP(w http.ResponseWriter, req *http.Request, e *Engine) 
 	root := p.trees[req.Method]
 	if root != nil {
 		ctx := e.NewContext(w, req)
-		if handle, tsr := root.GetValue(path, ctx); handle != nil {
+		if handle, tsr := radix.Route(root, path, ctx); handle != nil {
 			handle(ctx)
 			return
 		} else if req.Method != http.MethodConnect && path != "/" {

@@ -40,12 +40,12 @@ func newTestCtx() *testContext {
 // AddRoute / GetValue: static routes
 
 func TestAddRouteGetValueSingleStatic(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	called := false
 	root.AddRoute("/users", func(ctx *testContext) { called = true })
 
 	ctx := newTestCtx()
-	h, tsr := root.GetValue("/users", ctx)
+	h, tsr := Route(&root, "/users", ctx)
 	if h == nil {
 		t.Fatal("expected handle for /users")
 	}
@@ -59,7 +59,7 @@ func TestAddRouteGetValueSingleStatic(t *testing.T) {
 }
 
 func TestAddRouteGetValueMultipleStatic(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	results := map[string]bool{}
 
 	routes := []string{"/", "/users", "/users/list", "/posts", "/posts/list"}
@@ -71,7 +71,7 @@ func TestAddRouteGetValueMultipleStatic(t *testing.T) {
 	for _, r := range routes {
 		results[r] = false
 		ctx := newTestCtx()
-		h, tsr := root.GetValue(r, ctx)
+		h, tsr := Route(&root, r, ctx)
 		if h == nil {
 			t.Fatalf("expected handle for %q", r)
 		}
@@ -86,25 +86,25 @@ func TestAddRouteGetValueMultipleStatic(t *testing.T) {
 }
 
 func TestGetValueNotFound(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users", func(ctx *testContext) {})
 
-	h, _ := root.GetValue("/nonexistent", newTestCtx())
+	h, _ := Route(&root, "/nonexistent", newTestCtx())
 	if h != nil {
 		t.Fatal("expected no handle for /nonexistent")
 	}
 }
 
 func TestGetValueRootOnly(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/", func(ctx *testContext) {})
 
-	h, _ := root.GetValue("/", newTestCtx())
+	h, _ := Route(&root, "/", newTestCtx())
 	if h == nil {
 		t.Fatal("expected handle for /")
 	}
 
-	h2, _ := root.GetValue("/other", newTestCtx())
+	h2, _ := Route(&root, "/other", newTestCtx())
 	if h2 != nil {
 		t.Fatal("expected no handle for /other")
 	}
@@ -114,11 +114,11 @@ func TestGetValueRootOnly(t *testing.T) {
 // AddRoute / GetValue: param routes
 
 func TestGetValueSingleParam(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users/:id", func(ctx *testContext) {})
 
 	ctx := newTestCtx()
-	h, tsr := root.GetValue("/users/42", ctx)
+	h, tsr := Route(&root, "/users/42", ctx)
 	if h == nil {
 		t.Fatal("expected handle for /users/42")
 	}
@@ -131,11 +131,11 @@ func TestGetValueSingleParam(t *testing.T) {
 }
 
 func TestGetValueMultipleParams(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users/:id/posts/:postId", func(ctx *testContext) {})
 
 	ctx := newTestCtx()
-	h, _ := root.GetValue("/users/123/posts/456", ctx)
+	h, _ := Route(&root, "/users/123/posts/456", ctx)
 	if h == nil {
 		t.Fatal("expected handle")
 	}
@@ -148,11 +148,11 @@ func TestGetValueMultipleParams(t *testing.T) {
 }
 
 func TestGetValueParamWithTrailingSlash(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users/:id/", func(ctx *testContext) {})
 
 	ctx := newTestCtx()
-	h, _ := root.GetValue("/users/42/", ctx)
+	h, _ := Route(&root, "/users/42/", ctx)
 	if h == nil {
 		t.Fatal("expected handle")
 	}
@@ -162,22 +162,22 @@ func TestGetValueParamWithTrailingSlash(t *testing.T) {
 }
 
 func TestGetValueParamNilCtx(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users/:id", func(ctx *testContext) {})
 
 	// Pass nil context (zero value for *testContext) - should not panic
-	h, _ := root.GetValue("/users/42", nil)
+	h, _ := Route[*testContext](&root, "/users/42", nil)
 	if h == nil {
 		t.Fatal("expected handle even with nil ctx")
 	}
 }
 
 func TestGetValueParamNotFound(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users/:id", func(ctx *testContext) {})
 
 	// /users alone has no handler
-	h, _ := root.GetValue("/users", newTestCtx())
+	h, _ := Route(&root, "/users", newTestCtx())
 	if h != nil {
 		t.Fatal("expected no handle for /users without param")
 	}
@@ -187,11 +187,11 @@ func TestGetValueParamNotFound(t *testing.T) {
 // AddRoute / GetValue: catchAll routes
 
 func TestGetValueCatchAll(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/files/*filepath", func(ctx *testContext) {})
 
 	ctx := newTestCtx()
-	h, _ := root.GetValue("/files/path/to/file.txt", ctx)
+	h, _ := Route(&root, "/files/path/to/file.txt", ctx)
 	if h == nil {
 		t.Fatal("expected handle")
 	}
@@ -201,10 +201,10 @@ func TestGetValueCatchAll(t *testing.T) {
 }
 
 func TestGetValueCatchAllNilCtx(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/files/*filepath", func(ctx *testContext) {})
 
-	h, _ := root.GetValue("/files/a/b/c", nil)
+	h, _ := Route[*testContext](&root, "/files/a/b/c", nil)
 	if h == nil {
 		t.Fatal("expected handle with nil ctx")
 	}
@@ -214,10 +214,10 @@ func TestGetValueCatchAllNilCtx(t *testing.T) {
 // TSR (Trailing Slash Redirect)
 
 func TestGetValueTSRMissingTrailingSlash(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users/", func(ctx *testContext) {})
 
-	h, tsr := root.GetValue("/users", newTestCtx())
+	h, tsr := Route(&root, "/users", newTestCtx())
 	if h != nil {
 		t.Fatal("expected no handle for /users (without trailing slash)")
 	}
@@ -227,10 +227,10 @@ func TestGetValueTSRMissingTrailingSlash(t *testing.T) {
 }
 
 func TestGetValueTSRExtraTrailingSlash(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users", func(ctx *testContext) {})
 
-	h, tsr := root.GetValue("/users/", newTestCtx())
+	h, tsr := Route(&root, "/users/", newTestCtx())
 	if h != nil {
 		t.Fatal("expected no handle for /users/ (with extra trailing slash)")
 	}
@@ -238,10 +238,10 @@ func TestGetValueTSRExtraTrailingSlash(t *testing.T) {
 }
 
 func TestGetValueTSRWithParam(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users/:id/", func(ctx *testContext) {})
 
-	h, tsr := root.GetValue("/users/42", newTestCtx())
+	h, tsr := Route(&root, "/users/42", newTestCtx())
 	if h != nil {
 		t.Fatal("expected no handle")
 	}
@@ -254,7 +254,7 @@ func TestGetValueTSRWithParam(t *testing.T) {
 // Mixed routes (static + param + catchAll)
 
 func TestMixedRoutes(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/", func(ctx *testContext) {})
 	root.AddRoute("/users", func(ctx *testContext) {})
 	root.AddRoute("/users/:id", func(ctx *testContext) {})
@@ -276,7 +276,7 @@ func TestMixedRoutes(t *testing.T) {
 
 	for _, tt := range tests {
 		ctx := newTestCtx()
-		h, _ := root.GetValue(tt.path, ctx)
+		h, _ := Route(&root, tt.path, ctx)
 		if (h != nil) != tt.wantMatch {
 			t.Fatalf("GetValue(%q): got match=%v, want match=%v", tt.path, h != nil, tt.wantMatch)
 		}
@@ -292,7 +292,7 @@ func TestMixedRoutes(t *testing.T) {
 // Priority / child ordering
 
 func TestRoutePriorityOrdering(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	// Add routes with shared prefixes
 	root.AddRoute("/a", func(ctx *testContext) {})
 	root.AddRoute("/b", func(ctx *testContext) {})
@@ -300,7 +300,7 @@ func TestRoutePriorityOrdering(t *testing.T) {
 	root.AddRoute("/b/c", func(ctx *testContext) {})
 
 	for _, path := range []string{"/a", "/b", "/a/b", "/b/c"} {
-		h, _ := root.GetValue(path, newTestCtx())
+		h, _ := Route(&root, path, newTestCtx())
 		if h == nil {
 			t.Fatalf("expected handle for %q after priority reordering", path)
 		}
@@ -311,7 +311,7 @@ func TestRoutePriorityOrdering(t *testing.T) {
 // FindCaseInsensitivePath
 
 func TestFindCaseInsensitivePath(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/Users/List", func(ctx *testContext) {})
 
 	fixedPath, found := root.FindCaseInsensitivePath("/users/list", true)
@@ -324,7 +324,7 @@ func TestFindCaseInsensitivePath(t *testing.T) {
 }
 
 func TestFindCaseInsensitivePathNotFound(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users", func(ctx *testContext) {})
 
 	_, found := root.FindCaseInsensitivePath("/nonexistent", false)
@@ -334,7 +334,7 @@ func TestFindCaseInsensitivePathNotFound(t *testing.T) {
 }
 
 func TestFindCaseInsensitivePathTrailingSlashFix(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users/", func(ctx *testContext) {})
 
 	// Should match with trailing slash added
@@ -348,7 +348,7 @@ func TestFindCaseInsensitivePathTrailingSlashFix(t *testing.T) {
 }
 
 func TestFindCaseInsensitivePathNoFix(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users/", func(ctx *testContext) {})
 
 	// Without fixTrailingSlash, should not find when trailing slash is missing
@@ -359,7 +359,7 @@ func TestFindCaseInsensitivePathNoFix(t *testing.T) {
 }
 
 func TestFindCaseInsensitivePathWithParam(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/Users/:id", func(ctx *testContext) {})
 
 	fixedPath, found := root.FindCaseInsensitivePath("/users/123", true)
@@ -372,7 +372,7 @@ func TestFindCaseInsensitivePathWithParam(t *testing.T) {
 }
 
 func TestFindCaseInsensitivePathWithCatchAll(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/Files/*filepath", func(ctx *testContext) {})
 
 	fixedPath, found := root.FindCaseInsensitivePath("/files/path/to/file", true)
@@ -385,7 +385,7 @@ func TestFindCaseInsensitivePathWithCatchAll(t *testing.T) {
 }
 
 func TestFindCaseInsensitivePathExactMatch(t *testing.T) {
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users", func(ctx *testContext) {})
 
 	// Exact match (already lowercase)
@@ -407,7 +407,7 @@ func TestAddRoutePanicDuplicateHandle(t *testing.T) {
 			t.Fatal("expected panic for duplicate handle")
 		}
 	}()
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users", func(ctx *testContext) {})
 	root.AddRoute("/users", func(ctx *testContext) {})
 }
@@ -418,7 +418,7 @@ func TestAddRoutePanicWildcardConflict(t *testing.T) {
 			t.Fatal("expected panic for wildcard conflict")
 		}
 	}()
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users/:id", func(ctx *testContext) {})
 	root.AddRoute("/users/:name", func(ctx *testContext) {}) // conflicts with :id
 }
@@ -429,7 +429,7 @@ func TestAddRoutePanicEmptyWildcardName(t *testing.T) {
 			t.Fatal("expected panic for empty wildcard name")
 		}
 	}()
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users/:", func(ctx *testContext) {})
 }
 
@@ -439,7 +439,7 @@ func TestAddRoutePanicCatchAllNotAtEnd(t *testing.T) {
 			t.Fatal("expected panic for catch-all not at end of path")
 		}
 	}()
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/files/*filepath/extra", func(ctx *testContext) {})
 }
 
@@ -449,6 +449,6 @@ func TestAddRoutePanicInvalidWildcard(t *testing.T) {
 			t.Fatal("expected panic for invalid wildcard (nested)")
 		}
 	}()
-	var root Node[*testContext]
+	var root Node[func(*testContext)]
 	root.AddRoute("/users/:id:name/posts", func(ctx *testContext) {})
 }
