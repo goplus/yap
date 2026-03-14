@@ -335,7 +335,7 @@ func (n *Node[H]) insertChild(path, fullPath string, handle H) {
 }
 
 // Route returns the handle registered with the given path (key). The values of
-// wildcards are saved to a map.
+// wildcard values are set on the context via UnderlyingSetPathParam.
 //
 // If no handle can be found, a TSR (trailing slash redirect) recommendation is
 // made if a handle exists with an extra (without the) trailing slash for the

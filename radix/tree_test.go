@@ -37,7 +37,7 @@ func newTestCtx() *testContext {
 }
 
 // -----------------------------------------------------------------------------
-// AddRoute / GetValue: static routes
+// AddRoute / Route: static routes
 
 func TestAddRouteGetValueSingleStatic(t *testing.T) {
 	var root Node[func(*testContext)]
@@ -111,7 +111,7 @@ func TestGetValueRootOnly(t *testing.T) {
 }
 
 // -----------------------------------------------------------------------------
-// AddRoute / GetValue: param routes
+// AddRoute / Route: param routes
 
 func TestGetValueSingleParam(t *testing.T) {
 	var root Node[func(*testContext)]
@@ -184,7 +184,7 @@ func TestGetValueParamNotFound(t *testing.T) {
 }
 
 // -----------------------------------------------------------------------------
-// AddRoute / GetValue: catchAll routes
+// AddRoute / Route: catchAll routes
 
 func TestGetValueCatchAll(t *testing.T) {
 	var root Node[func(*testContext)]
@@ -278,11 +278,11 @@ func TestMixedRoutes(t *testing.T) {
 		ctx := newTestCtx()
 		h, _ := Route(&root, tt.path, ctx)
 		if (h != nil) != tt.wantMatch {
-			t.Fatalf("GetValue(%q): got match=%v, want match=%v", tt.path, h != nil, tt.wantMatch)
+			t.Fatalf("Route(%q): got match=%v, want match=%v", tt.path, h != nil, tt.wantMatch)
 		}
 		for k, v := range tt.wantParam {
 			if ctx.params[k] != v {
-				t.Fatalf("GetValue(%q): param %q = %q, want %q", tt.path, k, ctx.params[k], v)
+				t.Fatalf("Route(%q): param %q = %q, want %q", tt.path, k, ctx.params[k], v)
 			}
 		}
 	}
