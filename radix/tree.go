@@ -83,6 +83,10 @@ type context interface {
 	UnderlyingSetPathParam(name, val string)
 }
 
+type nilContext struct{}
+
+func (nilContext) UnderlyingSetPathParam(name, val string) {}
+
 // Node is a node in the radix tree.
 type Node[H any] struct {
 	path      string
@@ -334,13 +338,22 @@ func (n *Node[H]) insertChild(path, fullPath string, handle H) {
 	n.h, n.ok = handle, true
 }
 
+// Route returns the handle registered with the given path (key).
+//
+// If no handle can be found, a TSR (trailing slash redirect) recommendation is
+// made if a handle exists with an extra (without the) trailing slash for the
+// given path.
+func (n *Node[H]) Route(path string) (handle H, ok, tsr bool) {
+	return Route(n, path, nilContext{})
+}
+
 // Route returns the handle registered with the given path (key). The values of
 // wildcard values are set on the context via UnderlyingSetPathParam.
 //
 // If no handle can be found, a TSR (trailing slash redirect) recommendation is
 // made if a handle exists with an extra (without the) trailing slash for the
 // given path.
-func Route[T context, H any](n *Node[H], path string, ctx T) (handle H, tsr bool) {
+func Route[T context, H any](n *Node[H], path string, ctx T) (handle H, ok, tsr bool) {
 walk: // Outer loop for walking the tree
 	for {
 		prefix := n.path
@@ -395,7 +408,7 @@ walk: // Outer loop for walking the tree
 						return
 					}
 
-					if handle = n.h; n.ok {
+					if handle, ok = n.h, n.ok; ok {
 						return
 					} else if len(n.children) == 1 {
 						// No handle found. Check if a handle for this path + a
@@ -411,7 +424,7 @@ walk: // Outer loop for walking the tree
 						ctx.UnderlyingSetPathParam(n.path[2:], path)
 					}
 
-					handle = n.h
+					handle, ok = n.h, n.ok
 					return
 
 				default:
@@ -421,7 +434,7 @@ walk: // Outer loop for walking the tree
 		} else if path == prefix {
 			// We should have reached the node containing the handle.
 			// Check if this node has a handle registered.
-			if handle = n.h; n.ok {
+			if handle, ok = n.h, n.ok; ok {
 				return
 			}
 

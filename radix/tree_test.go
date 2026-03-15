@@ -45,7 +45,7 @@ func TestAddRouteGetValueSingleStatic(t *testing.T) {
 	root.AddRoute("/users", func(ctx *testContext) { called = true })
 
 	ctx := newTestCtx()
-	h, tsr := Route(&root, "/users", ctx)
+	h, _, tsr := Route(&root, "/users", ctx)
 	if h == nil {
 		t.Fatal("expected handle for /users")
 	}
@@ -71,7 +71,7 @@ func TestAddRouteGetValueMultipleStatic(t *testing.T) {
 	for _, r := range routes {
 		results[r] = false
 		ctx := newTestCtx()
-		h, tsr := Route(&root, r, ctx)
+		h, _, tsr := Route(&root, r, ctx)
 		if h == nil {
 			t.Fatalf("expected handle for %q", r)
 		}
@@ -89,7 +89,7 @@ func TestGetValueNotFound(t *testing.T) {
 	var root Node[func(*testContext)]
 	root.AddRoute("/users", func(ctx *testContext) {})
 
-	h, _ := Route(&root, "/nonexistent", newTestCtx())
+	h, _, _ := Route(&root, "/nonexistent", newTestCtx())
 	if h != nil {
 		t.Fatal("expected no handle for /nonexistent")
 	}
@@ -99,12 +99,12 @@ func TestGetValueRootOnly(t *testing.T) {
 	var root Node[func(*testContext)]
 	root.AddRoute("/", func(ctx *testContext) {})
 
-	h, _ := Route(&root, "/", newTestCtx())
+	h, _, _ := Route(&root, "/", newTestCtx())
 	if h == nil {
 		t.Fatal("expected handle for /")
 	}
 
-	h2, _ := Route(&root, "/other", newTestCtx())
+	h2, _, _ := Route(&root, "/other", newTestCtx())
 	if h2 != nil {
 		t.Fatal("expected no handle for /other")
 	}
@@ -118,7 +118,7 @@ func TestGetValueSingleParam(t *testing.T) {
 	root.AddRoute("/users/:id", func(ctx *testContext) {})
 
 	ctx := newTestCtx()
-	h, tsr := Route(&root, "/users/42", ctx)
+	h, _, tsr := Route(&root, "/users/42", ctx)
 	if h == nil {
 		t.Fatal("expected handle for /users/42")
 	}
@@ -135,7 +135,7 @@ func TestGetValueMultipleParams(t *testing.T) {
 	root.AddRoute("/users/:id/posts/:postId", func(ctx *testContext) {})
 
 	ctx := newTestCtx()
-	h, _ := Route(&root, "/users/123/posts/456", ctx)
+	h, _, _ := Route(&root, "/users/123/posts/456", ctx)
 	if h == nil {
 		t.Fatal("expected handle")
 	}
@@ -152,7 +152,7 @@ func TestGetValueParamWithTrailingSlash(t *testing.T) {
 	root.AddRoute("/users/:id/", func(ctx *testContext) {})
 
 	ctx := newTestCtx()
-	h, _ := Route(&root, "/users/42/", ctx)
+	h, _, _ := Route(&root, "/users/42/", ctx)
 	if h == nil {
 		t.Fatal("expected handle")
 	}
@@ -166,7 +166,7 @@ func TestGetValueParamNilCtx(t *testing.T) {
 	root.AddRoute("/users/:id", func(ctx *testContext) {})
 
 	// Pass nil context (zero value for *testContext) - should not panic
-	h, _ := Route[*testContext](&root, "/users/42", nil)
+	h, _, _ := root.Route("/users/42")
 	if h == nil {
 		t.Fatal("expected handle even with nil ctx")
 	}
@@ -177,7 +177,7 @@ func TestGetValueParamNotFound(t *testing.T) {
 	root.AddRoute("/users/:id", func(ctx *testContext) {})
 
 	// /users alone has no handler
-	h, _ := Route(&root, "/users", newTestCtx())
+	h, _, _ := Route(&root, "/users", newTestCtx())
 	if h != nil {
 		t.Fatal("expected no handle for /users without param")
 	}
@@ -191,7 +191,7 @@ func TestGetValueCatchAll(t *testing.T) {
 	root.AddRoute("/files/*filepath", func(ctx *testContext) {})
 
 	ctx := newTestCtx()
-	h, _ := Route(&root, "/files/path/to/file.txt", ctx)
+	h, _, _ := Route(&root, "/files/path/to/file.txt", ctx)
 	if h == nil {
 		t.Fatal("expected handle")
 	}
@@ -204,7 +204,7 @@ func TestGetValueCatchAllNilCtx(t *testing.T) {
 	var root Node[func(*testContext)]
 	root.AddRoute("/files/*filepath", func(ctx *testContext) {})
 
-	h, _ := Route[*testContext](&root, "/files/a/b/c", nil)
+	h, _, _ := root.Route("/files/a/b/c")
 	if h == nil {
 		t.Fatal("expected handle with nil ctx")
 	}
@@ -217,7 +217,7 @@ func TestGetValueTSRMissingTrailingSlash(t *testing.T) {
 	var root Node[func(*testContext)]
 	root.AddRoute("/users/", func(ctx *testContext) {})
 
-	h, tsr := Route(&root, "/users", newTestCtx())
+	h, _, tsr := Route(&root, "/users", newTestCtx())
 	if h != nil {
 		t.Fatal("expected no handle for /users (without trailing slash)")
 	}
@@ -230,7 +230,7 @@ func TestGetValueTSRExtraTrailingSlash(t *testing.T) {
 	var root Node[func(*testContext)]
 	root.AddRoute("/users", func(ctx *testContext) {})
 
-	h, tsr := Route(&root, "/users/", newTestCtx())
+	h, _, tsr := Route(&root, "/users/", newTestCtx())
 	if h != nil {
 		t.Fatal("expected no handle for /users/ (with extra trailing slash)")
 	}
@@ -241,7 +241,7 @@ func TestGetValueTSRWithParam(t *testing.T) {
 	var root Node[func(*testContext)]
 	root.AddRoute("/users/:id/", func(ctx *testContext) {})
 
-	h, tsr := Route(&root, "/users/42", newTestCtx())
+	h, _, tsr := Route(&root, "/users/42", newTestCtx())
 	if h != nil {
 		t.Fatal("expected no handle")
 	}
@@ -276,7 +276,7 @@ func TestMixedRoutes(t *testing.T) {
 
 	for _, tt := range tests {
 		ctx := newTestCtx()
-		h, _ := Route(&root, tt.path, ctx)
+		h, _, _ := Route(&root, tt.path, ctx)
 		if (h != nil) != tt.wantMatch {
 			t.Fatalf("Route(%q): got match=%v, want match=%v", tt.path, h != nil, tt.wantMatch)
 		}
@@ -300,7 +300,7 @@ func TestRoutePriorityOrdering(t *testing.T) {
 	root.AddRoute("/b/c", func(ctx *testContext) {})
 
 	for _, path := range []string{"/a", "/b", "/a/b", "/b/c"} {
-		h, _ := Route(&root, path, newTestCtx())
+		h, _, _ := Route(&root, path, newTestCtx())
 		if h == nil {
 			t.Fatalf("expected handle for %q after priority reordering", path)
 		}
