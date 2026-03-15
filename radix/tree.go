@@ -168,29 +168,34 @@ walk:
 			path = path[i:]
 
 			if n.wildChild {
-				n = n.children[0]
-				n.priority++
+				idxc := path[0]
+				if idxc == ':' || idxc == '*' {
+					// Incoming segment is a wildcard — descend into the existing wildcard child.
+					n = n.children[len(n.children)-1]
+					n.priority++
 
-				// Check if the wildcard matches
-				if len(path) >= len(n.path) && n.path == path[:len(n.path)] &&
-					// Adding a child to a catchAll is not possible
-					n.nType != catchAll &&
-					// Check for longer wildcard, e.g. :name and :names
-					(len(n.path) >= len(path) || path[len(n.path)] == '/') {
-					continue walk
-				} else {
-					// Wildcard conflict
-					pathSeg := path
-					if n.nType != catchAll {
-						pathSeg = strings.SplitN(pathSeg, "/", 2)[0]
+					// Check if the wildcard matches
+					if len(path) >= len(n.path) && n.path == path[:len(n.path)] &&
+						// Adding a child to a catchAll is not possible
+						n.nType != catchAll &&
+						// Check for longer wildcard, e.g. :name and :names
+						(len(n.path) >= len(path) || path[len(n.path)] == '/') {
+						continue walk
+					} else {
+						// Wildcard conflict
+						pathSeg := path
+						if n.nType != catchAll {
+							pathSeg = strings.SplitN(pathSeg, "/", 2)[0]
+						}
+						prefix := fullPath[:strings.Index(fullPath, pathSeg)] + n.path
+						panic("'" + pathSeg +
+							"' in new path '" + fullPath +
+							"' conflicts with existing wildcard '" + n.path +
+							"' in existing prefix '" + prefix +
+							"'")
 					}
-					prefix := fullPath[:strings.Index(fullPath, pathSeg)] + n.path
-					panic("'" + pathSeg +
-						"' in new path '" + fullPath +
-						"' conflicts with existing wildcard '" + n.path +
-						"' in existing prefix '" + prefix +
-						"'")
 				}
+				// Incoming segment is static — fall through to the index scan below.
 			}
 
 			idxc := path[0]
@@ -216,8 +221,17 @@ walk:
 				// []byte for proper unicode char conversion, see #65
 				n.indices += string([]byte{idxc})
 				child := &Node[H]{}
-				n.children = append(n.children, child)
-				n.incrementChildPrio(len(n.indices) - 1)
+				if n.wildChild {
+					// Insert the new static child before the param child to maintain
+					// ordering: [...static..., param]. Append placeholder then swap.
+					n.children = append(n.children, child)
+					last := len(n.children) - 1
+					n.children[last], n.children[last-1] = n.children[last-1], n.children[last]
+					n.incrementChildPrio(last - 1)
+				} else {
+					n.children = append(n.children, child)
+					n.incrementChildPrio(len(n.indices) - 1)
+				}
 				n = child
 			}
 			n.insertChild(path, fullPath, handle)
@@ -255,8 +269,19 @@ func (n *Node[H]) insertChild(path, fullPath string, handle H) {
 		// Check if this node has existing children which would be
 		// unreachable if we insert the wildcard here
 		if len(n.children) > 0 {
-			panic("wildcard segment '" + wildcard +
-				"' conflicts with existing children in path '" + fullPath + "'")
+			// A :param wildcard may coexist with existing static children.
+			// catchAll is still forbidden: it would shadow every sibling.
+			if wildcard[0] != ':' {
+				panic("wildcard segment '" + wildcard +
+					"' conflicts with existing children in path '" + fullPath + "'")
+			}
+			// A second param wildcard at the same level is also forbidden.
+			for _, child := range n.children {
+				if child.nType == param {
+					panic("a param wildcard is already registered for path '" + fullPath + "'")
+				}
+			}
+			// Existing static children stay in place; the param child is appended last.
 		}
 
 		// param
@@ -272,7 +297,8 @@ func (n *Node[H]) insertChild(path, fullPath string, handle H) {
 				nType: param,
 				path:  wildcard,
 			}
-			n.children = []*Node[H]{child}
+			// Append param child last; any existing static children remain at front.
+			n.children = append(n.children, child)
 			n = child
 			n.priority++
 
@@ -380,8 +406,20 @@ walk: // Outer loop for walking the tree
 					return
 				}
 
+				// This node has a wildcard (param or catchAll) child.
+				// Static children (if any) come first in n.children and are indexed by n.indices.
+				// Try static children first; fall through to wildcard only if no static match.
+				idxc := path[0]
+				for i, c := range []byte(n.indices) {
+					if c == idxc {
+						n = n.children[i]
+						continue walk
+					}
+				}
+
 				// Handle wildcard child
-				n = n.children[0]
+				// The param/catchAll child is always last (static children come first).
+				n = n.children[len(n.children)-1]
 				switch n.nType {
 				case param:
 					// Find param end (either '/' or path end)
@@ -612,7 +650,60 @@ walk: // Outer loop for walking the tree
 				return nil
 			}
 
-			n = n.children[0]
+			// This node has a wildcard (param or catchAll) child.
+			// Static children (if any) come first; try them first via case-insensitive lookup.
+			if len(n.indices) > 0 {
+				rb = shiftNRuneBytes(rb, npLen)
+
+				var rv rune
+				var off int
+				if rb[0] != 0 {
+					// Old rune not finished — use first byte as-is
+				} else {
+					for max := min(npLen, 3); off < max; off++ {
+						if i := npLen - off; utf8.RuneStart(oldPath[i]) {
+							rv, _ = utf8.DecodeRuneInString(oldPath[i:])
+							break
+						}
+					}
+
+					lo := unicode.ToLower(rv)
+					utf8.EncodeRune(rb[:], lo)
+					rb = shiftNRuneBytes(rb, off)
+
+					idxc := rb[0]
+					for i, c := range []byte(n.indices) {
+						if c == idxc {
+							if out := n.children[i].findCaseInsensitivePathRec(
+								path, ciPath, rb, fixTrailingSlash,
+							); out != nil {
+								return out
+							}
+							break
+						}
+					}
+
+					if up := unicode.ToUpper(rv); up != lo {
+						utf8.EncodeRune(rb[:], up)
+						rb = shiftNRuneBytes(rb, off)
+
+						idxc := rb[0]
+						for i, c := range []byte(n.indices) {
+							if c == idxc {
+								if out := n.children[i].findCaseInsensitivePathRec(
+									path, ciPath, rb, fixTrailingSlash,
+								); out != nil {
+									return out
+								}
+								break
+							}
+						}
+					}
+				}
+			}
+
+			// The param/catchAll child is always last (static children come first).
+			n = n.children[len(n.children)-1]
 			switch n.nType {
 			case param:
 				// Find param end (either '/' or path end)
