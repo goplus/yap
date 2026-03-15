@@ -190,8 +190,7 @@ func (p *router) allowed(path, reqMethod string) (allow string) {
 				continue
 			}
 
-			handle, _ := radix.Route[*Context](p.trees[method], path, nil)
-			if handle != nil {
+			if _, ok, _ := radix.Route[*Context](p.trees[method], path, nil); ok {
 				// Route request method to list of allowed methods
 				allowed = append(allowed, method)
 			}
@@ -227,7 +226,7 @@ func (p *router) serveHTTP(w http.ResponseWriter, req *http.Request, e *Engine) 
 	root := p.trees[req.Method]
 	if root != nil {
 		ctx := e.NewContext(w, req)
-		if handle, tsr := radix.Route(root, path, ctx); handle != nil {
+		if handle, ok, tsr := radix.Route(root, path, ctx); ok {
 			handle(ctx)
 			return
 		} else if req.Method != http.MethodConnect && path != "/" {
