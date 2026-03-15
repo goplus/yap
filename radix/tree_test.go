@@ -603,3 +603,61 @@ func TestFindCaseInsensitivePathWithStaticParamSiblings(t *testing.T) {
 		t.Fatalf("expected /model/someother, got %q", fixedPath)
 	}
 }
+
+// TestStaticAndParamSiblingsFirstByteCollision verifies that a param value whose
+// first byte collides with a registered static sibling still routes correctly via
+// the param child (regression test for the no-backtracking bug).
+func TestStaticAndParamSiblingsFirstByteCollision(t *testing.T) {
+	var root Node[func(*testContext)]
+	root.AddRoute("/model/videoModels", func(ctx *testContext) {})
+	root.AddRoute("/model/imageModels", func(ctx *testContext) {})
+	root.AddRoute("/model/:model", func(ctx *testContext) {})
+
+	tests := []struct {
+		path      string
+		wantMatch bool
+		wantParam string // expected :model value; empty string means static match
+	}{
+		// Exact static matches must still work.
+		{"/model/videoModels", true, ""},
+		{"/model/imageModels", true, ""},
+		// Param values that share the first byte with a static sibling.
+		{"/model/videoModelsHD", true, "videoModelsHD"},
+		{"/model/imageModels2", true, "imageModels2"},
+		// Param values with no first-byte collision.
+		{"/model/textModels", true, "textModels"},
+		{"/model/anything", true, "anything"},
+	}
+
+	for _, tt := range tests {
+		ctx := newTestCtx()
+		h, _, _ := Route(&root, tt.path, ctx)
+		if (h != nil) != tt.wantMatch {
+			t.Fatalf("Route(%q): got match=%v, want match=%v", tt.path, h != nil, tt.wantMatch)
+		}
+		if tt.wantParam == "" {
+			if ctx.params["model"] != "" {
+				t.Fatalf("Route(%q): expected static match, but :model param = %q", tt.path, ctx.params["model"])
+			}
+		} else {
+			if ctx.params["model"] != tt.wantParam {
+				t.Fatalf("Route(%q): param model = %q, want %q", tt.path, ctx.params["model"], tt.wantParam)
+			}
+		}
+	}
+}
+
+// TestStaticAndParamSiblingsPanicDuplicateParamAfterStatic ensures the new
+// duplicate-param guard in insertChild fires when a static sibling is registered
+// before the first param and a second param is then attempted.
+func TestStaticAndParamSiblingsPanicDuplicateParamAfterStatic(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("expected panic for duplicate param wildcard at same level")
+		}
+	}()
+	var root Node[func(*testContext)]
+	root.AddRoute("/model/static", func(ctx *testContext) {}) // static sibling registered first
+	root.AddRoute("/model/:id", func(ctx *testContext) {})    // first param — OK
+	root.AddRoute("/model/:name", func(ctx *testContext) {})  // second param — must panic
+}

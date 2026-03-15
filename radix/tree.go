@@ -412,8 +412,19 @@ walk: // Outer loop for walking the tree
 				idxc := path[0]
 				for i, c := range []byte(n.indices) {
 					if c == idxc {
-						n = n.children[i]
-						continue walk
+						child := n.children[i]
+						// Verify the path actually starts with the child's full stored path
+						// AND that the child can plausibly handle the remainder (either it is
+						// an exact match or it has sub-children for further path segments).
+						// Without this guard a leaf static child would be entered for any
+						// param value sharing its first byte, causing a spurious 404 because
+						// the iterative walk has no mechanism to backtrack to the param child.
+						if strings.HasPrefix(path, child.path) &&
+							(len(path) == len(child.path) || len(child.children) > 0) {
+							n = child
+							continue walk
+						}
+						break
 					}
 				}
 
@@ -653,12 +664,27 @@ walk: // Outer loop for walking the tree
 			// This node has a wildcard (param or catchAll) child.
 			// Static children (if any) come first; try them first via case-insensitive lookup.
 			if len(n.indices) > 0 {
+				// Save rb before any manipulation so we can restore it for the
+				// param/catchAll fallthrough regardless of what the static-child
+				// attempts did to the buffer.
+				savedRb := rb
 				rb = shiftNRuneBytes(rb, npLen)
 
 				var rv rune
 				var off int
 				if rb[0] != 0 {
-					// Old rune not finished — use first byte as-is
+					// Old rune not finished — use the already-computed first byte directly.
+					idxc := rb[0]
+					for i, c := range []byte(n.indices) {
+						if c == idxc {
+							if out := n.children[i].findCaseInsensitivePathRec(
+								path, ciPath, rb, fixTrailingSlash,
+							); out != nil {
+								return out
+							}
+							break
+						}
+					}
 				} else {
 					for max := min(npLen, 3); off < max; off++ {
 						if i := npLen - off; utf8.RuneStart(oldPath[i]) {
@@ -700,6 +726,10 @@ walk: // Outer loop for walking the tree
 						}
 					}
 				}
+				// Restore rb to its state before this block so that the param/catchAll
+				// child below receives the same rb that the original code would have
+				// passed (i.e. unmodified relative to this node's entry point).
+				rb = savedRb
 			}
 
 			// The param/catchAll child is always last (static children come first).
