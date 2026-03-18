@@ -10,12 +10,12 @@ yap - Yet Another Go/XGo HTTP Web Framework
 
 This repo contains three [XGo classfiles](https://github.com/goplus/xgo/blob/main/doc/classfile.md). They are [yap](#yap-http-web-framework) (a HTTP Web Framework), [yaptest](ytest) (a HTTP Test Framework) and [ydb](ydb) (a XGo Database Framework).
 
-The classfile [yap](#yap-http-web-framework) has the file suffix `.yap`. The classfile [yaptest](ytest) has the file suffix `_ytest.gox`. And the classfile [ydb](ydb) has the file suffix `_ydb.gox`.
+The classfile [yap](#yap-http-web-framework) has the file suffix `_yap.gox`. The classfile [yaptest](ytest) has the file suffix `_ytest.gox`. And the classfile [ydb](ydb) has the file suffix `_ydb.gox`.
 
 Before using `yap`, `yaptest` or `ydb`, you need to add `github.com/goplus/yap` to `go.mod`:
 
 ```sh
-gop get github.com/goplus/yap@latest
+xgo get github.com/goplus/yap@latest
 ```
 
 For more details, see [YAP Framework Manual](doc/manual.md).
@@ -26,16 +26,16 @@ For more details, see [YAP Framework Manual](doc/manual.md).
 First let us initialize a hello project:
 
 ```sh
-gop mod init hello
+xgo mod init hello
 ```
 
 Then we have it reference a classfile called `yap` as the HTTP Web Framework:
 
 ```sh
-gop get github.com/goplus/yap@latest
+xgo get github.com/goplus/yap@latest
 ```
 
-Create a file named [get.yap](demo/classfile2_hello/get.yap) with the following content:
+Create a file named [get_yap.gox](demo/classfile2_hello/get_yap.gox) with the following content:
 
 ```go
 html `<html><body>Hello, YAP!</body></html>`
@@ -44,8 +44,8 @@ html `<html><body>Hello, YAP!</body></html>`
 Execute the following commands:
 
 ```sh
-gop mod tidy
-gop run .
+xgo mod tidy
+xgo run .
 ```
 
 A simplest web program is running now. At this time, if you visit http://localhost:8080, you will get:
@@ -57,14 +57,14 @@ Hello, YAP!
 
 ### yap: HTTP Web Framework
 
-This classfile has the file suffix `.yap`.
+This classfile has the file suffix `_yap.gox`.
 
 
 #### Router and Parameters
 
-YAP uses filenames to define routes. `get.yap`'s route is `get "/"` (GET homepage), and `get_p_#id.yap`'s route is `get "/p/:id"` (In fact, the filename can also be `get_p_:id.yap`, but it is not recommended because `:` is not allowed to exist in filenames under Windows).
+YAP uses filenames to define routes. `get_yap.gox`'s route is `get "/"` (GET homepage), and `get_p_#id_yap.gox`'s route is `get "/p/:id"` (In fact, the filename can also be `get_p_:id_yap.gox`, but it is not recommended because `:` is not allowed to exist in filenames under Windows).
 
-Let's create a file named [get_p_#id.yap](demo/classfile2_hello/get_p_%23id.yap) with the following content:
+Let's create a file named [get_p_#id_yap.gox](demo/classfile2_hello/get_p_%23id_yap.gox) with the following content:
 
 ```coffee
 json {
@@ -72,7 +72,7 @@ json {
 }
 ```
 
-Execute `gop run .` and visit http://localhost:8080/p/123, you will get:
+Execute `xgo run .` and visit http://localhost:8080/p/123, you will get:
 
 ```
 {"id": "123"}
@@ -81,7 +81,7 @@ Execute `gop run .` and visit http://localhost:8080/p/123, you will get:
 
 #### YAP Template
 
-In most cases, we don't use the `html` directive to generate html pages, but use the `yap` template engine. See [get_p_#id.yap](demo/classfile2_blog/get_p_%23id.yap):
+In most cases, we don't use the `html` directive to generate html pages, but use the `yap` template engine. See [get_p_#id_yap.gox](demo/classfile2_blog/get_p_%23id_yap.gox):
 
 ```coffee
 yap "article", {
@@ -100,7 +100,7 @@ It means finding a template called `article` to render. See [yap/article_yap.htm
 
 #### Run at specified address
 
-By default the YAP server runs on `localhost:8080`, but you can change it in [main.yap](demo/classfile2_blog/main.yap) file:
+By default the YAP server runs on `localhost:8080`, but you can change it in [main_yap.gox](demo/classfile2_blog/main_yap.gox) file:
 
 ```coffee
 run ":8888"
@@ -109,7 +109,7 @@ run ":8888"
 
 #### Static files
 
-Static files server demo ([main.yap](demo/classfile2_static/main.yap)):
+Static files server demo ([main_yap.gox](demo/classfile2_static/main_yap.gox)):
 
 ```coffee
 static "/foo", FS("public")
@@ -123,7 +123,7 @@ run ":8080"
 
 [yaptest](ytest) is a web server testing framework. This classfile has the file suffix `_ytest.gox`.
 
-Suppose we have a web server ([foo/get_p_#id.yap](ytest/demo/foo/get_p_%23id.yap)):
+Suppose we have a web server ([foo/get_p_#id_yap.gox](ytest/demo/foo/get_p_%23id_yap.gox)):
 
 ```go
 json {

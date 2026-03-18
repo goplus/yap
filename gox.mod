@@ -1,10 +1,8 @@
 xgo 1.6
 
-project .yap AppV2 github.com/goplus/yap
+project _yap.gox AppV2 github.com/goplus/yap
 
-class .yap Handler
-
-project _yap.gox App github.com/goplus/yap
+class _yap.gox Handler
 
 project _yapt.gox App github.com/goplus/yap/ytest github.com/qiniu/x/test
 

@@ -3,12 +3,12 @@ yap - Yet Another Go/XGo HTTP Web Framework
 
 This repo contains three [XGo classfiles](https://github.com/goplus/xgo/blob/main/doc/classfile.md): `yap` (a HTTP Web Framework), `yaptest` (a HTTP Test Framework) and `ydb` (a XGo Database Framework).
 
-The classfile `yap` has the file suffix `.yap`. The classfile `yaptest` has the file suffix `_ytest.gox`. And the classfile `ydb` has the file suffix `_ydb.gox`.
+The classfile `yap` has the file suffix `_yap.gox`. The classfile `yaptest` has the file suffix `_ytest.gox`. And the classfile `ydb` has the file suffix `_ydb.gox`.
 
 Before using `yap`, `yaptest` or `ydb`, you need to add `github.com/goplus/yap` to `go.mod`:
 
 ```sh
-gop get github.com/goplus/yap@latest
+xgo get github.com/goplus/yap@latest
 ```
 
 
@@ -33,7 +33,7 @@ func main() {
 }
 ```
 
-demo in XGo classfile v1 ([main.yap](../demo/classfile_hello/main.yap)):
+demo in XGo classfile v1 ([main_yap.gox](../demo/classfile_hello/main_yap.gox)):
 
 ```go
 get "/", ctx => {
@@ -48,15 +48,15 @@ get "/p/:id", ctx => {
 run "localhost:8080"
 ```
 
-demo in XGo classfile v2 ([get.yap](../demo/classfile2_hello/get.yap), [get_p_#id.yap](../demo/classfile2_hello/get_p_%23id.yap)):
+demo in XGo classfile v2 ([get_yap.gox](../demo/classfile2_hello/get_yap.gox), [get_p_#id_yap.gox](../demo/classfile2_hello/get_p_%23id_yap.gox)):
 
-* [get.yap](../demo/classfile2_hello/get.yap):
+* [get_yap.gox](../demo/classfile2_hello/get_yap.gox):
 
 ```go
 html `<html><body>Hello, YAP!</body></html>`
 ```
 
-* [get_p_#id.yap](../demo/classfile2_hello/get_p_%23id.yap):
+* [get_p_#id_yap.gox](../demo/classfile2_hello/get_p_%23id_yap.gox):
 
 ```coffee
 json {
@@ -77,7 +77,7 @@ y.Static("/") // means: y.Static("/", y.FS("static"))
 y.Run(":8080")
 ```
 
-Static files server demo in XGo classfile ([main.yap](../demo/classfile2_static/main.yap)):
+Static files server demo in XGo classfile ([main_yap.gox](../demo/classfile2_static/main_yap.gox)):
 
 ```go
 static "/foo", FS("public")
@@ -118,7 +118,7 @@ y.GET("/p/:id", func(ctx *yap.Context) {
 y.Run(":8888")
 ```
 
-demo in XGo classfile v1 ([main.yap](../demo/classfile_blog/blog_yap.gox), [article_yap.html](../demo/classfile_blog/yap/article_yap.html)):
+demo in XGo classfile v1 ([main_yap.gox](../demo/classfile_blog/main_yap.gox), [article_yap.html](../demo/classfile_blog/yap/article_yap.html)):
 
 ```go
 get "/p/:id", ctx => {
@@ -130,7 +130,7 @@ get "/p/:id", ctx => {
 run ":8888"
 ```
 
-demo in XGo classfile v2 ([get_p_#id.yap](../demo/classfile2_blog/get_p_%23id.yap), [article_yap.html](../demo/classfile2_blog/yap/article_yap.html)):
+demo in XGo classfile v2 ([get_p_#id_yap.gox](../demo/classfile2_blog/get_p_%23id_yap.gox), [article_yap.html](../demo/classfile2_blog/yap/article_yap.html)):
 
 ```go
 yap "article", {
@@ -143,7 +143,7 @@ yap "article", {
 
 This classfile has the file suffix `_ytest.gox`.
 
-Suppose we have a web server ([foo/get_p_#id.yap](../ytest/demo/foo/get_p_%23id.yap)):
+Suppose we have a web server ([foo/get_p_#id_yap.gox](../ytest/demo/foo/get_p_%23id_yap.gox)):
 
 ```go
 json {
