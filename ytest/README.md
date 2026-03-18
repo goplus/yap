@@ -10,10 +10,10 @@ yaptest is a web server testing framework. This classfile has the file suffix `_
 Before using `yaptest`, you need to add `github.com/goplus/yap` to `go.mod`:
 
 ```
-gop get github.com/goplus/yap@latest
+xgo get github.com/goplus/yap@latest
 ```
 
-Suppose we have a web server ([foo/get_p_#id.yap](demo/foo/get_p_%23id.yap)):
+Suppose we have a web server ([foo/get_p_#id_yap.gox](demo/foo/get_p_%23id_yap.gox)):
 
 ```go
 json {

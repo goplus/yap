@@ -9,19 +9,19 @@ const _ = true
 type AppV2 struct {
 	yap.AppV2
 }
-//line demo/classfile_hello/main.yap:1
+//line demo/classfile_hello/main_yap.gox:1
 func (this *AppV2) MainEntry() {
-//line demo/classfile_hello/main.yap:1:1
+//line demo/classfile_hello/main_yap.gox:1:1
 	this.Get("/", func(ctx *yap.Context) {
-//line demo/classfile_hello/main.yap:2:1
+//line demo/classfile_hello/main_yap.gox:2:1
 		ctx.Html__1(`<html><body>Hello, YAP!</body></html>`)
 	})
-//line demo/classfile_hello/main.yap:4:1
+//line demo/classfile_hello/main_yap.gox:4:1
 	this.Get("/p/:id", func(ctx *yap.Context) {
-//line demo/classfile_hello/main.yap:5:1
+//line demo/classfile_hello/main_yap.gox:5:1
 		ctx.Json__1(map[string]string{"id": ctx.Param("id")})
 	})
-//line demo/classfile_hello/main.yap:10:1
+//line demo/classfile_hello/main_yap.gox:10:1
 	this.Run("localhost:8080")
 }
 func (this *AppV2) Main() {

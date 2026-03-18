@@ -12,11 +12,11 @@ const _ = true
 type AppV2 struct {
 	yap.AppV2
 }
-//line demo/classfile2_statichttp/main.yap:3
+//line demo/classfile2_statichttp/main_yap.gox:3
 func (this *AppV2) MainEntry() {
-//line demo/classfile2_statichttp/main.yap:3:1
+//line demo/classfile2_statichttp/main_yap.gox:3:1
 	this.Static__2("/", fs.Http("https://xgo.dev"), false)
-//line demo/classfile2_statichttp/main.yap:4:1
+//line demo/classfile2_statichttp/main_yap.gox:4:1
 	this.Run(":8080")
 }
 func (this *AppV2) Main() {

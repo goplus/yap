@@ -6,11 +6,11 @@ import "github.com/goplus/yap"
 
 const _ = true
 
-type get struct {
+type get_p_id struct {
 	yap.Handler
 	*AppV2
 }
-type get_p_id struct {
+type get struct {
 	yap.Handler
 	*AppV2
 }
@@ -19,33 +19,33 @@ type AppV2 struct {
 }
 
 func (this *AppV2) Main() {
-	_xgo_obj0 := &get{AppV2: this}
-	_xgo_obj1 := &get_p_id{AppV2: this}
+	_xgo_obj0 := &get_p_id{AppV2: this}
+	_xgo_obj1 := &get{AppV2: this}
 	yap.XGot_AppV2_Main(this, _xgo_obj0, _xgo_obj1)
 }
-//line demo/classfile2_hello/get.yap:1
-func (this *get) Main(_xgo_arg0 *yap.Context) {
-	this.Handler.Main(_xgo_arg0)
-//line demo/classfile2_hello/get.yap:1:1
-	this.Html__1(`<html><body>Hello, YAP!</body></html>`)
-}
-func (this *get) Classfname() string {
-	return "get"
-}
-func (this *get) Classclone() yap.HandlerProto {
-	_xgo_ret := *this
-	return &_xgo_ret
-}
-//line demo/classfile2_hello/get_p_#id.yap:1
+//line demo/classfile2_hello/get_p_#id_yap.gox:1
 func (this *get_p_id) Main(_xgo_arg0 *yap.Context) {
 	this.Handler.Main(_xgo_arg0)
-//line demo/classfile2_hello/get_p_#id.yap:1:1
+//line demo/classfile2_hello/get_p_#id_yap.gox:1:1
 	this.Json__1(map[string]string{"id": this.XGo_Env("id")})
 }
 func (this *get_p_id) Classfname() string {
 	return "get_p_#id"
 }
 func (this *get_p_id) Classclone() yap.HandlerProto {
+	_xgo_ret := *this
+	return &_xgo_ret
+}
+//line demo/classfile2_hello/get_yap.gox:1
+func (this *get) Main(_xgo_arg0 *yap.Context) {
+	this.Handler.Main(_xgo_arg0)
+//line demo/classfile2_hello/get_yap.gox:1:1
+	this.Html__1(`<html><body>Hello, YAP!</body></html>`)
+}
+func (this *get) Classfname() string {
+	return "get"
+}
+func (this *get) Classclone() yap.HandlerProto {
 	_xgo_ret := *this
 	return &_xgo_ret
 }

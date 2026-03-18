@@ -1,5 +1,7 @@
+import "github.com/goplus/yap/ytest/auth/bearer"
+
 host "https://example.com", "http://localhost:8080"
-testauth := oauth2("...")
+testauth := bearer.New("...")
 
 DefaultHeader.set "User-Agent", "yaptest/0.7"
 

@@ -9,13 +9,13 @@ const _ = true
 type AppV2 struct {
 	yap.AppV2
 }
-//line demo/classfile2_static/main.yap:1
+//line demo/classfile2_static/main_yap.gox:1
 func (this *AppV2) MainEntry() {
-//line demo/classfile2_static/main.yap:1:1
+//line demo/classfile2_static/main_yap.gox:1:1
 	this.Static__0("/foo", this.FS("public"))
-//line demo/classfile2_static/main.yap:2:1
+//line demo/classfile2_static/main_yap.gox:2:1
 	this.Static__0("/")
-//line demo/classfile2_static/main.yap:4:1
+//line demo/classfile2_static/main_yap.gox:4:1
 	this.Run(":8080")
 }
 func (this *AppV2) Main() {

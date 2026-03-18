@@ -6,27 +6,27 @@ import "github.com/goplus/yap"
 
 const _ = true
 
-type blog struct {
-	yap.App
+type AppV2 struct {
+	yap.AppV2
 }
-//line demo/classfile_blog/blog_yap.gox:1
-func (this *blog) MainEntry() {
-//line demo/classfile_blog/blog_yap.gox:1:1
+//line demo/classfile_blog/main_yap.gox:1
+func (this *AppV2) MainEntry() {
+//line demo/classfile_blog/main_yap.gox:1:1
 	this.Get("/", func(ctx *yap.Context) {
-//line demo/classfile_blog/blog_yap.gox:2:1
+//line demo/classfile_blog/main_yap.gox:2:1
 		ctx.Html__1(`<html><body>Hello, <a href="/p/123">YAP</a>!</body></html>`)
 	})
-//line demo/classfile_blog/blog_yap.gox:4:1
+//line demo/classfile_blog/main_yap.gox:4:1
 	this.Get("/p/:id", func(ctx *yap.Context) {
-//line demo/classfile_blog/blog_yap.gox:5:1
+//line demo/classfile_blog/main_yap.gox:5:1
 		ctx.Yap__1("article", map[string]string{"id": ctx.Param("id")})
 	})
-//line demo/classfile_blog/blog_yap.gox:10:1
+//line demo/classfile_blog/main_yap.gox:10:1
 	this.Run(":8888")
 }
-func (this *blog) Main() {
-	yap.XGot_App_Main(this)
+func (this *AppV2) Main() {
+	yap.XGot_AppV2_Main(this)
 }
 func main() {
-	new(blog).Main()
+	new(AppV2).Main()
 }
